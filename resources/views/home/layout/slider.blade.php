@@ -1,3 +1,7 @@
+{{-- <div class="lonyo-hero-section light-bg" style="background-image: url('{{ asset('frontend/assets/images/v1/memorial-park.jpg') }}'); background-size: cover; background-position: center; position: relative;">
+    <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.55); pointer-events: none;"></div>
+    <div class="container" style="position: relative; z-index: 1;"> --}}
+  
   <div class="lonyo-hero-section light-bg">
     <div class="container">
       <div class="row">
@@ -14,12 +18,13 @@
           </div>
         </div>
         <div class="col-lg-5">
-          {{-- <div class="lonyo-hero-thumb" data-aos="fade-left" data-aos-duration="700">
-            <img src="{{ asset('frontend/assets/images/v1/memorial.jpg') }}" alt="">
-            <div class="lonyo-hero-shape">
-              <img src="{{ asset('frontend/assets/images/shape/hero-shape1..svg') }}" alt="">
-            </div>
-          </div> --}}
+          <div class="lonyo-hero-thumb" data-aos="fade-left" data-aos-duration="700">
+            <img src="{{ asset('frontend/assets/images/v1/slider1.png') }}" alt="">
+            {{-- <div class="lonyo-hero-shape">
+              <img src="{{ asset('frontend/assets/images/shape/hero-shape1.svg') }}" alt="">
+            </div> --}}
+          </div>
+
         </div>
       </div>
     </div>
