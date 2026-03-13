@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('home.index');
@@ -30,3 +31,4 @@ Route::get('/verify', [AdminController::class, 'ShowVerification'])->name('custo
 
 Route::post('/verify', [AdminController::class, 'VerificationVerify'])->name('custom.verification.verify');
 
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.submit');

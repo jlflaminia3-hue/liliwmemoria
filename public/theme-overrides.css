@@ -70,36 +70,81 @@ a.text-primary:focus {
 
 .liliwmemoria-hero-contact {
   width: 100%;
-  max-width: 460px;
-  padding: 18px;
-  border-radius: 10px;
-  background-color: rgba(20, 44, 20, 0.72);
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(2px);
+  max-width: 1120px;
+  margin: 28px auto 0;
+}
+
+.liliwmemoria-hero-contact__title {
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.liliwmemoria-hero-contact__subtitle {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.liliwmemoria-hero-contact__link {
+  color: rgba(255, 255, 255, 0.92);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.liliwmemoria-hero-contact__link:hover,
+.liliwmemoria-hero-contact__link:focus {
+  color: #ffffff;
+}
+
+.liliwmemoria-hero-contact__alert {
+  max-width: 1120px;
+  margin: 16px auto 0;
+}
+
+.liliwmemoria-hero-contact__group {
+  margin-bottom: 12px;
+}
+
+.liliwmemoria-hero-contact__group .input-group {
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 }
 
 .liliwmemoria-hero-contact__group .input-group-text,
-.liliwmemoria-hero-contact__group .form-control {
-  background-color: rgba(255, 255, 255, 0.96);
+.liliwmemoria-hero-contact__group .form-control,
+.liliwmemoria-hero-contact__group .form-select {
+  background-color: rgba(255, 255, 255, 0.98);
+  border: 0;
 }
 
 .liliwmemoria-hero-contact__group .input-group-text {
-  color: rgba(20, 44, 20, 0.65);
-  border: 0;
+  width: 46px;
+  justify-content: center;
+  color: rgba(20, 44, 20, 0.55);
+  background-color: rgba(245, 245, 245, 0.98);
+  border-right: 1px solid rgba(20, 44, 20, 0.08);
 }
 
-.liliwmemoria-hero-contact__group .form-control {
-  border: 0;
+.liliwmemoria-hero-contact__group .form-control,
+.liliwmemoria-hero-contact__group .form-select {
   color: #142c14;
   font-size: 16px;
   line-height: 1.2;
+  min-height: 48px;
+}
+
+.liliwmemoria-hero-contact__group .form-select {
+  padding-right: 2.25rem;
 }
 
 .liliwmemoria-hero-contact__group .form-control::placeholder {
   color: rgba(20, 44, 20, 0.45);
 }
 
-.liliwmemoria-hero-contact__group .form-control:focus {
+.liliwmemoria-hero-contact__group .form-control:focus,
+.liliwmemoria-hero-contact__group .form-select:focus {
   box-shadow: 0 0 0 0.2rem rgba(20, 44, 20, 0.2);
 }
 
@@ -110,11 +155,46 @@ a.text-primary:focus {
   justify-content: center;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  min-width: 360px;
+  padding: 14px 32px !important;
+  border-radius: 2px !important;
+  display: inline-flex;
+  align-items: center;
 }
 
 .liliwmemoria-hero-contact__btn:hover,
 .liliwmemoria-hero-contact__btn:focus {
   background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.liliwmemoria-hero-contact__message {
+  margin-bottom: 0;
+}
+
+.liliwmemoria-hero-contact__message .input-group,
+.liliwmemoria-hero-contact__message .form-control {
+  height: 100%;
+}
+
+.liliwmemoria-hero-contact__message textarea.form-control {
+  resize: none;
+  min-height: 270px;
+}
+
+.liliwmemoria-hero-contact__actions {
+  margin-top: 10px;
+  padding-bottom: 120px;
+}
+
+@media (max-width: 991px) {
+  .liliwmemoria-hero-contact__actions {
+    padding-bottom: 80px;
+  }
+  .liliwmemoria-hero-contact__btn {
+    min-width: 0;
+    width: 100%;
+    max-width: 360px;
+  }
 }
 
 /* Ensure the home page section title fits on a single slide line */
@@ -127,4 +207,46 @@ a.text-primary:focus {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   display: inline-block;
   max-width: 100%;
+}
+
+.liliwmemoria-hero-bg {
+  position: relative;
+  background-image: url("/frontend/assets/images/v1/memorial-park.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.liliwmemoria-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(24, 46, 24, 0.897);
+}
+
+.liliwmemoria-hero-bg > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.liliwmemoria-hero-bg .hero-title,
+.liliwmemoria-hero-bg .text {
+  color: #ffffff;
+}
+
+header.lonyo-header-section.liliwmemoria-header-glass {
+  background-color: rgba(255, 255, 255, 0.267);
+  border-bottom: 1px solid rgba(20, 44, 20, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+header.lonyo-header-section.liliwmemoria-header-glass.sticky-menu {
+  background-color: rgba(255, 255, 255, 0.144);
+}
+
+@supports not ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  header.lonyo-header-section.liliwmemoria-header-glass {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
 }

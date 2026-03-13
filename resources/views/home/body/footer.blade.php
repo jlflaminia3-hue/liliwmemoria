@@ -113,7 +113,7 @@
               <div class="lonyo-subscription-field2">
                 <form action="#">
                   <input type="email" placeholder="Enter your e-mail">
-                  <button class="lonyo-default-btn subscrib-btn d-block" type="submit">Subscribe</button>
+                  <button class="lonyo-default-btn subscrib-btn d-block" type="submit">CONTACT US</button>
                 </form>
               </div>
             </div>
