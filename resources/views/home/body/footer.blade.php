@@ -5,7 +5,7 @@
           <div class="col-xxl-4 col-xl-12 col-md-6">
             <div class="lonyo-footer-textarea">
               @include('home.body.brand')
-              <p>This tool simplifies your spending and saving to organize your money.</p>
+              <p>LiliwMemoria provides compassionate cemetery management services, helping families honor and remember their loved ones with dignity and care.</p>
               <div class="lonyo-social-wrap">
                 <ul>
                   <li>
@@ -39,81 +39,43 @@
                 </ul>
               </div>
             </div>
+
+
+
+            
           </div>
-          <div class="col-xxl-3 col-xl-4 col-md-6">
+          {{-- <div class="col-xxl-3 col-xl-4 col-md-6">
             <div class="lonyo-footer-menu">
-              <h4>Main pages</h4>
               <div class="lonyo-footer-menu-wrap">
                 <div class="lonyo-footer-menu1">
                   <ul>
                     <li>
-                      <a href="index.html">Home 01</a>
+                      <a href="index.html">About</a>
                     </li>
                     <li>
-                      <a href="index-02.html">Home 02</a>
+                      <a href="index-02.html">Services</a>
                     </li>
                     <li>
-                      <a href="index-03.html">Home 03</a>
+                      <a href="index-03.html">Galleries</a>
                     </li>
                     <li>
-                      <a href="about-us.html">About us</a>
+                      <a href="about-us.html">Location</a>
                     </li>
                     <li>
-                      <a href="contact-us.html">Contact us</a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="lonyo-footer-menu1">
-                  <ul>
-                    <li>
-                      <a href="blog.html">Blog</a>
-                    </li>
-                    <li>
-                      <a href="single-blog.html">Blog single</a>
-                    </li>
-                    <li>
-                      <a href="integration.html">Integrations</a>
-                    </li>
-                    <li>
-                      <a href="single-integration.html">Integration single</a>
-                    </li>
-                    <li>
-                      <a href="pricing.html">Pricing</a>
+                      <a href="contact-us.html">Contact</a>
                     </li>
                   </ul>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="col-xxl-2 col-xl-4 col-md-6">
-            <div class="lonyo-footer-menu pl-30">
-              <h4>Utility pages</h4>
-              <ul>
-                <li>
-                  <a href="sign-up.html">Sign up</a>
-                </li>
-                <li>
-                  <a href="login.html">Log in</a>
-                </li>
-                <li>
-                  <a href="reset-password.html">Reset password</a>
-                </li>
-                <li>
-                  <a href="cooming-soon.html">Coming soon</a>
-                </li>
-                <li>
-                  <a href="error-404.html">404 Not found</a>
-                </li>
-              </ul>
-            </div>
-          </div>
+          </div> --}}
           <div class="col-xxl-3 col-xl-4 col-md-6">
             <div class="lonyo-footer-menu pl-31 mb-0">
-              <h4>Join our newsletter</h4>
+              <h4>Stay Informed</h4>
               <div class="lonyo-subscription-field2">
                 <form action="#">
                   <input type="email" placeholder="Enter your e-mail">
-                  <button class="lonyo-default-btn subscrib-btn d-block" type="submit">CONTACT US</button>
+                  <button class="lonyo-default-btn subscrib-btn d-block" type="submit">SUBSCRIBE</button>
                 </form>
               </div>
             </div>

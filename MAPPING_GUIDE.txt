@@ -1,0 +1,217 @@
+================================================================================
+                    CEMETERY MAPPING SYSTEM - USER GUIDE
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Overview
+2. Prerequisites
+3. Getting Started
+4. Admin Functions
+5. Public Map Features
+6. How to Add Your Site Map Image
+7. Troubleshooting
+
+================================================================================
+1. OVERVIEW
+================================================================================
+
+This cemetery mapping system uses Leaflet.js (OpenStreetMap) to display burial
+lots on an interactive map. It has two main interfaces:
+
+- ADMIN: Manage lots, add deceased information, view/edit map
+- PUBLIC: Search for deceased, view locations, get directions
+
+================================================================================
+2. PREREQUISITES
+================================================================================
+
+Before using the system, ensure you have:
+
+- [ ] MySQL database running
+- [ ] PHP and Laravel installed
+- [ ] Ran `php artisan migrate`
+
+To run migrations:
+    php artisan migrate
+
+================================================================================
+3. GETTING STARTED
+================================================================================
+
+STEP 1: Access the Admin Panel
+------------------------------
+1. Go to your application URL
+2. Login with your admin credentials
+3. Navigate to: Lots > Map View (in sidebar)
+
+STEP 2: Set Default Map Location
+---------------------------------
+The map defaults to coordinates [14.5995, 120.9842] (Manila, Philippines).
+
+To change the default location, edit:
+    resources/views/admin/lots/map.blade.php
+    resources/views/map.blade.php
+
+Find this line:
+    var map = L.map('map').setView([14.5995, 120.9842], 15);
+
+Change to your cemetery's coordinates:
+    var map = L.map('map').setView([YOUR_LAT, YOUR_LNG], 16);
+
+To find your coordinates:
+1. Go to https://www.openstreetmap.org
+2. Navigate to your cemetery
+3. The URL will show coordinates, e.g., /#lat=14.5995&lon=120.9842
+
+================================================================================
+4. ADMIN FUNCTIONS
+================================================================================
+
+A. Adding a New Burial Lot (with Deceased)
+------------------------------------------
+1. Go to: Lots > Map View
+2. Click on the map where the lot is located
+3. A modal will appear with:
+   - Lot Information (name, section, coordinates)
+   - Deceased Information (name, dates, etc.)
+4. Fill in the details and click "Save"
+
+B. Adding a Lot (without Deceased)
+---------------------------------
+1. Go to: Lots > All Lots
+2. Click "Add Lot" button
+3. Enter lot name, section, and coordinates
+4. Save
+
+C. Editing a Lot
+-----------------
+1. Go to: Lots > All Lots
+2. Click "Edit" on the lot you want to modify
+3. Update details and save
+
+D. Viewing All Lots (List View)
+-------------------------------
+1. Go to: Lots > All Lots
+2. View all lots with their status (Available/Occupied)
+3. See deceased names associated with each lot
+
+================================================================================
+5. PUBLIC MAP FEATURES
+================================================================================
+
+The public map is accessible at: /map
+
+FEATURES:
+- Interactive map with all burial locations
+- Color-coded markers:
+  * GREEN = Available lot
+  * RED = Occupied lot
+- Click marker to view:
+  * Lot name and section
+  * Deceased information (if any)
+  * "Get Directions" button (opens Google Maps)
+
+SEARCH FUNCTION:
+- Use the search box to find a deceased person by name
+- The map will zoom to that location and show popup
+
+GET DIRECTIONS:
+- Click on any occupied lot marker
+- Click "Get Directions" in the popup
+- Opens Google Maps with the lot's exact coordinates for navigation
+
+================================================================================
+6. HOW TO ADD YOUR SITE MAP IMAGE
+================================================================================
+
+OPTION A: Overlay Your Site Map as an Image Layer
+--------------------------------------------------
+If you have a scanned map/image of your cemetery layout:
+
+1. Place your image file in: public/images/
+   Supported formats: PNG, JPG, JPEG
+
+2. Edit resources/views/admin/lots/map.blade.php
+
+3. Add an image overlay after the tile layer:
+
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       attribution: '&copy; OpenStreetMap contributors'
+   }).addTo(map);
+
+   // Add your site map image overlay
+   var imageUrl = '/images/your-map-image.jpg';
+   var imageBounds = [[lat1, lng1], [lat2, lng2]];
+   L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+   To find bounds:
+   - Go to OpenStreetMap at the correct zoom level
+   - Note the coordinates of the top-left and bottom-right corners
+   - Use those for [lat1, lng1] and [lat2, lng2]
+
+OPTION B: Use as Background Only (Hide Base Map)
+-------------------------------------------------
+If you want ONLY your site map image (no OpenStreetMap):
+
+1. Edit the view files
+2. Remove the L.tileLayer line
+3. Keep only the image overlay:
+
+   var imageUrl = '/images/your-cemetery-map.jpg';
+   var imageBounds = [[14.5995, 120.9842], [14.6000, 120.9850]];
+   var overlay = L.imageOverlay(imageUrl, imageBounds).addTo(map);
+   
+   // Set map to image bounds
+   map.fitBounds(imageBounds);
+
+OPTION C: Add a Custom Marker Icon
+----------------------------------
+To use a custom marker image instead of colored circles:
+
+1. Add your icon to: public/images/markers/
+2. Edit the map view files
+3. Replace the divIcon with:
+
+   var customIcon = L.icon({
+       iconUrl: '/images/markers/cemetery-marker.png',
+       iconSize: [32, 32],
+       iconAnchor: [16, 32],
+       popupAnchor: [0, -32]
+   });
+
+   var marker = L.marker([lat, lng], {icon: customIcon}).addTo(map);
+
+================================================================================
+7. TROUBLESHIP
+================================================================================
+
+Q: Map shows "Unable to load tiles"
+A: Check your internet connection. OpenStreetMap requires internet access.
+
+Q: Markers are not showing
+A: Check if lots exist in the database. Run: php artisan tinker
+   Then: App\Models\Lot::count()
+
+Q: Click on map does not open modal
+A: Ensure Bootstrap JS is loaded. Check admin_master.blade.php
+
+Q: How do I change the map zoom level?
+A: In the map view files, change the number in setView:
+   setView([lat, lng], 15)  // Higher number = more zoomed in
+
+Q: Can I use Google Maps instead of OpenStreetMap?
+A: Yes, but you need a Google Maps API key. Contact Google Cloud Platform
+   to get an API key, then update the tileLayer URL.
+
+================================================================================
+SUPPORT
+================================================================================
+
+For issues or questions, check:
+- Laravel documentation: https://laravel.com/docs
+- Leaflet.js docs: https://leafletjs.com/reference
+
+================================================================================
+                              END OF GUIDE
+================================================================================

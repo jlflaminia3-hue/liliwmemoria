@@ -4,24 +4,26 @@
                     <!--- Sidemenu -->
                     <div id="sidebar-menu">
 
-                        {{-- <div class="logo-box">
-                            <a href="index.html" class="logo logo-light">
+                        <div class="logo-box">
+                            <a href="{{ url('/') }}" class="logo logo-light liliwmemoria-brand">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22">
+                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('backend/assets/images/logo-light.png') }}" alt="" height="24">
+                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
+                                    <span class="liliwmemoria-brand__text text-primary">LiliwMemoria</span>
                                 </span>
                             </a>
-                            <a href="index.html" class="logo logo-dark">
+                            <a href="{{ url('/') }}" class="logo logo-dark liliwmemoria-brand">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22">
+                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('backend/assets/images/logo-dark.png') }}" alt="" height="24">
+                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
+                                    <span class="liliwmemoria-brand__text text-primary">LiliwMemoria</span>
                                 </span>
                             </a>
-                        </div> --}}
+                        </div>
 
                         <ul id="side-menu">
 
@@ -104,19 +106,10 @@
                                 <div class="collapse" id="sidebarError">
                                     <ul class="nav-second-level">
                                         <li>
-                                            <a href="error-404.html" class="tp-link">Error 404</a>
+                                            <a href="{{ route('admin.lots.index') }}" class="tp-link">All Lots</a>
                                         </li>
                                         <li>
-                                            <a href="error-500.html" class="tp-link">Error 500</a>
-                                        </li>
-                                        <li>
-                                            <a href="error-503.html" class="tp-link">Error 503</a>
-                                        </li>
-                                        <li>
-                                            <a href="error-429.html" class="tp-link">Error 429</a>
-                                        </li>
-                                        <li>
-                                            <a href="offline-page.html" class="tp-link">Offline Page</a>
+                                            <a href="{{ route('admin.lots.map') }}" class="tp-link">Map View</a>
                                         </li>
                                     </ul>
                                 </div>

@@ -10,6 +10,10 @@
         <meta name="author" content="Zoyothemes"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
+        @php($metaLogoPath = 'frontend/assets/images/logo/liliwmemoria-logo.png')
+        @php($metaLogoExists = file_exists(public_path($metaLogoPath)))
+
+
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
 
@@ -19,6 +23,9 @@
 
         <!-- Icons -->
         <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     </head>
 
@@ -78,6 +85,9 @@
 
         <!-- App js-->
         <script src="{{ asset('backend/assets/js/app.js') }}"></script>
+
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     </body>
 </html>

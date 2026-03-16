@@ -3,12 +3,11 @@
     <div class="row justify-content-center text-center">
       <div class="col-lg-11">
         <p class="text liliwmemoria-hero-contact__subtitle">
-          We would be honoured to help you celebrate the life of your loved ones and provide them with a serene final
-          resting place.
+            It would be our privilege to help you honor the memory of your loved ones and offer them a peaceful place to rest.
         </p>
         <p class="text liliwmemoria-hero-contact__subtitle">
-          Contact us by calling <a class="liliwmemoria-hero-contact__link" href="tel:+1770124245493">(780) 424-5493</a>
-          or by filling out the form below, and let's discuss how we can best honour their wishes.
+          You can reach us at <a class="liliwmemoria-hero-contact__link" href="tel:+1770124245493">(780) 424-5493</a>
+          or simply fill out the form below, and together we’ll talk about how to best honor your loved one’s wishes. 
         </p>
       </div>
     </div>
