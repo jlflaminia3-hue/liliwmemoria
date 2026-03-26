@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Lot extends Model
 {
     protected $fillable = [
+        'lot_number',
         'name',
         'section',
         'latitude',
         'longitude',
         'is_occupied',
+        'status',
         'notes',
     ];
 
@@ -20,6 +22,7 @@ class Lot extends Model
     {
         return [
             'is_occupied' => 'boolean',
+            'lot_number' => 'integer',
             'latitude' => 'float',
             'longitude' => 'float',
         ];

@@ -15,7 +15,7 @@
         </div>
         <div class="col-lg-5">
           <div class="lonyo-hero-thumb" data-aos="fade-left" data-aos-duration="700">
-            <img src="{{ asset('frontend/assets/images/v1/slider1.png') }}" alt="">
+            <img src="{{ asset('frontend/assets/images/slider1.png') }}" alt="">
           </div>
 
         </div>

@@ -12,7 +12,12 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label class="form-label">Lot Name</label>
+                        <label class="form-label">Lot Number</label>
+                        <input type="text" class="form-control" value="{{ $lot->lot_number }}" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Owner</label>
                         <input type="text" name="name" class="form-control" value="{{ $lot->name }}" required>
                     </div>
 

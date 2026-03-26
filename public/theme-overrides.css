@@ -211,7 +211,7 @@ a.text-primary:focus {
 
 .liliwmemoria-hero-bg {
   position: relative;
-  background-image: url("/frontend/assets/images/v1/memorial-park.jpg");
+  background-image: url("/frontend/assets/images/memorial-park.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

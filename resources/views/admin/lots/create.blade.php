@@ -11,7 +11,13 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label class="form-label">Lot Name</label>
+                        <label class="form-label">Lot Number</label>
+                        <input type="text" name="lot_number" class="form-control" value="{{ $nextLotNumber ?? '' }}" readonly>
+                        <div class="form-text">Auto-generated and unique.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Owner</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
 

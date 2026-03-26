@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/{lot}', [LotController::class, 'update'])->name('update');
         Route::delete('/{lot}', [LotController::class, 'destroy'])->name('destroy');
         Route::get('/map', [LotController::class, 'map'])->name('map');
+        Route::get('/next-lot-number', [LotController::class, 'nextLotNumber'])->name('nextLotNumber');
         Route::post('/with-deceased', [LotController::class, 'storeWithDeceased'])->name('storeWithDeceased');
     });
 });

@@ -21,9 +21,9 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th>Lot #</th>
+                                <th>Owner</th>
                                 <th>Section</th>
-                                <th>Coordinates</th>
                                 <th>Status</th>
                                 <th>Deceased</th>
                                 <th>Actions</th>
@@ -32,14 +32,20 @@
                         <tbody>
                             @foreach($lots as $lot)
                             <tr>
+                                <td>{{ $lot->lot_number }}</td>
                                 <td>{{ $lot->name }}</td>
                                 <td>{{ $lot->section ?? '-' }}</td>
-                                <td>{{ $lot->latitude }}, {{ $lot->longitude }}</td>
                                 <td>
-                                    @if($lot->is_occupied)
-                                    <span class="badge bg-danger">Occupied</span>
+                                    @php
+                                        $status = $lot->status ?? ($lot->is_occupied ? 'occupied' : 'available');
+                                    @endphp
+
+                                    @if($status === 'occupied')
+                                        <span class="badge bg-danger">Occupied</span>
+                                    @elseif($status === 'reserved')
+                                        <span class="badge bg-primary">Reserved</span>
                                     @else
-                                    <span class="badge bg-success">Available</span>
+                                        <span class="badge bg-success">Available</span>
                                     @endif
                                 </td>
                                 <td>
