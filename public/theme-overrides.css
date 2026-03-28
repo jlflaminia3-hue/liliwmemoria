@@ -44,6 +44,15 @@ a.text-primary:focus {
 .btn-outline-primary:focus {
   background-color: #142C14 !important;
   border-color: #142C14 !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-primary:active,
+.btn-outline-primary.active,
+.show > .btn-outline-primary.dropdown-toggle {
+  background-color: #0f1f0f !important;
+  border-color: #0f1f0f !important;
+  color: #ffffff !important;
 }
 
 .progress-bar.bg-primary {

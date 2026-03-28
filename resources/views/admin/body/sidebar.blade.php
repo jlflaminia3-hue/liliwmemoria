@@ -30,51 +30,34 @@
                             <li class="menu-title">Menu</li>
 
                             <li>
-                                <a href="#sidebarDashboards" data-bs-toggle="collapse">
+                                <a href="{{ route('dashboard') }}" class="tp-link">
                                     <i data-feather="home"></i>
                                     <span> Dashboard </span>
-                                    <span class="menu-arrow"></span>
                                 </a>
-                                <div class="collapse" id="sidebarDashboards">
-                                    <ul class="nav-second-level">
-                                        <li>
-                                            <a href="index.html" class="tp-link">Analytical</a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                 
                             <li class="menu-title">Pages</li>
 
                             <li>
-                                <a href="#sidebarAuth" data-bs-toggle="collapse">
+                                <a href="{{ route('admin.clients.index') }}" class="tp-link">
                                     <i data-feather="users"></i>
                                     <span> Clients </span>
-                                    </a>
+                                </a>
                             </li>
 
-                            {{-- <li>
-                                <a href="#sidebarAuth" data-bs-toggle="collapse">
-                                    <i data-feather="file-text"></i>
-                                    <span> Visitor Logs </span>
-                                    <span class="menu-arrow"></span>
-                                </a>
-                            </li> --}}
-
                             <li>
-                                <a href="calendar.html" class="tp-link">
+                                <a href="#" class="tp-link">
                                     <i data-feather="calendar"></i>
                                     <span> Reservations </span>
                                 </a>
                             </li>
 
                             <li>
-                                <a href="calendar.html" class="tp-link">
+                                <a href="#" class="tp-link">
                                     <i data-feather="clipboard"></i>
                                     <span> Visitor Logs </span>
                                 </a>
                             </li>
-
 
                             <li>
                                 <a href="#sidebarError" data-bs-toggle="collapse">
@@ -95,33 +78,33 @@
                             </li>
 
                             <li>
-                                <a href="#sidebarExpages" data-bs-toggle="collapse">
+                                <a href="#" class="tp-link">
                                     <i data-feather="map-pin"></i>
                                     <span> Interments </span>
                                 </a>
                             </li>
 
                             <li>
-                                <a href="calendar.html" class="tp-link">
+                                <a href="{{ route('admin.payments.index') }}" class="tp-link">
                                     <i data-feather="credit-card"></i>
                                     <span> Payments </span>
                                 </a>
                             </li>
 
-
                             <li>
-                                <a href="calendar.html" class="tp-link">
+                                <a href="{{ route('admin.reports.payments') }}" class="tp-link">
                                     <i data-feather="bar-chart-2"></i>
                                     <span> Reports </span>
                                 </a>
                             </li>
 
                             <li>
-                                <a href="calendar.html" class="tp-link">
+                                <a href="#" class="tp-link">
                                     <i data-feather="settings"></i>
                                     <span> Settings </span>
                                 </a>
                             </li>
+
                         </ul>
                     </div>
                     <!-- End Sidebar -->

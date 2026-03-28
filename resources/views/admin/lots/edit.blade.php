@@ -22,8 +22,24 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Section (Optional)</label>
+                        <label class="form-label">Phase (Optional)</label>
                         <input type="text" name="section" class="form-control" value="{{ $lot->section }}">
+                    </div>
+
+                    @php
+                        $status = $lot->status ?? ($lot->is_occupied ? 'occupied' : 'available');
+                        if (!in_array($status, ['available', 'reserved', 'occupied'], true)) {
+                            $status = 'available';
+                        }
+                    @endphp
+
+                    <div class="mb-3">
+                        <label class="form-label">Lot Status</label>
+                        <select name="status" id="lot_status" class="form-select" required>
+                            <option value="available" @selected($status === 'available')>Available</option>
+                            <option value="reserved" @selected($status === 'reserved')>Reserved</option>
+                            <option value="occupied" @selected($status === 'occupied')>Occupied</option>
+                        </select>
                     </div>
 
                     <div class="row">
@@ -37,10 +53,35 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" name="is_occupied" class="form-check-input" id="is_occupied" {{ $lot->is_occupied ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_occupied">Occupied</label>
+                    <div id="deceased_block" style="display: none;">
+                        <hr>
+                        <h5 class="card-title mb-3">Add Deceased (Optional)</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="deceased_first_name" class="form-control" value="{{ old('deceased_first_name') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="deceased_last_name" class="form-control" value="{{ old('deceased_last_name') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" name="deceased_date_of_birth" class="form-control" value="{{ old('deceased_date_of_birth') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date of Death</label>
+                                <input type="date" name="deceased_date_of_death" class="form-control" value="{{ old('deceased_date_of_death') }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Burial Date</label>
+                                <input type="date" name="deceased_burial_date" class="form-control" value="{{ old('deceased_burial_date') }}">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea name="deceased_notes" class="form-control" rows="2">{{ old('deceased_notes') }}</textarea>
+                            </div>
                         </div>
                     </div>
 
@@ -56,4 +97,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        var statusSelect = document.getElementById('lot_status');
+        var deceasedBlock = document.getElementById('deceased_block');
+        if (!statusSelect || !deceasedBlock) return;
+
+        function sync() {
+            var status = statusSelect.value;
+            deceasedBlock.style.display = status === 'occupied' ? '' : 'none';
+        }
+
+        statusSelect.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 @endsection

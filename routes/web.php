@@ -1,6 +1,15 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ClientCommunicationController;
+use App\Http\Controllers\ClientContractController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientFamilyLinkController;
+use App\Http\Controllers\ClientLotOwnershipController;
+use App\Http\Controllers\PaymentPlanController;
+use App\Http\Controllers\PaymentReportController;
+use App\Http\Controllers\PaymentTransactionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LotController;
@@ -11,9 +20,9 @@ Route::get('/', function () {
     return view('home.index');
 });
 
-Route::get('/dashboard', function () {
-    return view('admin.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', AdminDashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::get('/map', function () {
     $lots = \App\Models\Lot::with('deceased')->get();
@@ -21,7 +30,7 @@ Route::get('/map', function () {
     return view('map', compact('lots'));
 })->name('public.map');
 
-Route::middleware('auth')->group(function () {
+    Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -37,7 +46,48 @@ Route::middleware('auth')->group(function () {
         Route::get('/next-lot-number', [LotController::class, 'nextLotNumber'])->name('nextLotNumber');
         Route::post('/with-deceased', [LotController::class, 'storeWithDeceased'])->name('storeWithDeceased');
     });
-});
+
+        Route::prefix('admin/clients')->name('admin.clients.')->group(function () {
+        Route::get('/', [ClientController::class, 'index'])->name('index');
+        Route::get('/create', [ClientController::class, 'create'])->name('create');
+        Route::post('/', [ClientController::class, 'store'])->name('store');
+        Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+        Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+        Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+
+        Route::post('/{client}/ownerships', [ClientLotOwnershipController::class, 'store'])->name('ownerships.store');
+        Route::delete('/{client}/ownerships/{ownership}', [ClientLotOwnershipController::class, 'destroy'])->name('ownerships.destroy');
+
+        Route::post('/{client}/contracts', [ClientContractController::class, 'store'])->name('contracts.store');
+        Route::delete('/{client}/contracts/{contract}', [ClientContractController::class, 'destroy'])->name('contracts.destroy');
+
+        Route::post('/{client}/family-links', [ClientFamilyLinkController::class, 'store'])->name('familyLinks.store');
+        Route::delete('/{client}/family-links/{link}', [ClientFamilyLinkController::class, 'destroy'])->name('familyLinks.destroy');
+
+        Route::post('/{client}/communications', [ClientCommunicationController::class, 'store'])->name('communications.store');
+        Route::delete('/{client}/communications/{communication}', [ClientCommunicationController::class, 'destroy'])->name('communications.destroy');
+        });
+
+        Route::prefix('admin/payments')->name('admin.payments.')->group(function () {
+            Route::get('/', [PaymentPlanController::class, 'index'])->name('index');
+            Route::get('/create', [PaymentPlanController::class, 'create'])->name('create');
+            Route::post('/', [PaymentPlanController::class, 'store'])->name('store');
+            Route::get('/{paymentPlan}', [PaymentPlanController::class, 'show'])->name('show');
+            Route::post('/{paymentPlan}/notify', [PaymentPlanController::class, 'notify'])->name('notify');
+
+            Route::post('/{paymentPlan}/transactions', [PaymentTransactionController::class, 'store'])->name('transactions.store');
+        });
+
+        Route::prefix('admin/payment-transactions')->name('admin.paymentTransactions.')->group(function () {
+            Route::get('/{paymentTransaction}/receipt', [PaymentTransactionController::class, 'downloadReceipt'])->name('receipt');
+            Route::get('/{paymentTransaction}/invoice', [PaymentTransactionController::class, 'invoice'])->name('invoice');
+        });
+
+        Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+            Route::get('/payments', [PaymentReportController::class, 'index'])->name('payments');
+        });
+    });
 
 require __DIR__.'/auth.php';
 

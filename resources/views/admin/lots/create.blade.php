@@ -22,7 +22,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Section (Optional)</label>
+                        <label class="form-label">Phase (Optional)</label>
                         <input type="text" name="section" class="form-control">
                     </div>
 

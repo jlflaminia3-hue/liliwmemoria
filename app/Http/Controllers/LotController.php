@@ -26,7 +26,7 @@ class LotController extends Controller
     {
         $validated = $request->validate([
             'lot_number' => 'nullable|integer|min:1|unique:lots,lot_number',
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'section' => 'nullable|string|max:255',
             'status' => 'nullable|in:available,occupied,reserved',
             'notes' => 'nullable|string',
@@ -37,7 +37,18 @@ class LotController extends Controller
             $status = ! empty($validated['is_occupied']) ? 'occupied' : 'available';
         }
 
-        DB::transaction(function () use ($validated, $status) {
+        if ($status !== 'available') {
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+        }
+
+        $ownerName = trim((string) ($validated['name'] ?? ''));
+        if ($ownerName === '') {
+            $ownerName = 'Unassigned';
+        }
+
+        DB::transaction(function () use ($validated, $status, $ownerName) {
             $maxLotNumber = (int) Lot::query()->lockForUpdate()->max('lot_number');
             $requestedLotNumber = (int) ($validated['lot_number'] ?? 0);
 
@@ -48,6 +59,7 @@ class LotController extends Controller
 
             Lot::create(array_merge($validated, [
                 'lot_number' => $lotNumber,
+                'name' => $ownerName,
                 'status' => $status,
                 'is_occupied' => $status === 'occupied',
             ]));
@@ -66,20 +78,53 @@ class LotController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'section' => 'nullable|string|max:255',
-            'is_occupied' => 'boolean',
             'status' => 'nullable|in:available,occupied,reserved',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
             'notes' => 'nullable|string',
+            'deceased_first_name' => 'nullable|string|max:255',
+            'deceased_last_name' => 'nullable|string|max:255',
+            'deceased_date_of_birth' => 'nullable|date',
+            'deceased_date_of_death' => 'nullable|date',
+            'deceased_burial_date' => 'nullable|date',
+            'deceased_notes' => 'nullable|string',
         ]);
 
         $status = $validated['status'] ?? null;
         if (! $status) {
-            $status = ! empty($validated['is_occupied']) ? 'occupied' : 'available';
+            $status = $lot->status ?? ($lot->is_occupied ? 'occupied' : 'available');
         }
 
         $validated['status'] = $status;
         $validated['is_occupied'] = $status === 'occupied';
 
-        $lot->update($validated);
+        if (($validated['deceased_first_name'] ?? null) || ($validated['deceased_last_name'] ?? null)) {
+            $request->validate([
+                'deceased_first_name' => 'required|string|max:255',
+                'deceased_last_name' => 'required|string|max:255',
+            ]);
+        }
+
+        $lot->update([
+            'name' => $validated['name'],
+            'section' => $validated['section'] ?? null,
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'status' => $validated['status'],
+            'is_occupied' => $validated['is_occupied'],
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        if ($status === 'occupied' && ! empty($validated['deceased_first_name']) && ! empty($validated['deceased_last_name'])) {
+            $lot->deceased()->create([
+                'first_name' => $validated['deceased_first_name'],
+                'last_name' => $validated['deceased_last_name'],
+                'date_of_birth' => $validated['deceased_date_of_birth'] ?? null,
+                'date_of_death' => $validated['deceased_date_of_death'] ?? null,
+                'burial_date' => $validated['deceased_burial_date'] ?? null,
+                'notes' => $validated['deceased_notes'] ?? null,
+            ]);
+        }
 
         return redirect()->route('admin.lots.index')->with('success', 'Lot updated successfully.');
     }
@@ -111,10 +156,12 @@ class LotController extends Controller
     {
         $validated = $request->validate([
             'lot_number' => 'nullable|integer|min:1|unique:lots,lot_number',
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'section' => 'nullable|string|max:255',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'geometry_type' => 'nullable|in:rect,poly',
+            'geometry' => 'nullable|json',
             'status' => 'required|in:available,occupied,reserved',
             'first_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
@@ -124,6 +171,12 @@ class LotController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        if ($validated['status'] !== 'available') {
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+        }
+
         if ($validated['status'] === 'occupied') {
             $request->validate([
                 'first_name' => 'required|string|max:255',
@@ -131,7 +184,12 @@ class LotController extends Controller
             ]);
         }
 
-        $lot = DB::transaction(function () use ($validated) {
+        $ownerName = trim((string) ($validated['name'] ?? ''));
+        if ($ownerName === '') {
+            $ownerName = 'Unassigned';
+        }
+
+        $lot = DB::transaction(function () use ($validated, $ownerName) {
             $maxLotNumber = (int) Lot::query()->lockForUpdate()->max('lot_number');
             $requestedLotNumber = (int) ($validated['lot_number'] ?? 0);
 
@@ -142,10 +200,12 @@ class LotController extends Controller
 
             $lot = Lot::create([
                 'lot_number' => $lotNumber,
-                'name' => $validated['name'],
+                'name' => $ownerName,
                 'section' => $validated['section'] ?? null,
                 'latitude' => $validated['latitude'],
                 'longitude' => $validated['longitude'],
+                'geometry_type' => $validated['geometry_type'] ?? null,
+                'geometry' => isset($validated['geometry']) ? json_decode($validated['geometry'], true) : null,
                 'status' => $validated['status'],
                 'is_occupied' => $validated['status'] === 'occupied',
                 'notes' => $validated['notes'] ?? null,

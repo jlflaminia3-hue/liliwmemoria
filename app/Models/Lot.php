@@ -13,6 +13,8 @@ class Lot extends Model
         'section',
         'latitude',
         'longitude',
+        'geometry_type',
+        'geometry',
         'is_occupied',
         'status',
         'notes',
@@ -25,6 +27,7 @@ class Lot extends Model
             'lot_number' => 'integer',
             'latitude' => 'float',
             'longitude' => 'float',
+            'geometry' => 'array',
         ];
     }
 

@@ -4,10 +4,9 @@
     <head>
 
         <meta charset="utf-8" />
-        <title>Admin - Dashboard</title>
+        <title>LiliwMemoria - Admin</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc."/>
-        <meta name="author" content="Zoyothemes"/>
+        <meta name="description" content="LiliwMemoria cemetery management dashboard."/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
         @php($metaLogoPath = 'frontend/assets/images/logo/liliwmemoria-logo.png')
@@ -73,15 +72,6 @@
         <script src="{{ asset('backend/assets/libs/waypoints/lib/jquery.waypoints.min.js') }}"></script>
         <script src="{{ asset('backend/assets/libs/jquery.counterup/jquery.counterup.min.js') }}"></script>
         <script src="{{ asset('backend/assets/libs/feather-icons/feather.min.js') }}"></script>
-
-        <!-- Apexcharts JS -->
-        <script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-        <!-- for basic area chart -->
-        <script src="https://apexcharts.com/samples/{{ asset('backend/assets/stock-prices.js') }}"></script>
-
-        <!-- Widgets Init Js -->
-        <script src="{{ asset('backend/assets/js/pages/analytics-dashboard.init.js') }}"></script>
 
         <!-- App js-->
         <script src="{{ asset('backend/assets/js/app.js') }}"></script>

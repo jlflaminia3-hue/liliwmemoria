@@ -23,7 +23,7 @@
                             <tr>
                                 <th>Lot #</th>
                                 <th>Owner</th>
-                                <th>Section</th>
+                                <th>Phase</th>
                                 <th>Status</th>
                                 <th>Deceased</th>
                                 <th>Actions</th>
