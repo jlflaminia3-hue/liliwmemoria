@@ -143,12 +143,15 @@ class PaymentPlanController extends Controller
 
         $next = $paymentPlan->installments
             ->where('type', 'installment')
-            ->first(fn (PaymentInstallment $i) => $i->installmentBalance() > 0);
+            ->filter(fn (PaymentInstallment $i) => $i->installmentBalance() > 0)
+            ->sortBy('due_date')
+            ->values()
+            ->first();
 
         $upcoming = $paymentPlan->installments
             ->where('type', 'installment')
             ->filter(fn (PaymentInstallment $i) => $i->installmentBalance() > 0)
-            ->take(3)
+            ->sortBy('due_date')
             ->values();
 
         $instructions = (string) config('payments.instructions');

@@ -12,9 +12,8 @@
         @php($metaLogoPath = 'frontend/assets/images/logo/liliwmemoria-logo.png')
         @php($metaLogoExists = file_exists(public_path($metaLogoPath)))
 
-
         <!-- App favicon -->
-        <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
+        <link rel="shortcut icon" href="{{ asset('backend/assets/images/liliwmemoria-logo.png') }}">
 
         <!-- App css -->
         <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />

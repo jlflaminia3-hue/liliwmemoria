@@ -247,6 +247,19 @@
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure the map reflects latest DB state when navigating back after edits/deletes.
+    window.addEventListener('pageshow', function (event) {
+        try {
+            var nav = performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+            var isBackForward = nav && nav.type === 'back_forward';
+            if (event.persisted || isBackForward) {
+                window.location.reload();
+            }
+        } catch (e) {
+            // no-op
+        }
+    });
+
     var imageUrl = "{{ asset('backend/assets/images/map.jpg') }}";
 
     // Legacy bounds from the old lat/lng overlay (used only to transform older records).

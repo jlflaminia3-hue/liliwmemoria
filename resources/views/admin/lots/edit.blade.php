@@ -35,11 +35,15 @@
 
                     <div class="mb-3">
                         <label class="form-label">Lot Status</label>
-                        <select name="status" id="lot_status" class="form-select" required>
-                            <option value="available" @selected($status === 'available')>Available</option>
-                            <option value="reserved" @selected($status === 'reserved')>Reserved</option>
-                            <option value="occupied" @selected($status === 'occupied')>Occupied</option>
-                        </select>
+                        <div class="d-flex gap-2">
+                            <select name="status" id="lot_status" class="form-select" required>
+                                <option value="available" @selected($status === 'available')>Available</option>
+                                <option value="reserved" @selected($status === 'reserved')>Reserved</option>
+                                <option value="occupied" @selected($status === 'occupied')>Occupied</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-danger" id="btnAddDeceased">Add Deceased</button>
+                        </div>
+                        <div class="form-text">Adding a deceased will automatically set the lot to Occupied.</div>
                     </div>
 
                     <div class="row">
@@ -102,6 +106,7 @@
     (function () {
         var statusSelect = document.getElementById('lot_status');
         var deceasedBlock = document.getElementById('deceased_block');
+        var addDeceasedBtn = document.getElementById('btnAddDeceased');
         if (!statusSelect || !deceasedBlock) return;
 
         function sync() {
@@ -110,6 +115,13 @@
         }
 
         statusSelect.addEventListener('change', sync);
+        if (addDeceasedBtn) {
+            addDeceasedBtn.addEventListener('click', function () {
+                statusSelect.value = 'occupied';
+                sync();
+                deceasedBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
         sync();
     })();
 </script>

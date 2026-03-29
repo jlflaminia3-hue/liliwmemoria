@@ -95,15 +95,24 @@ class LotController extends Controller
             $status = $lot->status ?? ($lot->is_occupied ? 'occupied' : 'available');
         }
 
-        $validated['status'] = $status;
-        $validated['is_occupied'] = $status === 'occupied';
+        $hasDeceasedInput = ! empty($validated['deceased_first_name']) || ! empty($validated['deceased_last_name']);
+        if ($hasDeceasedInput) {
+            $request->validate([
+                'deceased_first_name' => 'required|string|max:255',
+                'deceased_last_name' => 'required|string|max:255',
+            ]);
+            $status = 'occupied';
+        }
 
-        if (($validated['deceased_first_name'] ?? null) || ($validated['deceased_last_name'] ?? null)) {
+        if ($status === 'occupied' && ! $hasDeceasedInput) {
             $request->validate([
                 'deceased_first_name' => 'required|string|max:255',
                 'deceased_last_name' => 'required|string|max:255',
             ]);
         }
+
+        $validated['status'] = $status;
+        $validated['is_occupied'] = $status === 'occupied';
 
         $lot->update([
             'name' => $validated['name'],
@@ -140,7 +149,10 @@ class LotController extends Controller
     {
         $lots = Lot::with('deceased')->get();
 
-        return view('admin.lots.map', compact('lots'));
+        return response()
+            ->view('admin.lots.map', compact('lots'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     public function nextLotNumber()
