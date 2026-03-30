@@ -47,6 +47,10 @@ class AdminController extends Controller
             $userId = session('user_id');
             if ($request->code == $verificationCode) {
                 $user = User::find($userId);
+                if (! $user) {
+                    session()->forget(['verification_code', 'user_id']);
+                    return redirect()->route('login')->withErrors(['email' => 'Session expired. Please log in again.']);
+                }
                 Auth::login($user);
                 session()->forget(['verification_code', 'user_id']);
                 return redirect()->route('dashboard');

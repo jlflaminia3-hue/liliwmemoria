@@ -1,4 +1,4 @@
-@php($logoPath = 'frontend/assets/images/logo/liliwmemoria-logo.png')
+@php($logoPath = 'backend/assets/images/logo/liliwmemoria-logo.png')
 @php($logoExists = file_exists(public_path($logoPath)))
 
 <a href="{{ url('/') }}" class="liliwmemoria-brand">
@@ -20,8 +20,4 @@
             </svg>
         </span>
     @endif
-
-    <span class="liliwmemoria-brand__text text-primary">
-        LiliwMemoria
-    </span>
 </a>

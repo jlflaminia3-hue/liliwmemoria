@@ -1,4 +1,4 @@
-@php($logoPath = 'frontend/assets/images/logo/liliwmemoria-logo.png')
+@php($logoPath = 'frontend/assets/images/logo/textlogo.png')
 @php($logoExists = file_exists(public_path($logoPath)))
 
 <a href="{{ url('/') }}" class="liliwmemoria-brand">
@@ -6,9 +6,8 @@
         <img
             src="{{ asset($logoPath) }}"
             alt="LiliwMemoria logo"
-            width="28"
             height="28"
-            style="object-fit: contain;"
+            style="width: auto; object-fit: contain;"
         >
     @else
         <span class="text-primary d-inline-flex align-items-center" aria-hidden="true">
@@ -21,7 +20,4 @@
         </span>
     @endif
 
-    <span class="liliwmemoria-brand__text text-primary">
-        LiliwMemoria
-    </span>
 </a>

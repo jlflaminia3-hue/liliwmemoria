@@ -71,10 +71,10 @@
                                             {{ $plan->term_months }} months
                                             <div class="text-muted small">{{ number_format((float) $plan->interest_rate_percent, 2) }}%</div>
                                         </td>
-                                        <td class="text-end">{{ number_format((float) $plan->principal_amount, 2) }}</td>
-                                        <td class="text-end">{{ number_format((float) $plan->interest_amount, 2) }}</td>
-                                        <td class="text-end">{{ number_format((float) ($plan->paid_total ?? 0), 2) }}</td>
-                                        <td class="text-end">{{ number_format((float) ($plan->outstanding_total ?? 0), 2) }}</td>
+                                        <td class="text-end">₱{{ number_format((float) $plan->principal_amount, 2) }}</td>
+                                        <td class="text-end">₱{{ number_format((float) $plan->interest_amount, 2) }}</td>
+                                        <td class="text-end">₱{{ number_format((float) ($plan->paid_total ?? 0), 2) }}</td>
+                                        <td class="text-end">₱{{ number_format((float) ($plan->outstanding_total ?? 0), 2) }}</td>
                                         <td>
                                             <span class="badge bg-{{ $plan->status === 'completed' ? 'success' : ($plan->status === 'canceled' ? 'secondary' : 'primary') }}">
                                                 {{ ucfirst($plan->status) }}
@@ -94,4 +94,3 @@
     </div>
 </div>
 @endsection
-

@@ -76,8 +76,20 @@
                                     <td>{{ $contract->status }}</td>
                                     <td>{{ $contract->contract_number ?? '-' }}</td>
                                     <td>{{ $contract->lot ? 'Lot #'.$contract->lot->lot_number : '-' }}</td>
-                                    <td>{{ $contract->total_amount ?? '-' }}</td>
-                                    <td>{{ $contract->amount_paid ?? '-' }}</td>
+                                    <td>
+                                        @if (is_null($contract->total_amount))
+                                            -
+                                        @else
+                                            ₱{{ number_format((float) $contract->total_amount, 2) }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if (is_null($contract->amount_paid))
+                                            -
+                                        @else
+                                            ₱{{ number_format((float) $contract->amount_paid, 2) }}
+                                        @endif
+                                    </td>
                                     <td>{{ $contract->due_date?->format('Y-m-d') ?? '-' }}</td>
                                     <td class="text-end">
                                         <form method="POST" action="{{ route('admin.clients.contracts.destroy', [$client, $contract]) }}">
@@ -105,4 +117,3 @@
         </div>
     </div>
 </div>
-

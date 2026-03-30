@@ -52,25 +52,25 @@
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Principal</div>
-                            <div class="h5 mb-0">{{ number_format((float) $totals['principal_total'], 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $totals['principal_total'], 2) }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Interest</div>
-                            <div class="h5 mb-0">{{ number_format((float) $totals['interest_total'], 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $totals['interest_total'], 2) }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Paid</div>
-                            <div class="h5 mb-0">{{ number_format((float) $totals['paid_total'], 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $totals['paid_total'], 2) }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Outstanding (incl. penalties)</div>
-                            <div class="h5 mb-0">{{ number_format((float) $totals['outstanding_total'], 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $totals['outstanding_total'], 2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -102,16 +102,16 @@
                                             <td>
                                                 <div class="fw-semibold">{{ ucfirst($inst->type) }}</div>
                                                 @if ($inst->type === 'installment')
-                                                    <div class="text-muted small">P {{ number_format((float) $inst->principal_due, 2) }} · I {{ number_format((float) $inst->interest_due, 2) }}</div>
+                                                    <div class="text-muted small">P ₱{{ number_format((float) $inst->principal_due, 2) }} · I ₱{{ number_format((float) $inst->interest_due, 2) }}</div>
                                                 @endif
                                             </td>
                                             <td>{{ optional($inst->due_date)->format('Y-m-d') }}</td>
-                                            <td class="text-end">{{ number_format((float) $inst->amount_due, 2) }}</td>
-                                            <td class="text-end">{{ number_format((float) $inst->amount_paid, 2) }}</td>
+                                            <td class="text-end">₱{{ number_format((float) $inst->amount_due, 2) }}</td>
+                                            <td class="text-end">₱{{ number_format((float) $inst->amount_paid, 2) }}</td>
                                             <td class="text-end">
-                                                <div>{{ number_format((float) $inst->penalty_accrued, 2) }}</div>
+                                                <div>₱{{ number_format((float) $inst->penalty_accrued, 2) }}</div>
                                                 @if ($penaltyDue > 0)
-                                                    <div class="text-muted small">Due: {{ number_format($penaltyDue, 2) }}</div>
+                                                    <div class="text-muted small">Due: ₱{{ number_format($penaltyDue, 2) }}</div>
                                                 @endif
                                             </td>
                                             <td>
@@ -125,7 +125,7 @@
                                                 @endphp
                                                 <span class="badge bg-{{ $badge }}">{{ ucfirst($inst->status) }}</span>
                                                 @if ($instDue > 0)
-                                                    <div class="text-muted small">Due: {{ number_format($instDue, 2) }}</div>
+                                                    <div class="text-muted small">Due: ₱{{ number_format($instDue, 2) }}</div>
                                                 @endif
                                             </td>
                                         </tr>
@@ -156,8 +156,8 @@
                                                 <td>{{ optional($tx->transaction_date)->format('Y-m-d') }}</td>
                                                 <td>{{ $tx->method }}</td>
                                                 <td>{{ $tx->reference_number ?? '-' }}</td>
-                                                <td class="text-end">{{ number_format((float) $tx->amount, 2) }}</td>
-                                                <td class="text-end">{{ number_format((float) $tx->unapplied_amount, 2) }}</td>
+                                                <td class="text-end">₱{{ number_format((float) $tx->amount, 2) }}</td>
+                                                <td class="text-end">₱{{ number_format((float) $tx->unapplied_amount, 2) }}</td>
                                                 <td class="text-end">
                                                     <a class="btn btn-sm btn-light" href="{{ route('admin.paymentTransactions.invoice', $tx) }}">Invoice</a>
                                                     <a class="btn btn-sm btn-light" href="{{ route('admin.paymentTransactions.invoice', [$tx, 'download' => 1]) }}">Download</a>

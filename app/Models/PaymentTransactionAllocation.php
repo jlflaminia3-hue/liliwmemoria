@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PaymentTransactionAllocation extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'payment_transaction_id',
         'payment_installment_id',
@@ -31,4 +34,3 @@ class PaymentTransactionAllocation extends Model
         return $this->belongsTo(PaymentInstallment::class, 'payment_installment_id');
     }
 }
-

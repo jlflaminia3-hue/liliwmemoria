@@ -29,7 +29,7 @@
                             <div class="text-muted small">Payment Details</div>
                             <div>Method: <strong>{{ $transaction->method }}</strong></div>
                             <div>Reference: {{ $transaction->reference_number ?? '-' }}</div>
-                            <div class="mt-2 h5 mb-0">Amount: {{ number_format((float) $transaction->amount, 2) }}</div>
+                            <div class="mt-2 h5 mb-0">Amount: ₱{{ number_format((float) $transaction->amount, 2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -57,14 +57,14 @@
                                         @endif
                                     </td>
                                     <td>{{ $alloc->installment?->due_date?->format('Y-m-d') ?? '-' }}</td>
-                                    <td class="text-end">{{ number_format((float) $alloc->amount_applied, 2) }}</td>
+                                    <td class="text-end">₱{{ number_format((float) $alloc->amount_applied, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th colspan="3" class="text-end">Total</th>
-                                <th class="text-end">{{ number_format((float) $transaction->amount, 2) }}</th>
+                                <th class="text-end">₱{{ number_format((float) $transaction->amount, 2) }}</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -81,4 +81,3 @@
     </div>
 </div>
 @endsection
-

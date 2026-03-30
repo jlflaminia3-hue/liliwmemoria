@@ -30,7 +30,7 @@
                     <div class="col-md-4">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Total Collections ({{ $from->toDateString() }} to {{ $to->toDateString() }})</div>
-                            <div class="h5 mb-0">{{ number_format((float) $collections, 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $collections, 2) }}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -42,7 +42,7 @@
                     <div class="col-md-4">
                         <div class="p-3 border rounded">
                             <div class="text-muted small">Outstanding Total (as of {{ now()->toDateString() }})</div>
-                            <div class="h5 mb-0">{{ number_format((float) $outstandingTotal, 2) }}</div>
+                            <div class="h5 mb-0">₱{{ number_format((float) $outstandingTotal, 2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
                                         <td><a href="{{ route('admin.clients.show', $row['plan']->client) }}">{{ $row['plan']->client->full_name }}</a></td>
                                         <td>{{ $row['plan']->plan_number }}</td>
                                         <td class="text-end">{{ $row['count'] }}</td>
-                                        <td class="text-end">{{ number_format((float) $row['amount'], 2) }}</td>
+                                        <td class="text-end">₱{{ number_format((float) $row['amount'], 2) }}</td>
                                         <td class="text-end">
                                             <a class="btn btn-sm btn-light" href="{{ route('admin.payments.show', $row['plan']) }}">View</a>
                                         </td>
@@ -83,4 +83,3 @@
     </div>
 </div>
 @endsection
-

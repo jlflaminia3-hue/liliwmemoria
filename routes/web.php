@@ -10,10 +10,14 @@ use App\Http\Controllers\ClientLotOwnershipController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReportController;
 use App\Http\Controllers\PaymentTransactionController;
+use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LotController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Master\AuditLogController as MasterAuditLogController;
+use App\Http\Controllers\Master\MasterDashboardController;
+use App\Http\Controllers\Master\UserController as MasterUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,7 +25,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', AdminDashboardController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:admin,master_admin'])
     ->name('dashboard');
 
 Route::get('/map', function () {
@@ -35,6 +39,7 @@ Route::get('/map', function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::middleware('role:admin,master_admin')->group(function () {
     Route::prefix('admin/lots')->name('admin.lots.')->group(function () {
         Route::get('/', [LotController::class, 'index'])->name('index');
         Route::get('/create', [LotController::class, 'create'])->name('create');
@@ -88,13 +93,24 @@ Route::get('/map', function () {
             Route::get('/payments', [PaymentReportController::class, 'index'])->name('payments');
         });
     });
+    });
+
+Route::prefix('master')->name('master.')->middleware(['auth', 'role:master_admin'])->group(function () {
+    Route::get('/dashboard', MasterDashboardController::class)->name('dashboard');
+    Route::get('/audit-logs', [MasterAuditLogController::class, 'index'])->name('auditLogs.index');
+
+    Route::get('/users', [MasterUserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}/edit', [MasterUserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [MasterUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [MasterUserController::class, 'destroy'])->name('users.destroy');
+});
 
 require __DIR__.'/auth.php';
 
 Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
 
 // Route::post('/admin/login', [AdminController::class, 'AdminLogin'])->name('admin.login');
-Route::middleware('guest')->post('/admin/register', [RegisteredUserController::class, 'store'])->name('admin.register');
+Route::middleware('guest')->post('/admin/register', [AdminRegisteredUserController::class, 'store'])->name('admin.register');
 
 Route::get('/verify', [AdminController::class, 'ShowVerification'])->name('custom.verification.form');
 

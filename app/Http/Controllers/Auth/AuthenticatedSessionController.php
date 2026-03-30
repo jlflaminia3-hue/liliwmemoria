@@ -28,7 +28,26 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+
+        if (! $user) {
+            Auth::logout();
+            return redirect()->route('login');
+        }
+
+        if ($user->role === 'master_admin') {
+            return redirect()->route('master.dashboard');
+        }
+
+        if ($user->role === 'admin') {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        Auth::logout();
+
+        return redirect()
+            ->route('login')
+            ->withErrors(['email' => 'Your account is not authorized to access the admin dashboard.']);
     }
 
     /**
@@ -42,6 +61,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

@@ -7,20 +7,20 @@
                         <div class="logo-box">
                             <a href="{{ url('/') }}" class="logo logo-light liliwmemoria-brand">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
+                                    <img src="{{ asset('backend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
-                                    <span class="liliwmemoria-brand__text text-primary">LiliwMemoria</span>
+                                    <img src="{{ asset('backend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
+                                    <span class="liliwmemoria-brand__text text-primary"></span>
                                 </span>
                             </a>
                             <a href="{{ url('/') }}" class="logo logo-dark liliwmemoria-brand">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
+                                    <img src="{{ asset('backend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('frontend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
-                                    <span class="liliwmemoria-brand__text text-primary">LiliwMemoria</span>
+                                    <img src="{{ asset('backend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria logo" height="24">
+                                    <span class="liliwmemoria-brand__text text-primary"></span>
                                 </span>
                             </a>
                         </div>
@@ -35,8 +35,33 @@
                                     <span> Dashboard </span>
                                 </a>
                             </li>
+
+                            @if (auth()->check() && auth()->user()->role === 'master_admin')
+                                <li>
+                                    <a href="{{ route('master.dashboard') }}" class="tp-link">
+                                        <i data-feather="shield"></i>
+                                        <span> Master Admin </span>
+                                    </a>
+                                </li>
+                            @endif
                 
                             <li class="menu-title">Pages</li>
+
+                            @if (auth()->check() && auth()->user()->role === 'master_admin')
+                                <li>
+                                    <a href="{{ route('master.auditLogs.index') }}" class="tp-link">
+                                        <i data-feather="activity"></i>
+                                        <span> Audit Logs </span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="{{ route('master.users.index') }}" class="tp-link">
+                                        <i data-feather="user-check"></i>
+                                        <span> Users </span>
+                                    </a>
+                                </li>
+                            @endif
 
                             <li>
                                 <a href="{{ route('admin.clients.index') }}" class="tp-link">

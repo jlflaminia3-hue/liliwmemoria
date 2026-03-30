@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClientCommunication extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'client_id',
         'channel',
@@ -33,4 +36,3 @@ class ClientCommunication extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 }
-

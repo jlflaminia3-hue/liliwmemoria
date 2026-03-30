@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentInstallment extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'payment_plan_id',
         'sequence',
@@ -63,4 +66,3 @@ class PaymentInstallment extends Model
         return CarbonImmutable::parse($this->due_date);
     }
 }
-
