@@ -46,8 +46,9 @@
                     <h6 class="text-muted mb-3">Lot Information</h6>
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Lot Number</label>
-                            <input type="text" name="lot_number" id="modal_lot_number" class="form-control" readonly>
+                            <label class="form-label">Lot ID</label>
+                            <input type="text" id="modal_lot_id" class="form-control" readonly>
+                            <input type="hidden" name="lot_number" id="modal_lot_number">
                             <div class="form-text">Auto-generated.</div>
                         </div>
                         <div class="col-md-5 mb-3" id="owner_field_wrap">
@@ -55,8 +56,14 @@
                             <input type="text" name="name" id="modal_owner" class="form-control">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Phase</label>
-                            <input type="text" name="section" class="form-control">
+                            <label class="form-label">Lot Category</label>
+                            <select name="section" id="modal_category" class="form-select" required>
+                                <option value="phase_1" selected>Phase 1</option>
+                                <option value="phase_2">Phase 2</option>
+                                <option value="garden_lot">Garden Lot</option>
+                                <option value="back_office_lot">Back Office Lot</option>
+                                <option value="mausoleum">Mausoleum</option>
+                            </select>
                         </div>
                     </div>
                     <div class="row">
@@ -319,6 +326,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var ownerWrap = document.getElementById('owner_field_wrap');
     var ownerInput = document.getElementById('modal_owner');
     var detailsFields = document.getElementById('details_fields');
+    var categorySelect = document.getElementById('modal_category');
+    var lotIdInput = document.getElementById('modal_lot_id');
     var lotNumberInput = document.getElementById('modal_lot_number');
     var geometryTypeInput = document.getElementById('modal_geometry_type');
     var geometryInput = document.getElementById('modal_geometry');
@@ -339,17 +348,23 @@ document.addEventListener('DOMContentLoaded', function() {
     );
 
     function prefillLotNumber() {
-        if (!lotNumberInput) return;
+        if (!lotNumberInput || !lotIdInput) return;
 
         lotNumberInput.value = '';
+        lotIdInput.value = '';
 
-        fetch(nextLotNumberUrl, {
+        var category = categorySelect ? String(categorySelect.value || '') : '';
+
+        var url = nextLotNumberUrl + (category ? ('?category=' + encodeURIComponent(category)) : '');
+
+        fetch(url, {
             headers: { 'Accept': 'application/json' }
         })
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data && data.lot_number) {
                     lotNumberInput.value = String(data.lot_number);
+                    lotIdInput.value = String(data.lot_id || '');
                 }
             })
             .catch(function() {
@@ -364,6 +379,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         addLotModalEl.addEventListener('hidden.bs.modal', function() {
             if (lotNumberInput) lotNumberInput.value = '';
+            if (lotIdInput) lotIdInput.value = '';
+        });
+    }
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            prefillLotNumber();
         });
     }
 
@@ -423,11 +445,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
-        var lotNumberLabel = (lot.lot_number ? ('Lot #' + lot.lot_number) : ('Lot #' + lot.id));
-        var popupContent = '<b>' + lotNumberLabel + '</b><br>';
+        var lotIdLabel = lot.lot_id ? String(lot.lot_id) : ('L-' + String(lot.lot_number || lot.id));
+        var popupContent = '<b>' + lotIdLabel + '</b><br>';
         popupContent += 'Owner: ' + lot.name + '<br>';
         popupContent += 'Status: ' + statusLabel + '<br>';
-        popupContent += 'Phase: ' + (lot.section || 'N/A') + '<br>';
+        popupContent += 'Lot Category: ' + categoryLabel(lot.section) + '<br>';
         
         if (lot.deceased && lot.deceased.length > 0) {
             lot.deceased.forEach(function(d) {
@@ -439,11 +461,11 @@ document.addEventListener('DOMContentLoaded', function() {
             popupContent += '<br><em>No deceased recorded</em>';
         }
 
-        var hoverContent = '<div class="lot-hover-title">' + lotNumberLabel + '</div>' +
+        var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
             '<div class="lot-hover-grid">' +
                 '<div class="lot-hover-row"><div class="lot-hover-k">Owner</div><div class="lot-hover-v">' + lot.name + '</div></div>' +
                 '<div class="lot-hover-row"><div class="lot-hover-k">Status</div><div class="lot-hover-v">' + statusLabel + '</div></div>' +
-                '<div class="lot-hover-row"><div class="lot-hover-k">Phase</div><div class="lot-hover-v">' + (lot.section || 'N/A') + '</div></div>' +
+                '<div class="lot-hover-row"><div class="lot-hover-k">Lot Category</div><div class="lot-hover-v">' + categoryLabel(lot.section) + '</div></div>' +
             '</div>';
 
         if (lot.deceased && lot.deceased.length > 0) {
@@ -519,6 +541,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
 
+    function categoryLabel(category) {
+        switch (String(category || '')) {
+            case 'phase_1': return 'Phase 1';
+            case 'phase_2': return 'Phase 2';
+            case 'garden_lot': return 'Garden Lot';
+            case 'back_office_lot': return 'Back Office Lot';
+            case 'mausoleum': return 'Mausoleum';
+            default: return category || 'N/A';
+        }
+    }
+
     function statusStyle(status, isNew) {
         var colors = {
             available: { stroke: '#198754', fill: 'rgba(25, 135, 84, 0.22)' },
@@ -590,11 +623,11 @@ document.addEventListener('DOMContentLoaded', function() {
             var layer = lotToLayer(lot, statusStyle(status, isNew));
             if (!layer) return;
 
-            var lotNumberLabel = (lot.lot_number ? ('Lot #' + lot.lot_number) : ('Lot #' + lot.id));
-            var popupContent = '<b>' + lotNumberLabel + '</b><br>' +
+            var lotIdLabel = lot.lot_id ? String(lot.lot_id) : ('L-' + String(lot.lot_number || lot.id));
+            var popupContent = '<b>' + lotIdLabel + '</b><br>' +
                 'Owner: ' + lot.name + '<br>' +
                 'Status: ' + titleStatus(status) + '<br>' +
-                'Phase: ' + (lot.section || 'N/A') + '<br>';
+                'Lot Category: ' + categoryLabel(lot.section) + '<br>';
 
             if (lot.deceased && lot.deceased.length > 0) {
                 lot.deceased.forEach(function(d) {
@@ -606,11 +639,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 popupContent += '<br><em>No deceased recorded</em>';
             }
 
-            var hoverContent = '<div class="lot-hover-title">' + lotNumberLabel + '</div>' +
+            var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
                 '<div class="lot-hover-grid">' +
                     '<div class="lot-hover-row"><div class="lot-hover-k">Owner</div><div class="lot-hover-v">' + lot.name + '</div></div>' +
                     '<div class="lot-hover-row"><div class="lot-hover-k">Status</div><div class="lot-hover-v">' + titleStatus(status) + '</div></div>' +
-                    '<div class="lot-hover-row"><div class="lot-hover-k">Phase</div><div class="lot-hover-v">' + (lot.section || 'N/A') + '</div></div>' +
+                    '<div class="lot-hover-row"><div class="lot-hover-k">Lot Category</div><div class="lot-hover-v">' + categoryLabel(lot.section) + '</div></div>' +
                 '</div>';
 
             if (lot.deceased && lot.deceased.length > 0) {

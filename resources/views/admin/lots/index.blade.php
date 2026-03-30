@@ -21,9 +21,9 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Lot #</th>
+                                <th>Lot ID</th>
                                 <th>Owner</th>
-                                <th>Phase</th>
+                                <th>Lot Category</th>
                                 <th>Status</th>
                                 <th>Deceased</th>
                                 <th>Actions</th>
@@ -32,9 +32,9 @@
                         <tbody>
                             @foreach($lots as $lot)
                             <tr>
-                                <td>{{ $lot->lot_number }}</td>
+                                <td>{{ $lot->lot_id }}</td>
                                 <td>{{ $lot->name }}</td>
-                                <td>{{ $lot->section ?? '-' }}</td>
+                                <td>{{ $lot->lot_category_label }}</td>
                                 <td>
                                     @php
                                         $status = $lot->status ?? ($lot->is_occupied ? 'occupied' : 'available');

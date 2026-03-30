@@ -12,17 +12,25 @@ class ClientLotOwnershipController extends Controller
     public function store(Request $request, Client $client)
     {
         $validated = $request->validate([
-            'lot_number' => 'required|integer|min:1|exists:lots,lot_number',
+            'lot_id' => 'required|string|max:32',
             'ownership_type' => 'nullable|in:owner,co-owner,authorized',
             'started_at' => 'nullable|date',
             'ended_at' => 'nullable|date|after_or_equal:started_at',
             'notes' => 'nullable|string',
         ]);
 
-        $lot = Lot::query()->where('lot_number', $validated['lot_number'])->firstOrFail();
+        $parsed = Lot::parseLotId($validated['lot_id']);
+        if (! $parsed) {
+            return back()->withErrors(['lot_id' => 'Invalid Lot ID.']);
+        }
+
+        $lot = Lot::query()
+            ->where('section', $parsed['section'])
+            ->where('lot_number', $parsed['lot_number'])
+            ->firstOrFail();
         $isAvailable = ($lot->status === 'available') || ($lot->status === null && $lot->is_occupied === false);
         if (! $isAvailable) {
-            return back()->withErrors(['lot_number' => 'Selected lot is not available.']);
+            return back()->withErrors(['lot_id' => 'Selected lot is not available.']);
         }
 
         $validated['ownership_type'] = $validated['ownership_type'] ?? 'owner';

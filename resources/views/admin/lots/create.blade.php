@@ -11,19 +11,26 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label class="form-label">Lot Number</label>
-                        <input type="text" name="lot_number" class="form-control" value="{{ $nextLotNumber ?? '' }}" readonly>
+                        <label class="form-label">Lot ID</label>
+                        <input type="text" id="lot_id_display" class="form-control" value="{{ $nextLotId ?? '' }}" readonly>
+                        <input type="hidden" name="lot_number" id="lot_number" value="{{ $nextLotNumber ?? '' }}">
                         <div class="form-text">Auto-generated and unique.</div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Owner</label>
-                        <input type="text" name="name" class="form-control" required>
+                        <input type="text" name="name" class="form-control">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Phase (Optional)</label>
-                        <input type="text" name="section" class="form-control">
+                        <label class="form-label">Lot Category</label>
+                        <select name="section" id="lot_category" class="form-select" required>
+                            <option value="phase_1" {{ ($defaultCategory ?? '') === 'phase_1' ? 'selected' : '' }}>Phase 1</option>
+                            <option value="phase_2" {{ ($defaultCategory ?? '') === 'phase_2' ? 'selected' : '' }}>Phase 2</option>
+                            <option value="garden_lot" {{ ($defaultCategory ?? '') === 'garden_lot' ? 'selected' : '' }}>Garden Lot</option>
+                            <option value="back_office_lot" {{ ($defaultCategory ?? '') === 'back_office_lot' ? 'selected' : '' }}>Back Office Lot</option>
+                            <option value="mausoleum" {{ ($defaultCategory ?? '') === 'mausoleum' ? 'selected' : '' }}>Mausoleum</option>
+                        </select>
                     </div>
 
                     <div class="row">
@@ -63,4 +70,38 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var categorySelect = document.getElementById('lot_category');
+    var lotIdDisplay = document.getElementById('lot_id_display');
+    var lotNumberInput = document.getElementById('lot_number');
+    if (!categorySelect || !lotIdDisplay || !lotNumberInput) return;
+
+    var nextLotNumberUrl = @json(
+        \Illuminate\Support\Facades\Route::has('admin.lots.nextLotNumber')
+            ? route('admin.lots.nextLotNumber')
+            : url('/admin/lots/next-lot-number')
+    );
+
+    function refreshLotId() {
+        var category = String(categorySelect.value || '');
+        lotIdDisplay.value = '';
+        lotNumberInput.value = '';
+
+        fetch(nextLotNumberUrl + '?category=' + encodeURIComponent(category), {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data) return;
+                if (data.lot_number) lotNumberInput.value = String(data.lot_number);
+                if (data.lot_id) lotIdDisplay.value = String(data.lot_id);
+            })
+            .catch(function () {});
+    }
+
+    categorySelect.addEventListener('change', refreshLotId);
+});
+</script>
 @endsection

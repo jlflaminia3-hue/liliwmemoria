@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class LotController extends Controller
 {
+    private const LOT_CATEGORIES = [
+        'phase_1',
+        'phase_2',
+        'garden_lot',
+        'back_office_lot',
+        'mausoleum',
+    ];
+
     public function index()
     {
         $lots = Lot::with('deceased')->get();
@@ -17,17 +25,21 @@ class LotController extends Controller
 
     public function create()
     {
-        $nextLotNumber = (int) Lot::max('lot_number') + 1;
+        $defaultCategory = 'phase_1';
+        $nextLotNumber = (int) Lot::query()
+            ->where('section', $defaultCategory)
+            ->max('lot_number') + 1;
+        $nextLotId = Lot::categoryPrefix($defaultCategory).'-'.$nextLotNumber;
 
-        return view('admin.lots.create', compact('nextLotNumber'));
+        return view('admin.lots.create', compact('nextLotNumber', 'nextLotId', 'defaultCategory'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'lot_number' => 'nullable|integer|min:1|unique:lots,lot_number',
+            'lot_number' => 'nullable|integer|min:1',
             'name' => 'nullable|string|max:255',
-            'section' => 'nullable|string|max:255',
+            'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
             'status' => 'nullable|in:available,occupied,reserved',
             'notes' => 'nullable|string',
         ]);
@@ -49,11 +61,18 @@ class LotController extends Controller
         }
 
         DB::transaction(function () use ($validated, $status, $ownerName) {
-            $maxLotNumber = (int) Lot::query()->lockForUpdate()->max('lot_number');
+            $category = (string) ($validated['section'] ?? '');
+            $maxLotNumber = (int) Lot::query()
+                ->where('section', $category)
+                ->lockForUpdate()
+                ->max('lot_number');
             $requestedLotNumber = (int) ($validated['lot_number'] ?? 0);
 
             $lotNumber = $requestedLotNumber > 0 ? $requestedLotNumber : ($maxLotNumber + 1);
-            if ($lotNumber <= $maxLotNumber && Lot::query()->where('lot_number', $lotNumber)->exists()) {
+            if (
+                $lotNumber <= $maxLotNumber
+                && Lot::query()->where('section', $category)->where('lot_number', $lotNumber)->exists()
+            ) {
                 $lotNumber = $maxLotNumber + 1;
             }
 
@@ -77,7 +96,7 @@ class LotController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'section' => 'nullable|string|max:255',
+            'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
             'status' => 'nullable|in:available,occupied,reserved',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
@@ -157,19 +176,38 @@ class LotController extends Controller
 
     public function nextLotNumber()
     {
-        $nextLotNumber = (int) Lot::max('lot_number') + 1;
+        $request = request();
+        $categoryValue = $request->query('category');
+
+        if ($categoryValue !== null && $categoryValue !== '') {
+            $request->validate([
+                'category' => 'in:'.implode(',', self::LOT_CATEGORIES),
+            ]);
+        } else {
+            $categoryValue = '';
+        }
+
+        $nextLotNumber = DB::transaction(function () use ($categoryValue) {
+            return (int) Lot::query()
+                ->where('section', $categoryValue)
+                ->lockForUpdate()
+                ->max('lot_number') + 1;
+        }, 3);
+
+        $lotId = Lot::categoryPrefix((string) $categoryValue).'-'.$nextLotNumber;
 
         return response()->json([
             'lot_number' => $nextLotNumber,
+            'lot_id' => $lotId,
         ]);
     }
 
     public function storeWithDeceased(Request $request)
     {
         $validated = $request->validate([
-            'lot_number' => 'nullable|integer|min:1|unique:lots,lot_number',
+            'lot_number' => 'nullable|integer|min:1',
             'name' => 'nullable|string|max:255',
-            'section' => 'nullable|string|max:255',
+            'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'geometry_type' => 'nullable|in:rect,poly',
@@ -202,11 +240,18 @@ class LotController extends Controller
         }
 
         $lot = DB::transaction(function () use ($validated, $ownerName) {
-            $maxLotNumber = (int) Lot::query()->lockForUpdate()->max('lot_number');
+            $category = (string) ($validated['section'] ?? '');
+            $maxLotNumber = (int) Lot::query()
+                ->where('section', $category)
+                ->lockForUpdate()
+                ->max('lot_number');
             $requestedLotNumber = (int) ($validated['lot_number'] ?? 0);
 
             $lotNumber = $requestedLotNumber > 0 ? $requestedLotNumber : ($maxLotNumber + 1);
-            if ($lotNumber <= $maxLotNumber && Lot::query()->where('lot_number', $lotNumber)->exists()) {
+            if (
+                $lotNumber <= $maxLotNumber
+                && Lot::query()->where('section', $category)->where('lot_number', $lotNumber)->exists()
+            ) {
                 $lotNumber = $maxLotNumber + 1;
             }
 

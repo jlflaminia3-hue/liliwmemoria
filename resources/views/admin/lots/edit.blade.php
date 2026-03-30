@@ -12,8 +12,8 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label class="form-label">Lot Number</label>
-                        <input type="text" class="form-control" value="{{ $lot->lot_number }}" readonly>
+                        <label class="form-label">Lot ID</label>
+                        <input type="text" class="form-control" value="{{ $lot->lot_id }}" readonly>
                     </div>
 
                     <div class="mb-3">
@@ -22,8 +22,14 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Phase (Optional)</label>
-                        <input type="text" name="section" class="form-control" value="{{ $lot->section }}">
+                        <label class="form-label">Lot Category</label>
+                        <select name="section" class="form-select" required>
+                            <option value="phase_1" {{ $lot->section === 'phase_1' ? 'selected' : '' }}>Phase 1</option>
+                            <option value="phase_2" {{ $lot->section === 'phase_2' ? 'selected' : '' }}>Phase 2</option>
+                            <option value="garden_lot" {{ $lot->section === 'garden_lot' ? 'selected' : '' }}>Garden Lot</option>
+                            <option value="back_office_lot" {{ $lot->section === 'back_office_lot' ? 'selected' : '' }}>Back Office Lot</option>
+                            <option value="mausoleum" {{ $lot->section === 'mausoleum' ? 'selected' : '' }}>Mausoleum</option>
+                        </select>
                     </div>
 
                     @php

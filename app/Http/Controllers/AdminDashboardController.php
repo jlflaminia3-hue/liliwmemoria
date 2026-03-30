@@ -25,10 +25,10 @@ class AdminDashboardController extends Controller
         $deceasedTotal = Deceased::query()->count();
 
         $contractsActive = ClientContract::query()->where('status', 'active')->count();
-        $contractsPastDue = ClientContract::query()->where('status', 'past_due')->count();
+        $contractsPastDue = ClientContract::query()->where('status', 'pending')->count();
 
         $outstandingBalance = (float) ClientContract::query()
-            ->whereIn('status', ['active', 'past_due'])
+            ->whereIn('status', ['active', 'pending'])
             ->selectRaw('COALESCE(SUM(COALESCE(total_amount, 0) - COALESCE(amount_paid, 0)), 0) as balance')
             ->value('balance');
 
@@ -54,7 +54,7 @@ class AdminDashboardController extends Controller
 
         $pastDueContracts = ClientContract::query()
             ->with(['client', 'lot'])
-            ->where('status', 'past_due')
+            ->where('status', 'pending')
             ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC')
             ->limit(8)
             ->get();
@@ -87,4 +87,3 @@ class AdminDashboardController extends Controller
         ));
     }
 }
-

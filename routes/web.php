@@ -65,6 +65,7 @@ Route::get('/map', function () {
         Route::delete('/{client}/ownerships/{ownership}', [ClientLotOwnershipController::class, 'destroy'])->name('ownerships.destroy');
 
         Route::post('/{client}/contracts', [ClientContractController::class, 'store'])->name('contracts.store');
+        Route::put('/{client}/contracts/{contract}', [ClientContractController::class, 'update'])->name('contracts.update');
         Route::delete('/{client}/contracts/{contract}', [ClientContractController::class, 'destroy'])->name('contracts.destroy');
 
         Route::post('/{client}/family-links', [ClientFamilyLinkController::class, 'store'])->name('familyLinks.store');

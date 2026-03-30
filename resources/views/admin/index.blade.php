@@ -146,7 +146,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <div class="text-muted">Past Due / Balance</div>
+                                <div class="text-muted">Pending / Balance</div>
                                 <div class="fs-22 fw-semibold text-danger">{{ number_format($contractsPastDue) }}</div>
                                 <div class="text-muted mt-1">₱{{ number_format($outstandingBalance, 2) }}</div>
                             </div>
@@ -182,7 +182,7 @@
                                         <tr>
                                             <td>{{ $record->burial_date?->format('Y-m-d') ?? '-' }}</td>
                                             <td>{{ trim($record->first_name.' '.$record->last_name) }}</td>
-                                            <td>{{ $record->lot ? 'Lot #'.$record->lot->lot_number : '-' }}</td>
+                                            <td>{{ $record->lot ? 'Lot ID '.$record->lot->lot_id : '-' }}</td>
                                             <td>{{ $record->lot?->section ?? '-' }}</td>
                                         </tr>
                                     @endforeach
@@ -240,7 +240,7 @@
             <div class="col-lg-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Past Due Contracts</h5>
+                        <h5 class="card-title mb-0">Pending Contracts</h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -248,7 +248,7 @@
                                 <thead>
                                     <tr>
                                         <th>Client</th>
-                                        <th>Due</th>
+                                        <th>Completion</th>
                                         <th class="text-end">Balance</th>
                                     </tr>
                                 </thead>
@@ -262,7 +262,7 @@
                                                 <div class="fw-semibold">{{ $contract->client?->full_name ?? 'Unknown' }}</div>
                                                 <div class="text-muted">
                                                     {{ $contract->contract_number ? 'Contract #'.$contract->contract_number : 'No contract #' }}
-                                                    {{ $contract->lot ? ' • Lot #'.$contract->lot->lot_number : '' }}
+                                                    {{ $contract->lot ? ' • Lot ID '.$contract->lot->lot_id : '' }}
                                                 </div>
                                             </td>
                                             <td>{{ $contract->due_date?->format('Y-m-d') ?? '-' }}</td>
@@ -271,7 +271,7 @@
                                     @endforeach
                                     @if ($pastDueContracts->isEmpty())
                                         <tr>
-                                            <td colspan="3" class="text-muted text-center py-3">No past due contracts.</td>
+                                            <td colspan="3" class="text-muted text-center py-3">No pending contracts.</td>
                                         </tr>
                                     @endif
                                 </tbody>
@@ -300,7 +300,7 @@
                                     @foreach ($recentReservations as $ownership)
                                         <tr>
                                             <td>{{ $ownership->client?->full_name ?? 'Unknown' }}</td>
-                                            <td>{{ $ownership->lot ? 'Lot #'.$ownership->lot->lot_number : '-' }}</td>
+                                            <td>{{ $ownership->lot ? 'Lot ID '.$ownership->lot->lot_id : '-' }}</td>
                                             <td class="text-end">{{ $ownership->created_at?->format('Y-m-d') ?? '-' }}</td>
                                         </tr>
                                     @endforeach
@@ -335,7 +335,7 @@
                                     @foreach ($recentInterments as $record)
                                         <tr>
                                             <td>{{ trim($record->first_name.' '.$record->last_name) }}</td>
-                                            <td>{{ $record->lot ? 'Lot #'.$record->lot->lot_number : '-' }}</td>
+                                            <td>{{ $record->lot ? 'Lot ID '.$record->lot->lot_id : '-' }}</td>
                                             <td class="text-end">{{ $record->burial_date?->format('Y-m-d') ?? '-' }}</td>
                                         </tr>
                                     @endforeach
@@ -355,4 +355,3 @@
 </div>
 
 @endsection
-

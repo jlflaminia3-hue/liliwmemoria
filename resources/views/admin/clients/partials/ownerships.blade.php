@@ -1,63 +1,96 @@
 <div class="row">
     <div class="col-12">
         <div class="card mb-0">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0">Ownership Records</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title mb-3">Ownership Records</h5>
-
-                <form method="POST" action="{{ route('admin.clients.ownerships.store', $client) }}" class="row g-2 mb-3">
+                <form method="POST" action="{{ route('admin.clients.ownerships.store', $client) }}" class="row g-2 align-items-end mb-3">
                     @csrf
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         @php($lotListId = 'availableLots_'.$client->id)
-                        <input
-                            type="text"
-                            name="lot_number"
-                            class="form-control"
-                            placeholder="Lot number (type to search)"
-                            list="{{ $lotListId }}"
-                            inputmode="numeric"
-                            value="{{ old('lot_number') }}"
-                            required
-                        >
+                        <div class="form-floating">
+                            <input
+                                type="text"
+                                id="ownership_lot_number_{{ $client->id }}"
+                                name="lot_id"
+                                class="form-control"
+                                placeholder="Lot ID"
+                                list="{{ $lotListId }}"
+                                value="{{ old('lot_id') }}"
+                                required
+                            >
+                            <label for="ownership_lot_number_{{ $client->id }}">
+                                <i data-feather="search" class="me-1" aria-hidden="true"></i>
+                                Lot ID
+                            </label>
+                        </div>
                         <datalist id="{{ $lotListId }}">
                             @foreach ($availableLots as $lot)
-                                <option value="{{ $lot->lot_number }}">Lot #{{ $lot->lot_number }} - {{ $lot->name }}{{ $lot->section ? ' ('.$lot->section.')' : '' }}</option>
+                                <option value="{{ $lot->lot_id }}">{{ $lot->lot_id }} - {{ $lot->name }} ({{ $lot->lot_category_label }})</option>
                             @endforeach
                         </datalist>
-                        <div class="form-text">Start typing a lot number to see suggestions.</div>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="ownership_type" class="form-select">
-                            <option value="owner" @selected(old('ownership_type') === 'owner')>Owner</option>
-                            <option value="co-owner" @selected(old('ownership_type') === 'co-owner')>Co-owner</option>
-                            <option value="authorized" @selected(old('ownership_type') === 'authorized')>Authorized</option>
-                        </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="date" name="started_at" class="form-control" value="{{ old('started_at') }}">
+                        <div class="form-floating">
+                            <select id="ownership_type_{{ $client->id }}" name="ownership_type" class="form-select">
+                                <option value="owner" @selected(old('ownership_type') === 'owner')>Owner</option>
+                                <option value="co-owner" @selected(old('ownership_type') === 'co-owner')>Co-owner</option>
+                                <option value="authorized" @selected(old('ownership_type') === 'authorized')>Authorized</option>
+                            </select>
+                            <label for="ownership_type_{{ $client->id }}">Ownership Type</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input
+                                type="date"
+                                id="ownership_started_at_{{ $client->id }}"
+                                name="started_at"
+                                class="form-control"
+                                value="{{ old('started_at') }}"
+                                placeholder="YYYY-MM-DD"
+                                aria-label="Ownership Date"
+                            >
+                            <label for="ownership_started_at_{{ $client->id }}">Ownership Date</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input
+                                type="date"
+                                id="ownership_ended_at_{{ $client->id }}"
+                                name="ended_at"
+                                class="form-control"
+                                value="{{ old('ended_at') }}"
+                                placeholder="YYYY-MM-DD"
+                                aria-label="Reservation End"
+                            >
+                            <label for="ownership_ended_at_{{ $client->id }}">Reservation End</label>
+                        </div>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-success w-100">Save</button>
                     </div>
                     <div class="col-12">
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <input type="date" name="ended_at" class="form-control" value="{{ old('ended_at') }}">
-                            </div>
-                            <div class="col-md-9">
-                                <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" placeholder="Notes (optional)">
-                            </div>
-                        </div>
+                        <input
+                            type="text"
+                            name="notes"
+                            class="form-control"
+                            value="{{ old('notes') }}"
+                            placeholder="Notes (optional)"
+                        >
                     </div>
                 </form>
 
                 <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
                             <tr>
                                 <th>Lot</th>
                                 <th>Type</th>
-                                <th>Start</th>
-                                <th>End</th>
+                                <th>Ownership Date</th>
+                                <th>Reservation End</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -66,14 +99,14 @@
                                 <tr>
                                     <td>
                                         @if ($ownership->lot)
-                                            Lot #{{ $ownership->lot->lot_number }} - {{ $ownership->lot->name }}
+                                            {{ $ownership->lot->lot_id }} - {{ $ownership->lot->name }}
                                         @else
                                             -
                                         @endif
                                     </td>
-                                    <td>{{ $ownership->ownership_type }}</td>
-                                    <td>{{ $ownership->started_at?->format('Y-m-d') ?? '-' }}</td>
-                                    <td>{{ $ownership->ended_at?->format('Y-m-d') ?? '-' }}</td>
+                                    <td class="text-capitalize">{{ str_replace('-', ' ', $ownership->ownership_type) }}</td>
+                                    <td class="text-nowrap">{{ $ownership->started_at?->format('Y-m-d') ?? '-' }}</td>
+                                    <td class="text-nowrap">{{ $ownership->ended_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td class="text-end">
                                         <form method="POST" action="{{ route('admin.clients.ownerships.destroy', [$client, $ownership]) }}">
                                             @csrf
@@ -84,7 +117,9 @@
                                 </tr>
                                 @if ($ownership->notes)
                                     <tr>
-                                        <td colspan="5" class="text-muted">{{ $ownership->notes }}</td>
+                                        <td colspan="5" class="text-muted">
+                                            <small>{{ $ownership->notes }}</small>
+                                        </td>
                                     </tr>
                                 @endif
                             @endforeach

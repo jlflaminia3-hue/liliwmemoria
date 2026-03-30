@@ -14,6 +14,7 @@ class ClientContract extends Model
     protected $fillable = [
         'client_id',
         'lot_id',
+        'lot_kind',
         'contract_number',
         'contract_type',
         'status',
@@ -21,6 +22,7 @@ class ClientContract extends Model
         'amount_paid',
         'due_date',
         'signed_at',
+        'contract_duration_months',
         'notes',
     ];
 
@@ -31,6 +33,7 @@ class ClientContract extends Model
             'amount_paid' => 'decimal:2',
             'due_date' => 'date',
             'signed_at' => 'date',
+            'contract_duration_months' => 'integer',
         ];
     }
 
