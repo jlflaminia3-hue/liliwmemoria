@@ -46,6 +46,9 @@
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contracts" type="button" role="tab">Contracts</button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button" role="tab">Maintenance</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-family" type="button" role="tab">Family</button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -62,6 +65,9 @@
                     </div>
                     <div class="tab-pane fade" id="tab-contracts" role="tabpanel">
                         @include('admin.clients.partials.contracts')
+                    </div>
+                    <div class="tab-pane fade" id="tab-maintenance" role="tabpanel">
+                        @include('admin.clients.partials.maintenance')
                     </div>
                     <div class="tab-pane fade" id="tab-family" role="tabpanel">
                         @include('admin.clients.partials.family')

@@ -34,10 +34,10 @@
                             <input
                                 type="text"
                                 id="contract_number_{{ $client->id }}"
-                                name="contract_number"
                                 class="form-control"
-                                value="{{ old('contract_number') }}"
+                                value="Auto-generated"
                                 placeholder="Contract #"
+                                disabled
                             >
                             <label for="contract_number_{{ $client->id }}">Contract No.</label>
                         </div>
@@ -64,7 +64,7 @@
                                     id="contract_lot_id_{{ $client->id }}"
                                     name="contract_lot_id"
                                     class="form-control"
-                                    placeholder="Related Lot ID"
+                                    placeholder="Lot ID"
                                     list="{{ $contractLotListId }}"
                                     value="{{ old('contract_lot_id') }}"
                                 >
@@ -151,6 +151,24 @@
                         <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" placeholder="Notes (optional)">
                     </div>
                     <div class="col-12">
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                value="1"
+                                id="contract_email_pdf_{{ $client->id }}"
+                                name="email_pdf"
+                                @checked(old('email_pdf', 1))
+                            >
+                            <label class="form-check-label" for="contract_email_pdf_{{ $client->id }}">
+                                Email contract PDF to client{{ $client->email ? ' ('.$client->email.')' : '' }}
+                            </label>
+                        </div>
+                        @if (! $client->email)
+                            <div class="form-text text-warning">Client has no email on file.</div>
+                        @endif
+                    </div>
+                    <div class="col-12">
                         <button type="submit" class="btn btn-success">Add Contract</button>
                     </div>
                 </form>
@@ -203,6 +221,9 @@
                                                 <i data-feather="more-vertical"></i>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="{{ route('admin.clients.contracts.pdf', [$client, $contract]) }}" target="_blank" rel="noopener">
+                                                    Download PDF
+                                                </a>
                                                 <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editContractModal_{{ $contract->id }}">
                                                     Edit
                                                 </button>
@@ -278,10 +299,10 @@
                                                 <div class="form-floating">
                                                     <input
                                                         type="text"
-                                                        name="contract_number"
                                                         class="form-control"
                                                         placeholder="Contract #"
-                                                        value="{{ $isEditingThis ? old('contract_number') : $contract->contract_number }}"
+                                                        value="{{ $contract->contract_number }}"
+                                                        disabled
                                                     >
                                                     <label>Contract #</label>
                                                 </div>
@@ -308,11 +329,11 @@
                                                         type="text"
                                                         name="contract_lot_id"
                                                         class="form-control"
-                                                        placeholder="Related Lot ID"
+                                                        placeholder="Lot ID"
                                                         list="{{ $editLotListId }}"
                                                         value="{{ $isEditingThis ? old('contract_lot_id') : ($contract->lot?->lot_id ?? '') }}"
                                                     >
-                                                    <label>Related Lot</label>
+                                                    <label>Lot ID</label>
                                                 </div>
                                                 <datalist id="{{ $editLotListId }}">
                                                     @foreach ($availableLots as $lot)
@@ -402,6 +423,24 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="mt-2">
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    value="1"
+                                                    id="contract_email_pdf_edit_{{ $contract->id }}"
+                                                    name="email_pdf"
+                                                    @checked($isEditingThis ? old('email_pdf', 1) : 0)
+                                                >
+                                                <label class="form-check-label" for="contract_email_pdf_edit_{{ $contract->id }}">
+                                                    Email updated contract PDF to client{{ $client->email ? ' ('.$client->email.')' : '' }}
+                                                </label>
+                                            </div>
+                                            @if (! $client->email)
+                                                <div class="form-text text-warning">Client has no email on file.</div>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
@@ -428,6 +467,7 @@
                         const durationColEl = document.getElementById('contract_duration_col_{{ $client->id }}');
                         const lotSearchBtnEl = document.getElementById('contract_lot_search_btn_{{ $client->id }}');
                         const lotNumberEl = document.getElementById('contract_lot_id_{{ $client->id }}');
+                        const lotKindEl = document.getElementById('contract_lot_kind_{{ $client->id }}');
 
                         if (!contractTypeEl || !effectiveEl || !durationEl || !completionEl) {
                             return;
@@ -466,6 +506,25 @@
                             return { year, month, day };
                         }
 
+                        function inferLotKindFromLotId(lotId) {
+                            if (!lotId) return null;
+                            const value = String(lotId).trim().toUpperCase();
+                            const prefix = value.split('-', 1)[0];
+                            if (prefix === 'P1') return 'phase_1';
+                            if (prefix === 'P2') return 'phase_2';
+                            if (prefix === 'G') return 'garden_lot';
+                            if (prefix === 'BO') return 'back_office_lot';
+                            if (prefix === 'M') return 'mausoleum';
+                            return null;
+                        }
+
+                        function syncLotCategoryFromLotId(lotId, lotKindSelect) {
+                            if (!lotKindSelect) return;
+                            const inferred = inferLotKindFromLotId(lotId);
+                            if (!inferred) return;
+                            lotKindSelect.value = inferred;
+                        }
+
                         function syncReservationUi() {
                             const enabled = isReservation();
                             durationEl.disabled = !enabled;
@@ -502,6 +561,26 @@
                                 lotNumberEl.focus();
                             });
                         }
+
+                        if (lotNumberEl && lotKindEl) {
+                            const handler = function () {
+                                syncLotCategoryFromLotId(lotNumberEl.value, lotKindEl);
+                            };
+                            lotNumberEl.addEventListener('change', handler);
+                            lotNumberEl.addEventListener('input', handler);
+                            handler();
+                        }
+
+                        document.querySelectorAll('.modal input[name="contract_lot_id"]').forEach(function (input) {
+                            const handler = function () {
+                                const modal = input.closest('.modal');
+                                if (!modal) return;
+                                const lotKindSelect = modal.querySelector('select[name="lot_kind"]');
+                                syncLotCategoryFromLotId(input.value, lotKindSelect);
+                            };
+                            input.addEventListener('change', handler);
+                            input.addEventListener('input', handler);
+                        });
 
                         syncReservationUi();
                         syncCompletionDate();

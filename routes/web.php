@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientContractController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientFamilyLinkController;
 use App\Http\Controllers\ClientLotOwnershipController;
+use App\Http\Controllers\ClientMaintenanceController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReportController;
 use App\Http\Controllers\PaymentTransactionController;
@@ -65,6 +66,7 @@ Route::get('/map', function () {
         Route::delete('/{client}/ownerships/{ownership}', [ClientLotOwnershipController::class, 'destroy'])->name('ownerships.destroy');
 
         Route::post('/{client}/contracts', [ClientContractController::class, 'store'])->name('contracts.store');
+        Route::get('/{client}/contracts/{contract}/pdf', [ClientContractController::class, 'pdf'])->name('contracts.pdf');
         Route::put('/{client}/contracts/{contract}', [ClientContractController::class, 'update'])->name('contracts.update');
         Route::delete('/{client}/contracts/{contract}', [ClientContractController::class, 'destroy'])->name('contracts.destroy');
 
@@ -73,6 +75,11 @@ Route::get('/map', function () {
 
         Route::post('/{client}/communications', [ClientCommunicationController::class, 'store'])->name('communications.store');
         Route::delete('/{client}/communications/{communication}', [ClientCommunicationController::class, 'destroy'])->name('communications.destroy');
+
+        Route::middleware('role:master_admin')->group(function () {
+            Route::post('/{client}/maintenance', [ClientMaintenanceController::class, 'store'])->name('maintenance.store');
+            Route::delete('/{client}/maintenance/{maintenanceRecord}', [ClientMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
+        });
         });
 
         Route::prefix('admin/payments')->name('admin.payments.')->group(function () {

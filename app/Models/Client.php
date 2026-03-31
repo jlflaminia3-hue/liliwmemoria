@@ -65,4 +65,9 @@ class Client extends Model
     {
         return $this->hasMany(PaymentPlan::class);
     }
+
+    public function maintenanceRecords(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class)->latest('service_date')->latest('id');
+    }
 }

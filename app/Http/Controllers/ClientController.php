@@ -52,6 +52,9 @@ class ClientController extends Controller
             'lotOwnerships.lot',
             'contracts.lot',
             'communications.creator',
+            'maintenanceRecords.lot',
+            'maintenanceRecords.contract',
+            'maintenanceRecords.creator',
         ]);
 
         $familyLinks = ClientFamilyLink::query()

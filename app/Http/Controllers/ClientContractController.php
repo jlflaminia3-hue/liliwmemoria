@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContractPdfMail;
 use App\Models\Client;
 use App\Models\ClientContract;
 use App\Models\ClientLotOwnership;
@@ -9,22 +10,24 @@ use App\Models\Lot;
 use App\Models\PaymentPlan;
 use App\Models\PaymentInstallment;
 use App\Models\PaymentTransaction;
+use App\Services\Contracts\ContractPdfService;
 use App\Services\Payments\PaymentPlanGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ClientContractController extends Controller
 {
-    public function store(Request $request, Client $client, PaymentPlanGenerator $generator)
+    public function store(Request $request, Client $client, PaymentPlanGenerator $generator, ContractPdfService $pdfs)
     {
         $validated = $request->validate([
             'lot_id' => 'nullable|exists:lots,id',
             'contract_lot_id' => 'nullable|string|max:32',
             'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'mausoleum'])],
-            'contract_number' => 'nullable|string|max:255',
             'contract_type' => 'required|in:purchase,reservation,other',
             'status' => 'required|in:active,pending,completed,cancelled,transfered',
             'total_amount' => 'nullable|numeric|min:0',
@@ -38,6 +41,7 @@ class ClientContractController extends Controller
             ],
             'due_date' => 'nullable|date',
             'notes' => 'nullable|string',
+            'email_pdf' => 'nullable|boolean',
         ]);
 
         if (! empty($validated['contract_lot_id']) && ! Lot::parseLotId($validated['contract_lot_id'])) {
@@ -58,8 +62,12 @@ class ClientContractController extends Controller
                 ->toDateString();
         }
 
-        DB::transaction(function () use ($client, $validated, $generator) {
+        $emailPdf = (bool) ($validated['email_pdf'] ?? false);
+        $contractId = null;
+
+        DB::transaction(function () use ($client, $validated, $generator, &$contractId) {
             $contractData = $validated;
+            $contractData['created_by_user_id'] = auth()->id();
 
             $contractLotId = $contractData['contract_lot_id'] ?? null;
             if (empty($contractData['lot_id']) && ! empty($contractLotId)) {
@@ -73,8 +81,14 @@ class ClientContractController extends Controller
             }
 
             unset($contractData['contract_lot_id']);
+            unset($contractData['email_pdf']);
 
             $contract = $client->contracts()->create($contractData);
+            if (empty($contract->contract_number)) {
+                $contract->contract_number = ClientContract::formatContractNumber($contract->id);
+                $contract->save();
+            }
+            $contractId = $contract->id;
 
             if (empty($contractData['lot_id'])) {
                 $this->syncContractPaymentPlan($contract, $generator);
@@ -117,10 +131,30 @@ class ClientContractController extends Controller
             $this->syncContractPaymentPlan($contract, $generator);
         });
 
+        if ($contractId) {
+            $contract = ClientContract::query()->with('client')->find($contractId);
+            if ($contract) {
+                $pdfBinary = $pdfs->renderPdfBinary($contract);
+                $path = 'contracts/contract-' . $contract->id . '.pdf';
+                Storage::disk('local')->put($path, $pdfBinary);
+
+                $contract->pdf_path = $path;
+                $contract->pdf_generated_at = now();
+
+                if ($emailPdf && $contract->client?->email) {
+                    $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+                    Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
+                    $contract->pdf_emailed_at = now();
+                }
+
+                $contract->save();
+            }
+        }
+
         return back()->with('success', 'Contract saved.');
     }
 
-    public function update(Request $request, Client $client, ClientContract $contract, PaymentPlanGenerator $generator)
+    public function update(Request $request, Client $client, ClientContract $contract, PaymentPlanGenerator $generator, ContractPdfService $pdfs)
     {
         if ($contract->client_id !== $client->id) {
             abort(404);
@@ -130,7 +164,6 @@ class ClientContractController extends Controller
             'lot_id' => 'nullable|exists:lots,id',
             'contract_lot_id' => 'nullable|string|max:32',
             'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'mausoleum'])],
-            'contract_number' => 'nullable|string|max:255',
             'contract_type' => 'required|in:purchase,reservation,other',
             'status' => 'required|in:active,pending,completed,cancelled,transfered',
             'total_amount' => 'nullable|numeric|min:0',
@@ -146,6 +179,7 @@ class ClientContractController extends Controller
             'notes' => 'nullable|string',
             '_modal' => 'nullable|string',
             '_contract_id' => 'nullable|integer',
+            'email_pdf' => 'nullable|boolean',
         ]);
 
         if (! empty($validated['contract_lot_id']) && ! Lot::parseLotId($validated['contract_lot_id'])) {
@@ -166,6 +200,8 @@ class ClientContractController extends Controller
                 ->toDateString();
         }
 
+        $emailPdf = (bool) ($validated['email_pdf'] ?? false);
+
         DB::transaction(function () use ($client, $contract, $validated, $generator) {
             $oldLotId = $contract->lot_id;
 
@@ -182,7 +218,7 @@ class ClientContractController extends Controller
                 }
             }
 
-            unset($contractData['contract_lot_id'], $contractData['_modal'], $contractData['_contract_id']);
+            unset($contractData['contract_lot_id'], $contractData['_modal'], $contractData['_contract_id'], $contractData['email_pdf']);
 
             $contract->update($contractData);
 
@@ -258,7 +294,50 @@ class ClientContractController extends Controller
             $this->syncContractPaymentPlan($contract, $generator);
         });
 
+        $contract->refresh();
+        $contract->loadMissing('client');
+
+        $pdfBinary = $pdfs->renderPdfBinary($contract);
+        $path = 'contracts/contract-' . $contract->id . '.pdf';
+        Storage::disk('local')->put($path, $pdfBinary);
+
+        $contract->pdf_path = $path;
+        $contract->pdf_generated_at = now();
+
+        if ($emailPdf && $contract->client?->email) {
+            $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+            Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
+            $contract->pdf_emailed_at = now();
+        }
+
+        $contract->save();
+
         return back()->with('success', 'Contract updated.');
+    }
+
+    public function pdf(Client $client, ClientContract $contract, ContractPdfService $pdfs)
+    {
+        if ($contract->client_id !== $client->id) {
+            abort(404);
+        }
+
+        $contract->loadMissing(['client', 'lot']);
+
+        $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+
+        if ($contract->pdf_path && Storage::disk('local')->exists($contract->pdf_path)) {
+            return response()->download(Storage::disk('local')->path($contract->pdf_path), $filename);
+        }
+
+        $pdfBinary = $pdfs->renderPdfBinary($contract);
+        $path = 'contracts/contract-' . $contract->id . '.pdf';
+        Storage::disk('local')->put($path, $pdfBinary);
+
+        $contract->pdf_path = $path;
+        $contract->pdf_generated_at = now();
+        $contract->save();
+
+        return response()->download(Storage::disk('local')->path($path), $filename);
     }
 
     public function destroy(Client $client, ClientContract $contract)

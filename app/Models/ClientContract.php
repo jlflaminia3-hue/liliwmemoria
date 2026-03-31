@@ -11,8 +11,14 @@ class ClientContract extends Model
 {
     use Auditable;
 
+    public static function formatContractNumber(int $id): string
+    {
+        return 'CN-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);
+    }
+
     protected $fillable = [
         'client_id',
+        'created_by_user_id',
         'lot_id',
         'lot_kind',
         'contract_number',
@@ -24,6 +30,9 @@ class ClientContract extends Model
         'signed_at',
         'contract_duration_months',
         'notes',
+        'pdf_path',
+        'pdf_generated_at',
+        'pdf_emailed_at',
     ];
 
     protected function casts(): array
@@ -34,6 +43,8 @@ class ClientContract extends Model
             'due_date' => 'date',
             'signed_at' => 'date',
             'contract_duration_months' => 'integer',
+            'pdf_generated_at' => 'datetime',
+            'pdf_emailed_at' => 'datetime',
         ];
     }
 
