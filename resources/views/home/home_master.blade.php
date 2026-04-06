@@ -79,6 +79,9 @@
   <!-- Header -->
   @include('home.body.header')
 
+  <!-- Inquiry Modal -->
+  @include('home.body.inquiry_modal')
+
 
   <!-- Main -->
   @yield('home')
@@ -115,6 +118,26 @@
   <script src="{{ asset('frontend/assets/js/slick.js') }}"></script>
 
   <script src="{{ asset('frontend/assets/js/app.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var inquiryShouldOpen = @json(session('inquiry_status') || $errors->inquiry->any());
+      var inquiryModalEl = document.getElementById('inquiryModal');
+      var inquiryTriggers = document.querySelectorAll('.liliwmemoria-inquiry-trigger');
+
+      if (inquiryShouldOpen && inquiryModalEl && window.bootstrap) {
+        window.bootstrap.Modal.getOrCreateInstance(inquiryModalEl).show();
+      }
+
+      inquiryTriggers.forEach(function (trigger) {
+        trigger.addEventListener('click', function () {
+          var mobileMenu = document.querySelector('.lonyo-menu-wrapper');
+          if (mobileMenu) {
+            mobileMenu.classList.remove('lonyo-body-visible');
+          }
+        });
+      });
+    });
+  </script>
 
 
 </body>

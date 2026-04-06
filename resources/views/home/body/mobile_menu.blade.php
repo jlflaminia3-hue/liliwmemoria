@@ -23,13 +23,12 @@
             <a href="#">Location</a>
           </li>
           <li>
-            <a href="contact-us.html">Contact</a>
+            <a href="{{ route('contact.page') }}">Contact</a>
           </li>
         </ul>
       </div>
       <div class="lonyo-mobile-menu-btn">
-        <a class="lonyo-default-btn sm-size" href="contact-us.html" data-text="Get in Touch"><span class="btn-wraper">Login</span></a>
-        <a class="lonyo-default-btn sm-size" href="contact-us.html" data-text="Get in Touch"><span class="btn-wraper">Inquire</span></a>
+        <a class="lonyo-default-btn sm-size liliwmemoria-inquiry-trigger" href="#" data-bs-toggle="modal" data-bs-target="#inquiryModal" data-text="Get in Touch"><span class="btn-wraper">Inquire</span></a>
       </div>
     </div>
   </div>

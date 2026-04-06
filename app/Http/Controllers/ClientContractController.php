@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class ClientContractController extends Controller
 {
@@ -134,6 +135,7 @@ class ClientContractController extends Controller
         if ($contractId) {
             $contract = ClientContract::query()->with('client')->find($contractId);
             if ($contract) {
+                $emailError = null;
                 $pdfBinary = $pdfs->renderPdfBinary($contract);
                 $path = 'contracts/contract-' . $contract->id . '.pdf';
                 Storage::disk('local')->put($path, $pdfBinary);
@@ -143,11 +145,20 @@ class ClientContractController extends Controller
 
                 if ($emailPdf && $contract->client?->email) {
                     $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
-                    Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
-                    $contract->pdf_emailed_at = now();
+                    try {
+                        Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
+                        $contract->pdf_emailed_at = now();
+                    } catch (TransportExceptionInterface $e) {
+                        report($e);
+                        $emailError = 'Email could not be sent. Please check your mail server/DNS settings.';
+                    }
                 }
 
                 $contract->save();
+
+                if ($emailError) {
+                    return back()->with('warning', $emailError)->with('success', 'Contract saved.');
+                }
             }
         }
 
@@ -306,8 +317,14 @@ class ClientContractController extends Controller
 
         if ($emailPdf && $contract->client?->email) {
             $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
-            Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
-            $contract->pdf_emailed_at = now();
+            try {
+                Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
+                $contract->pdf_emailed_at = now();
+            } catch (TransportExceptionInterface $e) {
+                report($e);
+                $contract->save();
+                return back()->with('warning', 'Email could not be sent. Please check your mail server/DNS settings.')->with('success', 'Contract updated.');
+            }
         }
 
         $contract->save();

@@ -5,24 +5,28 @@
     <title>Contract {{ $contract->contract_number ?? ('#'.$contract->id) }}</title>
 
     <style>
-        @page { margin: 24px; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #111827; }
+        @page { margin: 20px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111827; }
         .muted { color: #6b7280; }
-        .header { margin-bottom: 16px; }
+        .header { margin-bottom: 10px; }
         .brand { font-size: 18px; font-weight: 700; }
-        .section { margin-top: 14px; }
-        .section-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+        .section { margin-top: 10px; page-break-inside: avoid; }
+        .section-title { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
         table { width: 100%; border-collapse: collapse; }
-        td { padding: 6px 8px; vertical-align: top; }
+        td { padding: 4px 6px; vertical-align: top; }
         .kv td { border: 1px solid #e5e7eb; }
         .kv td:first-child { width: 34%; background: #f9fafb; font-weight: 700; }
-        .signatures { margin-top: 28px; }
+        .signatures { margin-top: 18px; page-break-inside: avoid; }
         .sig-line { border-top: 1px solid #111827; width: 46%; padding-top: 4px; }
         .row { width: 100%; }
         .row:after { content: ""; display: table; clear: both; }
         .col { float: left; width: 50%; }
-        ol.clauses { margin: 6px 0 0 18px; padding: 0; }
-        ol.clauses > li { margin: 0 0 6px 0; line-height: 1.35; }
+        .clauses-wrap { width: 100%; margin-top: 4px; }
+        .clauses-wrap:after { content: ""; display: table; clear: both; }
+        .clauses-col { float: left; width: 49%; }
+        .clauses-col.right { float: right; }
+        ol.clauses { margin: 0 0 0 16px; padding: 0; }
+        ol.clauses > li { margin: 0 0 4px 0; line-height: 1.25; }
     </style>
 </head>
 
@@ -113,18 +117,26 @@
     <div class="section">
         <div class="section-title">Terms & Clauses</div>
         <div class="muted">
-            The following terms form part of this Contract and are binding upon the Purchaser and the Memorial Park, subject to applicable laws and duly issued park rules and regulations.
+            The following terms form part of this Contract and are subject to applicable laws and Memorial Park rules and regulations.
         </div>
-        <ol class="clauses">
-            <li><strong>Ownership & Rights:</strong> The Purchaser is granted the right to use the designated lot(s) for interment purposes only. Any transfer, assignment, or resale of rights requires prior written approval of the Memorial Park and completion of the required documentation and fees, if any.</li>
-            <li><strong>Payment Terms:</strong> The Purchaser shall pay the contract price in accordance with the agreed schedule. Past-due amounts may be subject to reasonable penalties, charges, or interest as provided in the applicable payment policy. Failure to pay may result in suspension of privileges or cancellation, subject to notice and applicable laws.</li>
-            <li><strong>Maintenance & Upkeep:</strong> The Memorial Park shall maintain common areas and grounds within its control. The Purchaser shall ensure that memorials, markers, and improvements comply with park standards and shall be responsible for the care of items not covered by the Memorial Park's maintenance obligations.</li>
-            <li><strong>Interment & Use Restrictions:</strong> All interments shall comply with Memorial Park rules, health and safety standards, and applicable local ordinances. Only authorized persons may be interred in the lot(s), unless otherwise approved in writing by the Memorial Park.</li>
-            <li><strong>Termination & Default:</strong> Material breach of these terms, violation of park rules, or continued non-payment after notice may constitute default and may result in termination of this Contract, without prejudice to other remedies available under law and the terms of this Contract.</li>
-            <li><strong>Transfer & Succession:</strong> In the event of the Purchaser's death, rights may pass to lawful heirs or designated successors upon submission of sufficient proof and completion of record updates with the Memorial Park.</li>
-            <li><strong>Liability & Compliance:</strong> The Memorial Park shall not be liable for loss or damage arising from force majeure events (including natural disasters) or acts of third parties (including vandalism), except as may be required by law. The Purchaser agrees to comply with all Memorial Park rules, government regulations, and applicable ordinances.</li>
-            <li><strong>Governing Law & Dispute Resolution:</strong> This Contract shall be governed by the laws of the Republic of the Philippines. Any dispute shall be brought before the proper courts or appropriate forum having jurisdiction.</li>
-        </ol>
+        <div class="clauses-wrap">
+            <div class="clauses-col">
+                <ol class="clauses">
+                    <li><strong>Ownership & Rights:</strong> The Purchaser is granted the right to use the designated lot(s) for interment purposes only. Any transfer, assignment, or resale requires prior written approval and completion of required documentation.</li>
+                    <li><strong>Payment Terms:</strong> Payments shall be made per the agreed schedule. Past-due amounts may be subject to penalties/charges under the applicable policy. Continued non-payment may result in suspension or cancellation, subject to notice and law.</li>
+                    <li><strong>Maintenance & Upkeep:</strong> The Memorial Park maintains common areas. The Purchaser shall ensure memorials/markers comply with park standards and is responsible for items not covered by park maintenance.</li>
+                    <li><strong>Interment & Use Restrictions:</strong> Interments must comply with park rules, health and safety standards, and applicable ordinances. Only authorized persons may be interred unless approved in writing.</li>
+                </ol>
+            </div>
+            <div class="clauses-col right">
+                <ol class="clauses" start="5">
+                    <li><strong>Termination & Default:</strong> Material breach, violation of park rules, or continued non-payment after notice may constitute default and may result in termination, without prejudice to other remedies under law.</li>
+                    <li><strong>Transfer & Succession:</strong> Upon the Purchaser's death, rights may pass to lawful heirs/designated successors upon submission of sufficient proof and completion of record updates.</li>
+                    <li><strong>Liability & Compliance:</strong> The Memorial Park is not liable for force majeure or third-party acts (including vandalism), except as required by law. The Purchaser shall comply with all rules and ordinances.</li>
+                    <li><strong>Governing Law:</strong> This Contract is governed by the laws of the Republic of the Philippines. Disputes shall be filed before the proper courts or forum with jurisdiction.</li>
+                </ol>
+            </div>
+        </div>
     </div>
 
     <div class="signatures">

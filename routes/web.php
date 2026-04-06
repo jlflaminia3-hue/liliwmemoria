@@ -25,6 +25,14 @@ Route::get('/', function () {
     return view('home.index');
 });
 
+Route::get('/contact-us', function () {
+    return redirect('/');
+})->name('contact.page');
+
+Route::get('/privacy-policy', function () {
+    return view('home.privacy-policy');
+})->name('privacy.policy');
+
 Route::get('/dashboard', AdminDashboardController::class)
     ->middleware(['auth', 'verified', 'role:admin,master_admin'])
     ->name('dashboard');
@@ -125,3 +133,4 @@ Route::get('/verify', [AdminController::class, 'ShowVerification'])->name('custo
 Route::post('/verify', [AdminController::class, 'VerificationVerify'])->name('custom.verification.verify');
 
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.submit');
+Route::post('/contact-us', [ContactController::class, 'storeInquiry'])->name('contact.inquiry.submit');
