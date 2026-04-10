@@ -6,17 +6,64 @@ use App\Models\Client;
 use App\Models\ClientFamilyLink;
 use App\Models\Lot;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::query()
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'has_lots' => ['nullable', Rule::in(['yes', 'no'])],
+            'per_page' => ['nullable', Rule::in([10, 20, 50, 100])],
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+        $hasLots = (string) ($validated['has_lots'] ?? '');
+        $perPage = (int) ($validated['per_page'] ?? 20);
+
+        $query = Client::query();
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('phone', 'like', '%'.$search.'%')
+                    ->orWhere('address_line1', 'like', '%'.$search.'%')
+                    ->orWhere('address_line2', 'like', '%'.$search.'%')
+                    ->orWhere('barangay', 'like', '%'.$search.'%')
+                    ->orWhere('city', 'like', '%'.$search.'%')
+                    ->orWhere('province', 'like', '%'.$search.'%')
+                    ->orWhere('postal_code', 'like', '%'.$search.'%')
+                    ->orWhere('country', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($hasLots === 'yes') {
+            $query->whereHas('lotOwnerships');
+        }
+
+        if ($hasLots === 'no') {
+            $query->whereDoesntHave('lotOwnerships');
+        }
+
+        $clients = $query
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return view('admin.clients.index', compact('clients'));
+        $statsBase = Client::query();
+        $stats = [
+            'total' => (clone $statsBase)->count(),
+            'with_email' => (clone $statsBase)->whereNotNull('email')->where('email', '!=', '')->count(),
+            'with_phone' => (clone $statsBase)->whereNotNull('phone')->where('phone', '!=', '')->count(),
+            'with_lots' => (clone $statsBase)->whereHas('lotOwnerships')->count(),
+        ];
+
+        return view('admin.clients.index', compact('clients', 'stats'));
     }
 
     public function create()

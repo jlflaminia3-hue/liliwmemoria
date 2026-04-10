@@ -5,175 +5,14 @@
                 <h5 class="card-title mb-0">Contracts / Agreements</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.clients.contracts.store', $client) }}" class="row g-2 align-items-end mb-3">
-                    @csrf
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <select id="contract_type_{{ $client->id }}" name="contract_type" class="form-select" required>
-                                <option value="purchase" @selected(old('contract_type') === 'purchase')>Purchase</option>
-                                <option value="reservation" @selected(old('contract_type') === 'reservation')>Reservation</option>
-                                <option value="other" @selected(old('contract_type') === 'other')>Other</option>
-                            </select>
-                            <label for="contract_type_{{ $client->id }}">Contract Type</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <select id="contract_status_{{ $client->id }}" name="status" class="form-select" required>
-                                <option value="active" @selected(old('status') === 'active')>Active</option>
-                                <option value="pending" @selected(old('status') === 'pending')>Pending</option>
-                                <option value="completed" @selected(old('status') === 'completed')>Completed</option>
-                                <option value="cancelled" @selected(old('status') === 'cancelled')>Cancelled</option>
-                                <option value="transfered" @selected(old('status') === 'transfered')>Transfered</option>
-                            </select>
-                            <label for="contract_status_{{ $client->id }}">Status</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <input
-                                type="text"
-                                id="contract_number_{{ $client->id }}"
-                                class="form-control"
-                                value="Auto-generated"
-                                placeholder="Contract #"
-                                disabled
-                            >
-                            <label for="contract_number_{{ $client->id }}">Contract No.</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <select id="contract_lot_kind_{{ $client->id }}" name="lot_kind" class="form-select">
-                                <option value="" @selected(old('lot_kind') === null || old('lot_kind') === '')>Lot Category</option>
-                                <option value="phase_1" @selected(old('lot_kind') === 'phase_1')>Phase 1</option>
-                                <option value="phase_2" @selected(old('lot_kind') === 'phase_2')>Phase 2</option>
-                                <option value="garden_lot" @selected(old('lot_kind') === 'garden_lot')>Garden Lot</option>
-                                <option value="back_office_lot" @selected(old('lot_kind') === 'back_office_lot')>Back Office Lot</option>
-                                <option value="mausoleum" @selected(old('lot_kind') === 'mausoleum')>Mausoleum</option>
-                            </select>
-                            <label for="contract_lot_kind_{{ $client->id }}">Lot Category</label>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        @php($contractLotListId = 'availableContractLots_'.$client->id)
-                        <div class="input-group">
-                            <div class="form-floating flex-grow-1">
-                                <input
-                                    type="text"
-                                    id="contract_lot_id_{{ $client->id }}"
-                                    name="contract_lot_id"
-                                    class="form-control"
-                                    placeholder="Lot ID"
-                                    list="{{ $contractLotListId }}"
-                                    value="{{ old('contract_lot_id') }}"
-                                >
-                                <label for="contract_lot_id_{{ $client->id }}">
-                                    <i data-feather="search" class="me-1" aria-hidden="true"></i>
-                                    Lot ID
-                                </label>
-                            </div>
-                        </div>
-                        <datalist id="{{ $contractLotListId }}">
-                            @foreach ($availableLots as $lot)
-                                <option value="{{ $lot->lot_id }}">{{ $lot->lot_id }} - {{ $lot->name }} ({{ $lot->lot_category_label }})</option>
-                            @endforeach
-                        </datalist>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="contract_amount_{{ $client->id }}"
-                                name="total_amount"
-                                class="form-control"
-                                value="{{ old('total_amount') }}"
-                                placeholder="Contract Amount"
-                            >
-                            <label for="contract_amount_{{ $client->id }}">Contract Amount</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="contract_down_payment_{{ $client->id }}"
-                                name="amount_paid"
-                                class="form-control"
-                                value="{{ old('amount_paid') }}"
-                                placeholder="Down Payment"
-                            >
-                            <label for="contract_down_payment_{{ $client->id }}">Down Payment</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <input
-                                type="date"
-                                id="contract_effective_{{ $client->id }}"
-                                name="signed_at"
-                                class="form-control"
-                                value="{{ old('signed_at') }}"
-                                placeholder="YYYY-MM-DD"
-                            >
-                            <label for="contract_effective_{{ $client->id }}">Effective</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2" id="contract_duration_col_{{ $client->id }}">
-                        <div class="form-floating">
-                            <select id="contract_duration_{{ $client->id }}" name="contract_duration_months" class="form-select">
-                                <option value="" @selected(old('contract_duration_months') === null || old('contract_duration_months') === '')>Select duration</option>
-                                <option value="12" @selected((string) old('contract_duration_months') === '12')>12 months</option>
-                                <option value="18" @selected((string) old('contract_duration_months') === '18')>18 months</option>
-                                <option value="24" @selected((string) old('contract_duration_months') === '24')>24 months</option>
-                            </select>
-                            <label for="contract_duration_{{ $client->id }}">Contract Duration</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <input
-                                type="date"
-                                id="contract_completion_{{ $client->id }}"
-                                name="due_date"
-                                class="form-control"
-                                value="{{ old('due_date') }}"
-                                placeholder="YYYY-MM-DD"
-                            >
-                            <label for="contract_completion_{{ $client->id }}">Completion</label>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" placeholder="Notes (optional)">
-                    </div>
-                    <div class="col-12">
-                        <div class="form-check">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                value="1"
-                                id="contract_email_pdf_{{ $client->id }}"
-                                name="email_pdf"
-                                @checked(old('email_pdf', 1))
-                            >
-                            <label class="form-check-label" for="contract_email_pdf_{{ $client->id }}">
-                                Email contract PDF to client{{ $client->email ? ' ('.$client->email.')' : '' }}
-                            </label>
-                        </div>
-                        @if (! $client->email)
-                            <div class="form-text text-warning">Client has no email on file.</div>
-                        @endif
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-success">Add Contract</button>
-                    </div>
-                </form>
+                <style>
+                    /* Give extra scroll room so row action dropdowns aren't clipped inside scroll containers. */
+                    .contracts-table-scroll {
+                        padding-bottom: 180px;
+                    }
+                </style>
 
-                <div class="table-responsive">
+                <div class="table-responsive contracts-table-scroll">
                     <table class="table table-sm table-hover mb-0">
                         <thead>
                             <tr>
@@ -316,6 +155,7 @@
                                                         <option value="phase_2" @selected($lotKindValue === 'phase_2')>Phase 2</option>
                                                         <option value="garden_lot" @selected($lotKindValue === 'garden_lot')>Garden Lot</option>
                                                         <option value="back_office_lot" @selected($lotKindValue === 'back_office_lot')>Back Office Lot</option>
+                                                        <option value="narra" @selected($lotKindValue === 'narra')>Narra</option>
                                                         <option value="mausoleum" @selected($lotKindValue === 'mausoleum')>Mausoleum</option>
                                                     </select>
                                                     <label>Lot Category</label>
@@ -460,21 +300,8 @@
 
                 <script>
                     (function () {
-                        const contractTypeEl = document.getElementById('contract_type_{{ $client->id }}');
-                        const effectiveEl = document.getElementById('contract_effective_{{ $client->id }}');
-                        const durationEl = document.getElementById('contract_duration_{{ $client->id }}');
-                        const completionEl = document.getElementById('contract_completion_{{ $client->id }}');
-                        const durationColEl = document.getElementById('contract_duration_col_{{ $client->id }}');
-                        const lotSearchBtnEl = document.getElementById('contract_lot_search_btn_{{ $client->id }}');
-                        const lotNumberEl = document.getElementById('contract_lot_id_{{ $client->id }}');
-                        const lotKindEl = document.getElementById('contract_lot_kind_{{ $client->id }}');
-
-                        if (!contractTypeEl || !effectiveEl || !durationEl || !completionEl) {
-                            return;
-                        }
-
                         function isReservation() {
-                            return contractTypeEl.value === 'reservation';
+                            return this.value === 'reservation';
                         }
 
                         function pad2(n) {
@@ -514,6 +341,7 @@
                             if (prefix === 'P2') return 'phase_2';
                             if (prefix === 'G') return 'garden_lot';
                             if (prefix === 'BO') return 'back_office_lot';
+                            if (prefix === 'N') return 'narra';
                             if (prefix === 'M') return 'mausoleum';
                             return null;
                         }
@@ -526,49 +354,27 @@
                         }
 
                         function syncReservationUi() {
-                            const enabled = isReservation();
-                            durationEl.disabled = !enabled;
-                            durationEl.required = enabled;
+                            const enabled = isReservation.call(this.contractTypeEl);
+                            this.durationEl.disabled = !enabled;
+                            this.durationEl.required = enabled;
 
                             if (!enabled) {
-                                durationEl.value = '';
+                                this.durationEl.value = '';
                             }
 
-                            if (durationColEl) {
-                                durationColEl.classList.toggle('opacity-50', !enabled);
+                            if (this.durationColEl) {
+                                this.durationColEl.classList.toggle('opacity-50', !enabled);
                             }
                         }
 
                         function syncCompletionDate() {
-                            if (!isReservation()) return;
+                            if (!isReservation.call(this.contractTypeEl)) return;
 
-                            const effective = parseYmd(effectiveEl.value);
-                            const months = parseInt(durationEl.value, 10);
+                            const effective = parseYmd(this.effectiveEl.value);
+                            const months = parseInt(this.durationEl.value, 10);
                             if (!effective || !months) return;
 
-                            completionEl.value = formatYmd(addMonthsNoOverflow(effective, months));
-                        }
-
-                        contractTypeEl.addEventListener('change', function () {
-                            syncReservationUi();
-                            syncCompletionDate();
-                        });
-                        effectiveEl.addEventListener('change', syncCompletionDate);
-                        durationEl.addEventListener('change', syncCompletionDate);
-
-                        if (lotSearchBtnEl && lotNumberEl) {
-                            lotSearchBtnEl.addEventListener('click', function () {
-                                lotNumberEl.focus();
-                            });
-                        }
-
-                        if (lotNumberEl && lotKindEl) {
-                            const handler = function () {
-                                syncLotCategoryFromLotId(lotNumberEl.value, lotKindEl);
-                            };
-                            lotNumberEl.addEventListener('change', handler);
-                            lotNumberEl.addEventListener('input', handler);
-                            handler();
+                            this.completionEl.value = formatYmd(addMonthsNoOverflow(effective, months));
                         }
 
                         document.querySelectorAll('.modal input[name="contract_lot_id"]').forEach(function (input) {
@@ -582,8 +388,34 @@
                             input.addEventListener('input', handler);
                         });
 
-                        syncReservationUi();
-                        syncCompletionDate();
+                        document.querySelectorAll('[id^="editContractModal_"]').forEach(function (modal) {
+                            const contractTypeEl = modal.querySelector('select[name="contract_type"]');
+                            const effectiveEl = modal.querySelector('input[name="signed_at"]');
+                            const durationEl = modal.querySelector('select[name="contract_duration_months"]');
+                            const completionEl = modal.querySelector('input[name="due_date"]');
+                            const durationColEl = durationEl ? durationEl.closest('.col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-12') : null;
+
+                            if (!contractTypeEl || !effectiveEl || !durationEl || !completionEl) {
+                                return;
+                            }
+
+                            const ctx = { contractTypeEl, effectiveEl, durationEl, completionEl, durationColEl };
+
+                            const onTypeChange = function () {
+                                syncReservationUi.call(ctx);
+                                syncCompletionDate.call(ctx);
+                            };
+                            const onDateChange = function () {
+                                syncCompletionDate.call(ctx);
+                            };
+
+                            contractTypeEl.addEventListener('change', onTypeChange);
+                            effectiveEl.addEventListener('change', onDateChange);
+                            durationEl.addEventListener('change', onDateChange);
+
+                            syncReservationUi.call(ctx);
+                            syncCompletionDate.call(ctx);
+                        });
                     })();
                 </script>
             </div>

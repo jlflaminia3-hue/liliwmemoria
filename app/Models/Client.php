@@ -70,4 +70,9 @@ class Client extends Model
     {
         return $this->hasMany(MaintenanceRecord::class)->latest('service_date')->latest('id');
     }
+
+    public function deceased(): HasMany
+    {
+        return $this->hasMany(Deceased::class);
+    }
 }

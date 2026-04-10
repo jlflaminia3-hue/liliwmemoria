@@ -5,85 +5,19 @@
                 <h5 class="card-title mb-0">Ownership Records</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.clients.ownerships.store', $client) }}" class="row g-2 align-items-end mb-3">
-                    @csrf
-                    <div class="col-md-4">
-                        @php($lotListId = 'availableLots_'.$client->id)
-                        <div class="form-floating">
-                            <input
-                                type="text"
-                                id="ownership_lot_number_{{ $client->id }}"
-                                name="lot_id"
-                                class="form-control"
-                                placeholder="Lot ID"
-                                list="{{ $lotListId }}"
-                                value="{{ old('lot_id') }}"
-                                required
-                            >
-                            <label for="ownership_lot_number_{{ $client->id }}">
-                                <i data-feather="search" class="me-1" aria-hidden="true"></i>
-                                Lot ID
-                            </label>
-                        </div>
-                        <datalist id="{{ $lotListId }}">
-                            @foreach ($availableLots as $lot)
-                                <option value="{{ $lot->lot_id }}">{{ $lot->lot_id }} - {{ $lot->name }} ({{ $lot->lot_category_label }})</option>
-                            @endforeach
-                        </datalist>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <select id="ownership_type_{{ $client->id }}" name="ownership_type" class="form-select">
-                                <option value="owner" @selected(old('ownership_type') === 'owner')>Owner</option>
-                                <option value="co-owner" @selected(old('ownership_type') === 'co-owner')>Co-owner</option>
-                                <option value="authorized" @selected(old('ownership_type') === 'authorized')>Authorized</option>
-                            </select>
-                            <label for="ownership_type_{{ $client->id }}">Ownership Type</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <input
-                                type="date"
-                                id="ownership_started_at_{{ $client->id }}"
-                                name="started_at"
-                                class="form-control"
-                                value="{{ old('started_at') }}"
-                                placeholder="YYYY-MM-DD"
-                                aria-label="Ownership Date"
-                            >
-                            <label for="ownership_started_at_{{ $client->id }}">Ownership Date</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-floating">
-                            <input
-                                type="date"
-                                id="ownership_ended_at_{{ $client->id }}"
-                                name="ended_at"
-                                class="form-control"
-                                value="{{ old('ended_at') }}"
-                                placeholder="YYYY-MM-DD"
-                                aria-label="Reservation End"
-                            >
-                            <label for="ownership_ended_at_{{ $client->id }}">Reservation End</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-success w-100">Save</button>
-                    </div>
-                    <div class="col-12">
-                        <input
-                            type="text"
-                            name="notes"
-                            class="form-control"
-                            value="{{ old('notes') }}"
-                            placeholder="Notes (optional)"
-                        >
-                    </div>
-                </form>
+                <div class="alert alert-light border mb-3">
+                    <div class="fw-semibold">Ownership is automated</div>
+                    <div class="text-muted small">Ownership records are created/updated automatically when you create reservations/contracts. Manual ownership creation is disabled.</div>
+                </div>
 
-                <div class="table-responsive">
+                <style>
+                    /* Give extra scroll room so row action dropdowns aren't clipped inside scroll containers. */
+                    .ownerships-table-scroll {
+                        padding-bottom: 180px;
+                    }
+                </style>
+
+                <div class="table-responsive ownerships-table-scroll">
                     <table class="table table-sm table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
@@ -108,11 +42,20 @@
                                     <td class="text-nowrap">{{ $ownership->started_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td class="text-nowrap">{{ $ownership->ended_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td class="text-end">
-                                        <form method="POST" action="{{ route('admin.clients.ownerships.destroy', [$client, $ownership]) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this ownership record?')">Remove</button>
-                                        </form>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ownership actions">
+                                                <i data-feather="more-vertical"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <form method="POST" action="{{ route('admin.clients.ownerships.destroy', [$client, $ownership]) }}" class="dropdown-item p-0">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-link dropdown-item text-danger m-0" onclick="return confirm('Remove this ownership record?')">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                                 @if ($ownership->notes)

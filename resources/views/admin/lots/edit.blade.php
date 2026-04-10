@@ -28,8 +28,14 @@
                             <option value="phase_2" {{ $lot->section === 'phase_2' ? 'selected' : '' }}>Phase 2</option>
                             <option value="garden_lot" {{ $lot->section === 'garden_lot' ? 'selected' : '' }}>Garden Lot</option>
                             <option value="back_office_lot" {{ $lot->section === 'back_office_lot' ? 'selected' : '' }}>Back Office Lot</option>
+                            <option value="narra" {{ $lot->section === 'narra' ? 'selected' : '' }}>Narra</option>
                             <option value="mausoleum" {{ $lot->section === 'mausoleum' ? 'selected' : '' }}>Mausoleum</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Block (Optional)</label>
+                        <input type="text" name="block" class="form-control" value="{{ $lot->block }}" placeholder="e.g. A, B, 1, 2">
                     </div>
 
                     @php

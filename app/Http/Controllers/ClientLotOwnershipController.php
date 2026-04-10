@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\ClientLotOwnership;
 use App\Models\Lot;
+use App\Services\LotStateService;
 use Illuminate\Http\Request;
 
 class ClientLotOwnershipController extends Controller
 {
-    public function store(Request $request, Client $client)
+    public function store(Request $request, Client $client, LotStateService $lotState)
     {
         $validated = $request->validate([
             'lot_id' => 'required|string|max:32',
@@ -45,15 +46,12 @@ class ClientLotOwnershipController extends Controller
             ]
         );
 
-        $lot->name = $client->full_name;
-        $lot->status = 'reserved';
-        $lot->is_occupied = false;
-        $lot->save();
+        $lotState->sync((int) $lot->id);
 
         return back()->with('success', 'Ownership record saved.');
     }
 
-    public function destroy(Client $client, ClientLotOwnership $ownership)
+    public function destroy(Client $client, ClientLotOwnership $ownership, LotStateService $lotState)
     {
         if ($ownership->client_id !== $client->id) {
             abort(404);
@@ -61,25 +59,7 @@ class ClientLotOwnershipController extends Controller
 
         $lotId = $ownership->lot_id;
         $ownership->delete();
-
-        $lot = Lot::query()->find($lotId);
-        if ($lot && $lot->status !== 'occupied' && $lot->is_occupied === false) {
-            $remaining = ClientLotOwnership::query()
-                ->with('client')
-                ->where('lot_id', $lotId)
-                ->latest('id')
-                ->first();
-
-            if ($remaining && $remaining->client) {
-                $lot->name = $remaining->client->full_name;
-                $lot->status = 'reserved';
-                $lot->save();
-            } else {
-                $lot->name = 'Unassigned';
-                $lot->status = 'available';
-                $lot->save();
-            }
-        }
+        $lotState->sync((int) $lotId);
 
         return back()->with('success', 'Ownership record deleted.');
     }

@@ -51,17 +51,22 @@
                             <input type="hidden" name="lot_number" id="modal_lot_number">
                             <div class="form-text">Auto-generated.</div>
                         </div>
-                        <div class="col-md-5 mb-3" id="owner_field_wrap">
+                        <div class="col-md-4 mb-3" id="owner_field_wrap">
                             <label class="form-label">Lot Owner</label>
                             <input type="text" name="name" id="modal_owner" class="form-control">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Block</label>
+                            <input type="text" name="block" id="modal_block" class="form-control" placeholder="e.g. A">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Lot Category</label>
                             <select name="section" id="modal_category" class="form-select" required>
                                 <option value="phase_1" selected>Phase 1</option>
                                 <option value="phase_2">Phase 2</option>
                                 <option value="garden_lot">Garden Lot</option>
                                 <option value="back_office_lot">Back Office Lot</option>
+                                <option value="narra">Narra</option>
                                 <option value="mausoleum">Mausoleum</option>
                             </select>
                         </div>
@@ -267,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    var imageUrl = "{{ asset('backend/assets/images/map.jpg') }}";
+    var imageUrl = "{{ asset('backend/assets/images/map.png') }}";
 
     // Legacy bounds from the old lat/lng overlay (used only to transform older records).
     var legacyA = [14.5995, 120.9842];
@@ -301,8 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var lots = @json($lots);
+    var reservationsUrl = @json(route('admin.reservations.index'));
     var newLotId = @json(session('new_lot_id'));
+    var focusedLotId = @json(request('lot'));
     var newLotLayer = null;
+    var focusedLotLayer = null;
 
     loadImageDimensions(imageUrl, function(dim) {
         imageW = dim.width || 1000;
@@ -547,6 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'phase_2': return 'Phase 2';
             case 'garden_lot': return 'Garden Lot';
             case 'back_office_lot': return 'Back Office Lot';
+            case 'narra': return 'Narra';
             case 'mausoleum': return 'Mausoleum';
             default: return category || 'N/A';
         }
@@ -554,18 +563,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function statusStyle(status, isNew) {
         var colors = {
-            available: { stroke: '#198754', fill: 'rgba(25, 135, 84, 0.22)' },
-            occupied: { stroke: '#dc3545', fill: 'rgba(220, 53, 69, 0.22)' },
-            reserved: { stroke: '#0d6efd', fill: 'rgba(13, 110, 253, 0.22)' },
+            available: '#198754',
+            occupied: '#dc3545',
+            reserved: '#0d6efd',
         };
-        var c = colors[status] || colors.available;
+        var fillColor = colors[status] || colors.available;
         return {
-            color: c.stroke,
-            weight: isNew ? 4 : 2,
-            opacity: 1,
-            fillColor: c.fill,
-            fillOpacity: 0.35,
-            dashArray: isNew ? '6 6' : null,
+            stroke: true,
+            color: fillColor,
+            weight: 1,
+            opacity: 0.8,
+            fillColor: fillColor,
+            fillOpacity: isNew ? 0.44 : 0.3,
         };
     }
 
@@ -627,7 +636,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var popupContent = '<b>' + lotIdLabel + '</b><br>' +
                 'Owner: ' + lot.name + '<br>' +
                 'Status: ' + titleStatus(status) + '<br>' +
-                'Lot Category: ' + categoryLabel(lot.section) + '<br>';
+                'Lot Category: ' + categoryLabel(lot.section) + '<br>' +
+                'Block: ' + (lot.block || '—') + '<br>';
 
             if (lot.deceased && lot.deceased.length > 0) {
                 lot.deceased.forEach(function(d) {
@@ -639,11 +649,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 popupContent += '<br><em>No deceased recorded</em>';
             }
 
+            if (status === 'available') {
+                popupContent += '<br><a class="btn btn-sm btn-primary mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
+            }
+
             var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
                 '<div class="lot-hover-grid">' +
                     '<div class="lot-hover-row"><div class="lot-hover-k">Owner</div><div class="lot-hover-v">' + lot.name + '</div></div>' +
                     '<div class="lot-hover-row"><div class="lot-hover-k">Status</div><div class="lot-hover-v">' + titleStatus(status) + '</div></div>' +
                     '<div class="lot-hover-row"><div class="lot-hover-k">Lot Category</div><div class="lot-hover-v">' + categoryLabel(lot.section) + '</div></div>' +
+                    '<div class="lot-hover-row"><div class="lot-hover-k">Block</div><div class="lot-hover-v">' + (lot.block || '—') + '</div></div>' +
                 '</div>';
 
             if (lot.deceased && lot.deceased.length > 0) {
@@ -666,11 +681,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (isNew) newLotLayer = layer;
+            if (focusedLotId !== null && String(lot.id) === String(focusedLotId)) {
+                focusedLotLayer = layer;
+            }
         });
 
-        if (newLotLayer && newLotLayer.getBounds) {
-            map.fitBounds(newLotLayer.getBounds().pad(0.6), { animate: true });
-            newLotLayer.openTooltip();
+        var priorityLayer = focusedLotLayer || newLotLayer;
+        if (priorityLayer && priorityLayer.getBounds) {
+            map.fitBounds(priorityLayer.getBounds().pad(0.6), { animate: true });
+            priorityLayer.openTooltip();
         }
     }
 
@@ -687,10 +706,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 dragging: true,
                 start: e.latlng,
                 layer: L.rectangle([e.latlng, e.latlng], {
+                    stroke: true,
                     color: '#0dcaf0',
-                    weight: 2,
-                    fillColor: 'rgba(13, 202, 240, 0.15)',
-                    fillOpacity: 0.25,
+                    weight: 1,
+                    opacity: 0.75,
+                    fillColor: '#0dcaf0',
+                    fillOpacity: 0.3,
                 }).addTo(map),
             };
             if (cancelDrawBtn) cancelDrawBtn.disabled = false;
@@ -725,7 +746,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 pending = {
                     type: 'poly',
                     points: [],
-                    layer: L.polyline([], { color: '#0dcaf0', weight: 2 }).addTo(map),
+                    layer: L.polygon([], {
+                        stroke: false,
+                        color: '#0dcaf0',
+                        weight: 0,
+                        opacity: 0,
+                        fillColor: '#0dcaf0',
+                        fillOpacity: 0.3,
+                    }).addTo(map),
                 };
             }
             pending.points.push(e.latlng);

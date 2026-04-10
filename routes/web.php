@@ -8,9 +8,11 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientFamilyLinkController;
 use App\Http\Controllers\ClientLotOwnershipController;
 use App\Http\Controllers\ClientMaintenanceController;
+use App\Http\Controllers\IntermentController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReportController;
 use App\Http\Controllers\PaymentTransactionController;
+use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ContactController;
@@ -38,6 +40,12 @@ Route::get('/dashboard', AdminDashboardController::class)
     ->name('dashboard');
 
 Route::get('/map', function () {
+    $expiredLotIds = \App\Models\Reservation::expireDue(\Carbon\CarbonImmutable::today());
+    $lotState = app(\App\Services\LotStateService::class);
+    foreach ($expiredLotIds as $lotId) {
+        $lotState->sync((int) $lotId);
+    }
+
     $lots = \App\Models\Lot::with('deceased')->get();
 
     return view('map', compact('lots'));
@@ -56,6 +64,7 @@ Route::get('/map', function () {
         Route::get('/{lot}/edit', [LotController::class, 'edit'])->name('edit');
         Route::put('/{lot}', [LotController::class, 'update'])->name('update');
         Route::delete('/{lot}', [LotController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [LotController::class, 'bulkDestroy'])->name('bulkDestroy');
         Route::get('/map', [LotController::class, 'map'])->name('map');
         Route::get('/next-lot-number', [LotController::class, 'nextLotNumber'])->name('nextLotNumber');
         Route::post('/with-deceased', [LotController::class, 'storeWithDeceased'])->name('storeWithDeceased');
@@ -98,6 +107,22 @@ Route::get('/map', function () {
             Route::post('/{paymentPlan}/notify', [PaymentPlanController::class, 'notify'])->name('notify');
 
             Route::post('/{paymentPlan}/transactions', [PaymentTransactionController::class, 'store'])->name('transactions.store');
+        });
+
+        Route::prefix('admin/interments')->name('admin.interments.')->group(function () {
+            Route::get('/', [IntermentController::class, 'index'])->name('index');
+            Route::post('/', [IntermentController::class, 'store'])->name('store');
+            Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
+            Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
+            Route::get('/{deceased}/documents/{document}', [IntermentController::class, 'downloadDocument'])->name('documents.download');
+        });
+
+        Route::prefix('admin/reservations')->name('admin.reservations.')->group(function () {
+            Route::get('/', [ReservationController::class, 'index'])->name('index');
+            Route::post('/', [ReservationController::class, 'store'])->name('store');
+            Route::put('/{reservation}', [ReservationController::class, 'update'])->name('update');
+            Route::delete('/{reservation}', [ReservationController::class, 'destroy'])->name('destroy');
+            Route::get('/{reservation}/contract', [ReservationController::class, 'downloadContract'])->name('contract.download');
         });
 
         Route::prefix('admin/payment-transactions')->name('admin.paymentTransactions.')->group(function () {

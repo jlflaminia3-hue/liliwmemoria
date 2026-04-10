@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lot;
+use App\Models\Reservation;
+use App\Services\LotStateService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class LotController extends Controller
 {
@@ -13,12 +17,64 @@ class LotController extends Controller
         'phase_2',
         'garden_lot',
         'back_office_lot',
+        'narra',
         'mausoleum',
     ];
 
-    public function index()
+    public function index(LotStateService $lotState)
     {
-        $lots = Lot::with('deceased')->get();
+        $expiredLotIds = Reservation::expireDue(CarbonImmutable::today());
+        foreach ($expiredLotIds as $lotId) {
+            $lotState->sync((int) $lotId);
+        }
+
+        $request = request();
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'sort' => ['nullable', Rule::in(['lot_id', 'owner', 'category', 'status', 'deceased'])],
+            'direction' => ['nullable', Rule::in(['asc', 'desc'])],
+            'per_page' => ['nullable', Rule::in([10, 20, 50, 100])],
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+        $sort = (string) ($validated['sort'] ?? 'lot_id');
+        $direction = (string) ($validated['direction'] ?? 'asc');
+        $perPage = (int) ($validated['per_page'] ?? 20);
+
+        $query = Lot::query()
+            ->with(['deceased:id,lot_id,first_name,last_name'])
+            ->withCount('deceased');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('section', 'like', '%'.$search.'%')
+                    ->orWhere('status', 'like', '%'.$search.'%')
+                    ->orWhereRaw("CONCAT(COALESCE(section, ''), '-', COALESCE(lot_number, '')) LIKE ?", ['%'.$search.'%'])
+                    ->orWhereHas('deceased', function ($deceasedQuery) use ($search) {
+                        $deceasedQuery
+                            ->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        match ($sort) {
+            'owner' => $query->orderBy('name', $direction),
+            'category' => $query->orderBy('section', $direction)->orderBy('lot_number', 'asc'),
+            'status' => $query->orderByRaw("
+                CASE COALESCE(status, CASE WHEN is_occupied = 1 THEN 'occupied' ELSE 'available' END)
+                    WHEN 'available' THEN 1
+                    WHEN 'reserved' THEN 2
+                    WHEN 'occupied' THEN 3
+                    ELSE 4
+                END {$direction}
+            ")->orderBy('lot_number', 'asc'),
+            'deceased' => $query->orderBy('deceased_count', $direction)->orderBy('lot_number', 'asc'),
+            default => $query->orderBy('section', $direction)->orderBy('lot_number', $direction),
+        };
+
+        $lots = $query->paginate($perPage)->withQueryString();
 
         return view('admin.lots.index', compact('lots'));
     }
@@ -40,6 +96,7 @@ class LotController extends Controller
             'lot_number' => 'nullable|integer|min:1',
             'name' => 'nullable|string|max:255',
             'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
+            'block' => 'nullable|string|max:255',
             'status' => 'nullable|in:available,occupied,reserved',
             'notes' => 'nullable|string',
         ]);
@@ -97,6 +154,7 @@ class LotController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
+            'block' => 'nullable|string|max:255',
             'status' => 'nullable|in:available,occupied,reserved',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
@@ -136,6 +194,7 @@ class LotController extends Controller
         $lot->update([
             'name' => $validated['name'],
             'section' => $validated['section'] ?? null,
+            'block' => $validated['block'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'status' => $validated['status'],
@@ -164,8 +223,29 @@ class LotController extends Controller
         return redirect()->route('admin.lots.index')->with('success', 'Lot deleted successfully.');
     }
 
-    public function map()
+    public function bulkDestroy(Request $request)
     {
+        $validated = $request->validate([
+            'lot_ids' => 'required|array|min:1',
+            'lot_ids.*' => 'integer|exists:lots,id',
+        ]);
+
+        $deletedCount = Lot::query()
+            ->whereIn('id', $validated['lot_ids'])
+            ->delete();
+
+        return redirect()
+            ->route('admin.lots.index')
+            ->with('success', $deletedCount.' lot(s) deleted successfully.');
+    }
+
+    public function map(LotStateService $lotState)
+    {
+        $expiredLotIds = Reservation::expireDue(CarbonImmutable::today());
+        foreach ($expiredLotIds as $lotId) {
+            $lotState->sync((int) $lotId);
+        }
+
         $lots = Lot::with('deceased')->get();
 
         return response()
@@ -208,6 +288,7 @@ class LotController extends Controller
             'lot_number' => 'nullable|integer|min:1',
             'name' => 'nullable|string|max:255',
             'section' => 'required|in:'.implode(',', self::LOT_CATEGORIES),
+            'block' => 'nullable|string|max:255',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'geometry_type' => 'nullable|in:rect,poly',
@@ -259,6 +340,7 @@ class LotController extends Controller
                 'lot_number' => $lotNumber,
                 'name' => $ownerName,
                 'section' => $validated['section'] ?? null,
+                'block' => $validated['block'] ?? null,
                 'latitude' => $validated['latitude'],
                 'longitude' => $validated['longitude'],
                 'geometry_type' => $validated['geometry_type'] ?? null,

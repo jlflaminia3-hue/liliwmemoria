@@ -71,7 +71,7 @@
                             </li>
 
                             <li>
-                                <a href="#" class="tp-link">
+                                <a href="{{ route('admin.reservations.index') }}" class="tp-link">
                                     <i data-feather="calendar"></i>
                                     <span> Reservations </span>
                                 </a>
@@ -103,7 +103,7 @@
                             </li>
 
                             <li>
-                                <a href="#" class="tp-link">
+                                <a href="{{ route('admin.interments.index') }}" class="tp-link">
                                     <i data-feather="map-pin"></i>
                                     <span> Interments </span>
                                 </a>

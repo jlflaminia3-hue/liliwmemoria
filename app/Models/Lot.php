@@ -14,6 +14,7 @@ class Lot extends Model
         'lot_number',
         'name',
         'section',
+        'block',
         'latitude',
         'longitude',
         'geometry_type',
@@ -58,6 +59,7 @@ class Lot extends Model
             'phase_2' => 'P2',
             'garden_lot' => 'G',
             'back_office_lot' => 'BO',
+            'narra' => 'N',
             'mausoleum' => 'M',
             default => 'L',
         };
@@ -72,6 +74,7 @@ class Lot extends Model
             'P2' => 'phase_2',
             'G' => 'garden_lot',
             'BO' => 'back_office_lot',
+            'N' => 'narra',
             'M' => 'mausoleum',
             default => null,
         };
@@ -118,6 +121,7 @@ class Lot extends Model
             'phase_2' => 'Phase 2',
             'garden_lot' => 'Garden Lot',
             'back_office_lot' => 'Back Office Lot',
+            'narra' => 'Narra',
             'mausoleum' => 'Mausoleum',
             default => $category !== '' ? $category : 'N/A',
         };

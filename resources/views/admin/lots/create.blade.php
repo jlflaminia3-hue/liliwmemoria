@@ -29,8 +29,14 @@
                             <option value="phase_2" {{ ($defaultCategory ?? '') === 'phase_2' ? 'selected' : '' }}>Phase 2</option>
                             <option value="garden_lot" {{ ($defaultCategory ?? '') === 'garden_lot' ? 'selected' : '' }}>Garden Lot</option>
                             <option value="back_office_lot" {{ ($defaultCategory ?? '') === 'back_office_lot' ? 'selected' : '' }}>Back Office Lot</option>
+                            <option value="narra" {{ ($defaultCategory ?? '') === 'narra' ? 'selected' : '' }}>Narra</option>
                             <option value="mausoleum" {{ ($defaultCategory ?? '') === 'mausoleum' ? 'selected' : '' }}>Mausoleum</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Block (Optional)</label>
+                        <input type="text" name="block" class="form-control" placeholder="e.g. A, B, 1, 2">
                     </div>
 
                     <div class="row">

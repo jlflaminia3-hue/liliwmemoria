@@ -5,13 +5,12 @@ namespace App\Http\Controllers;
 use App\Mail\ContractPdfMail;
 use App\Models\Client;
 use App\Models\ClientContract;
-use App\Models\ClientLotOwnership;
 use App\Models\Lot;
-use App\Models\PaymentPlan;
-use App\Models\PaymentInstallment;
-use App\Models\PaymentTransaction;
 use App\Services\Contracts\ContractPdfService;
+use App\Services\Contracts\ContractPaymentPlanSyncService;
+use App\Services\LotStateService;
 use App\Services\Payments\PaymentPlanGenerator;
+use App\Services\Reservations\LotReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +22,20 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class ClientContractController extends Controller
 {
-    public function store(Request $request, Client $client, PaymentPlanGenerator $generator, ContractPdfService $pdfs)
+    public function store(
+        Request $request,
+        Client $client,
+        PaymentPlanGenerator $generator,
+        ContractPdfService $pdfs,
+        ContractPaymentPlanSyncService $contractPlans,
+        LotReservationService $lotReservations,
+        LotStateService $lotState,
+    )
     {
         $validated = $request->validate([
             'lot_id' => 'nullable|exists:lots,id',
             'contract_lot_id' => 'nullable|string|max:32',
-            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'mausoleum'])],
+            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'narra', 'mausoleum'])],
             'contract_type' => 'required|in:purchase,reservation,other',
             'status' => 'required|in:active,pending,completed,cancelled,transfered',
             'total_amount' => 'nullable|numeric|min:0',
@@ -66,7 +73,7 @@ class ClientContractController extends Controller
         $emailPdf = (bool) ($validated['email_pdf'] ?? false);
         $contractId = null;
 
-        DB::transaction(function () use ($client, $validated, $generator, &$contractId) {
+        DB::transaction(function () use ($client, $validated, $generator, $contractPlans, $lotReservations, $lotState, &$contractId) {
             $contractData = $validated;
             $contractData['created_by_user_id'] = auth()->id();
 
@@ -92,44 +99,22 @@ class ClientContractController extends Controller
             $contractId = $contract->id;
 
             if (empty($contractData['lot_id'])) {
-                $this->syncContractPaymentPlan($contract, $generator);
+                $contractPlans->sync($contract, $generator);
                 return;
             }
 
-            $lot = Lot::query()->lockForUpdate()->findOrFail($contractData['lot_id']);
-
-            $hasExistingOwnership = ClientLotOwnership::query()
-                ->where('client_id', $client->id)
-                ->where('lot_id', $lot->id)
-                ->exists();
-
-            $isAvailable = ($lot->status === 'available') || ($lot->status === null && $lot->is_occupied === false);
-            if (! $hasExistingOwnership && ! $isAvailable) {
-                $lotField = empty($validated['lot_id']) ? 'contract_lot_id' : 'lot_id';
-                throw ValidationException::withMessages([$lotField => 'Selected lot is not available.']);
-            }
-
-            ClientLotOwnership::updateOrCreate(
-                ['client_id' => $client->id, 'lot_id' => $lot->id],
-                [
-                    'ownership_type' => 'owner',
-                    'started_at' => $validated['signed_at'] ?? null,
-                    'ended_at' => $validated['due_date'] ?? null,
-                    'notes' => null,
-                ]
+            $lotField = empty($validated['lot_id']) ? 'contract_lot_id' : 'lot_id';
+            $lotReservations->reserve(
+                client: $client,
+                lotId: (int) $contractData['lot_id'],
+                startedAt: $validated['signed_at'] ?? null,
+                endedAt: $validated['due_date'] ?? null,
+                lotKind: $validated['lot_kind'] ?? null,
+                lotFieldForErrors: $lotField,
             );
 
-            $lot->name = $client->full_name;
-            $lot->status = 'reserved';
-            $lot->is_occupied = false;
-
-            if (! empty($validated['lot_kind']) && empty($lot->section)) {
-                $lot->section = $validated['lot_kind'];
-            }
-
-            $lot->save();
-
-            $this->syncContractPaymentPlan($contract, $generator);
+            $contractPlans->sync($contract, $generator);
+            $lotState->sync((int) $contractData['lot_id']);
         });
 
         if ($contractId) {
@@ -165,7 +150,16 @@ class ClientContractController extends Controller
         return back()->with('success', 'Contract saved.');
     }
 
-    public function update(Request $request, Client $client, ClientContract $contract, PaymentPlanGenerator $generator, ContractPdfService $pdfs)
+    public function update(
+        Request $request,
+        Client $client,
+        ClientContract $contract,
+        PaymentPlanGenerator $generator,
+        ContractPdfService $pdfs,
+        ContractPaymentPlanSyncService $contractPlans,
+        LotReservationService $lotReservations,
+        LotStateService $lotState,
+    )
     {
         if ($contract->client_id !== $client->id) {
             abort(404);
@@ -174,7 +168,7 @@ class ClientContractController extends Controller
         $validated = $request->validate([
             'lot_id' => 'nullable|exists:lots,id',
             'contract_lot_id' => 'nullable|string|max:32',
-            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'mausoleum'])],
+            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'narra', 'mausoleum'])],
             'contract_type' => 'required|in:purchase,reservation,other',
             'status' => 'required|in:active,pending,completed,cancelled,transfered',
             'total_amount' => 'nullable|numeric|min:0',
@@ -213,7 +207,7 @@ class ClientContractController extends Controller
 
         $emailPdf = (bool) ($validated['email_pdf'] ?? false);
 
-        DB::transaction(function () use ($client, $contract, $validated, $generator) {
+        DB::transaction(function () use ($client, $contract, $validated, $generator, $contractPlans, $lotReservations, $lotState) {
             $oldLotId = $contract->lot_id;
 
             $contractData = $validated;
@@ -235,74 +229,27 @@ class ClientContractController extends Controller
 
             $newLotId = $contract->lot_id;
 
+            $lotReservations->clearOwnershipIfLotChanged($client, $oldLotId ? (int) $oldLotId : null, $newLotId ? (int) $newLotId : null);
             if ($oldLotId && $oldLotId !== $newLotId) {
-                $ownership = ClientLotOwnership::query()
-                    ->where('client_id', $client->id)
-                    ->where('lot_id', $oldLotId)
-                    ->first();
-
-                if ($ownership) {
-                    $ownership->delete();
-                }
-
-                $oldLot = Lot::query()->find($oldLotId);
-                if ($oldLot && $oldLot->status !== 'occupied' && $oldLot->is_occupied === false) {
-                    $remaining = ClientLotOwnership::query()
-                        ->with('client')
-                        ->where('lot_id', $oldLotId)
-                        ->latest('id')
-                        ->first();
-
-                    if ($remaining && $remaining->client) {
-                        $oldLot->name = $remaining->client->full_name;
-                        $oldLot->status = 'reserved';
-                        $oldLot->save();
-                    } else {
-                        $oldLot->name = 'Unassigned';
-                        $oldLot->status = 'available';
-                        $oldLot->save();
-                    }
-                }
+                $lotState->sync((int) $oldLotId);
             }
 
             if (empty($newLotId)) {
                 return;
             }
 
-            $lot = Lot::query()->lockForUpdate()->findOrFail($newLotId);
-
-            $hasExistingOwnership = ClientLotOwnership::query()
-                ->where('client_id', $client->id)
-                ->where('lot_id', $lot->id)
-                ->exists();
-
-            $isAvailable = ($lot->status === 'available') || ($lot->status === null && $lot->is_occupied === false);
-            if (! $hasExistingOwnership && ! $isAvailable) {
-                $lotField = empty($validated['lot_id']) ? 'contract_lot_id' : 'lot_id';
-                throw ValidationException::withMessages([$lotField => 'Selected lot is not available.']);
-            }
-
-            ClientLotOwnership::updateOrCreate(
-                ['client_id' => $client->id, 'lot_id' => $lot->id],
-                [
-                    'ownership_type' => 'owner',
-                    'started_at' => $validated['signed_at'] ?? null,
-                    'ended_at' => $validated['due_date'] ?? null,
-                    'notes' => null,
-                ]
+            $lotField = empty($validated['lot_id']) ? 'contract_lot_id' : 'lot_id';
+            $lotReservations->reserve(
+                client: $client,
+                lotId: (int) $newLotId,
+                startedAt: $validated['signed_at'] ?? null,
+                endedAt: $validated['due_date'] ?? null,
+                lotKind: $validated['lot_kind'] ?? null,
+                lotFieldForErrors: $lotField,
             );
 
-            $lot->name = $client->full_name;
-            $lot->status = 'reserved';
-            $lot->is_occupied = false;
-
-            if (! empty($validated['lot_kind']) && empty($lot->section)) {
-                $lot->section = $validated['lot_kind'];
-            }
-
-            $lot->save();
-
-            $this->syncContractPaymentPlan($contract, $generator);
+            $contractPlans->sync($contract, $generator);
+            $lotState->sync((int) $newLotId);
         });
 
         $contract->refresh();
@@ -368,100 +315,5 @@ class ClientContractController extends Controller
         return back()->with('success', 'Contract deleted.');
     }
 
-    private function syncContractPaymentPlan(ClientContract $contract, PaymentPlanGenerator $generator): void
-    {
-        $plan = PaymentPlan::query()
-            ->where('client_contract_id', $contract->id)
-            ->latest('id')
-            ->first();
-
-        $planStatus = match ($contract->status) {
-            'completed' => 'completed',
-            'cancelled', 'transfered' => 'canceled',
-            default => 'active',
-        };
-
-        if ($plan) {
-            $plan->status = $planStatus;
-            $plan->lot_id = $contract->lot_id;
-
-            $principal = (float) ($contract->total_amount ?? 0);
-            $downpayment = (float) ($contract->amount_paid ?? 0);
-            $termMonths = (int) ($contract->contract_duration_months ?? 0);
-
-            $hasRequired = $principal > 0 && $contract->signed_at && in_array($termMonths, [12, 18, 24], true);
-            if ($hasRequired) {
-                $plan->principal_amount = $principal;
-                $plan->downpayment_amount = max(0, min($downpayment, $principal));
-                $plan->term_months = $termMonths;
-                $plan->interest_rate_percent = PaymentPlan::interestRateForTerm($termMonths);
-                $plan->start_date = $contract->signed_at->toDateString();
-            }
-
-            $plan->save();
-
-            if (! $hasRequired) {
-                return;
-            }
-
-            $hasAnyTransactions = PaymentTransaction::query()
-                ->where('payment_plan_id', $plan->id)
-                ->exists();
-
-            $hasAnyPaidInstallments = PaymentInstallment::query()
-                ->where('payment_plan_id', $plan->id)
-                ->where(function ($q) {
-                    $q->where('amount_paid', '>', 0)->orWhere('penalty_paid', '>', 0);
-                })
-                ->exists();
-
-            if (! $hasAnyTransactions && ! $hasAnyPaidInstallments) {
-                PaymentInstallment::query()->where('payment_plan_id', $plan->id)->delete();
-                $generator->generate($plan);
-            } else {
-                $downpaymentInst = PaymentInstallment::query()
-                    ->where('payment_plan_id', $plan->id)
-                    ->where('type', 'downpayment')
-                    ->first();
-
-                if ($downpaymentInst && (float) $downpaymentInst->amount_paid <= 0) {
-                    $downpaymentInst->due_date = $plan->start_date;
-                    $downpaymentInst->amount_due = $plan->downpayment_amount;
-                    $downpaymentInst->principal_due = $plan->downpayment_amount;
-                    $downpaymentInst->interest_due = 0;
-                    $downpaymentInst->save();
-                }
-            }
-
-            return;
-        }
-
-        $principal = (float) ($contract->total_amount ?? 0);
-        $downpayment = (float) ($contract->amount_paid ?? 0);
-        $termMonths = (int) ($contract->contract_duration_months ?? 0);
-
-        if ($principal <= 0 || ! $contract->signed_at || ! in_array($termMonths, [12, 18, 24], true)) {
-            return;
-        }
-
-        $interestRate = PaymentPlan::interestRateForTerm($termMonths);
-
-        $plan = PaymentPlan::create([
-            'client_id' => $contract->client_id,
-            'client_contract_id' => $contract->id,
-            'lot_id' => $contract->lot_id,
-            'plan_number' => PaymentPlan::generatePlanNumber(),
-            'status' => $planStatus,
-            'principal_amount' => $principal,
-            'downpayment_amount' => max(0, min($downpayment, $principal)),
-            'term_months' => $termMonths,
-            'interest_rate_percent' => $interestRate,
-            'start_date' => $contract->signed_at->toDateString(),
-            'penalty_grace_days' => 0,
-            'penalty_rate_percent' => 0,
-            'notes' => null,
-        ]);
-
-        $generator->generate($plan);
-    }
+    // Contract payment plans now sync via ContractPaymentPlanSyncService.
 }

@@ -22,6 +22,9 @@
         <!-- Icons -->
         <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
 
+        <!-- Flatpickr (date picker) -->
+        <link href="{{ asset('backend/assets/libs/flatpickr/flatpickr.min.css') }}" rel="stylesheet" type="text/css" />
+
         <!-- Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -71,9 +74,11 @@
         <script src="{{ asset('backend/assets/libs/waypoints/lib/jquery.waypoints.min.js') }}"></script>
         <script src="{{ asset('backend/assets/libs/jquery.counterup/jquery.counterup.min.js') }}"></script>
         <script src="{{ asset('backend/assets/libs/feather-icons/feather.min.js') }}"></script>
+        <script src="{{ asset('backend/assets/libs/flatpickr/flatpickr.min.js') }}"></script>
 
         <!-- App js-->
         <script src="{{ asset('backend/assets/js/app.js') }}"></script>
+        <script src="{{ asset('backend/assets/js/pages/admin-datepickers.js') }}"></script>
 
         <!-- Leaflet JS -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

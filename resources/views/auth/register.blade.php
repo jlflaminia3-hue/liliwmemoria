@@ -32,7 +32,7 @@
                                 <div class="mb-0 border-0 p-md-5 p-lg-0 p-4">
                                     <div class="mb-4 p-0">
                                         <a href="{{ url('/') }}" class="auth-logo">
-                                            <img src="{{ asset('backend/assets/images/logo/textlogo.png') }}" alt="LiliwMemoria" class="mx-auto" height="32" />
+                                            <img src="{{ asset('backend/assets/images/logo/liliwmemoria-logo.png') }}" alt="LiliwMemoria" class="mx-auto" height="32" />
                                         </a>
                                     </div>
 
