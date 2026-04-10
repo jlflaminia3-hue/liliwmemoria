@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ClientCommunicationController;
 use App\Http\Controllers\ClientContractController;
 use App\Http\Controllers\ClientController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\IntermentController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReportController;
 use App\Http\Controllers\PaymentTransactionController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -57,6 +59,16 @@ Route::get('/map', function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::middleware('role:admin,master_admin')->group(function () {
+    Route::prefix('admin/analytics')->name('admin.analytics.')->group(function () {
+        Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        Route::get('/clients', [AnalyticsController::class, 'clients'])->name('clients');
+        Route::get('/plots', [AnalyticsController::class, 'plots'])->name('plots');
+        Route::get('/payments', [AnalyticsController::class, 'payments'])->name('payments');
+        Route::get('/documents', [AnalyticsController::class, 'documents'])->name('documents');
+        Route::get('/interments', [AnalyticsController::class, 'interments'])->name('interments');
+        Route::get('/visitors', [AnalyticsController::class, 'visitors'])->name('visitors');
+    });
+
     Route::prefix('admin/lots')->name('admin.lots.')->group(function () {
         Route::get('/', [LotController::class, 'index'])->name('index');
         Route::get('/create', [LotController::class, 'create'])->name('create');
@@ -72,8 +84,11 @@ Route::get('/map', function () {
 
         Route::prefix('admin/clients')->name('admin.clients.')->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('index');
+        Route::get('/analytics', [AnalyticsController::class, 'clients'])->name('analytics');
         Route::get('/create', [ClientController::class, 'create'])->name('create');
         Route::post('/', [ClientController::class, 'store'])->name('store');
+        Route::get('/export/csv', [ClientController::class, 'exportCsv'])->name('export.csv');
+        Route::get('/export/pdf', [ClientController::class, 'exportPdf'])->name('export.pdf');
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update');
         Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
@@ -131,6 +146,9 @@ Route::get('/map', function () {
         });
 
         Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+            Route::get('/', [ReportsController::class, 'index'])->name('index');
+            Route::get('/clients', [ReportsController::class, 'clients'])->name('clients');
+            Route::get('/plots', [ReportsController::class, 'plots'])->name('plots');
             Route::get('/payments', [PaymentReportController::class, 'index'])->name('payments');
         });
     });

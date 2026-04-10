@@ -4,6 +4,7 @@
 @php
     $currentSearch = request('search', '');
     $currentHasLots = request('has_lots', '');
+    $currentActivity = request('activity', '');
     $currentPerPage = (int) request('per_page', 20);
 @endphp
 
@@ -12,9 +13,21 @@
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column gap-3">
             <div class="flex-grow-1">
                 <h4 class="fs-18 fw-semibold m-0">Clients</h4>
-                <div class="text-muted mt-1">Manage client profiles, contact details, and linked lot ownerships.</div>
+                <div class="text-muted mt-1">Manage client profiles, contact details, and activity.</div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ route('admin.analytics.clients') }}" class="btn btn-outline-secondary btn-sm">
+                    <i data-feather="bar-chart-2" class="me-1" style="height: 16px; width: 16px;"></i>
+                    Analytics
+                </a>
+                <a href="{{ route('admin.clients.export.csv', request()->query()) }}" class="btn btn-outline-secondary btn-sm">
+                    <i data-feather="download" class="me-1" style="height: 16px; width: 16px;"></i>
+                    Export CSV
+                </a>
+                <a href="{{ route('admin.clients.export.pdf', request()->query()) }}" class="btn btn-outline-secondary btn-sm">
+                    <i data-feather="file-text" class="me-1" style="height: 16px; width: 16px;"></i>
+                    Export PDF
+                </a>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createClientModal">
                     <i data-feather="plus" class="me-1" style="height: 16px; width: 16px;"></i>
                     Add Client
@@ -40,7 +53,7 @@
             <div class="col-md-6 col-xl">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-semibold">All Clients</div>
+                        <div class="text-muted small text-uppercase fw-semibold">Total Clients</div>
                         <div class="fs-3 fw-bold">{{ number_format($stats['total'] ?? 0) }}</div>
                     </div>
                 </div>
@@ -48,24 +61,26 @@
             <div class="col-md-6 col-xl">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-semibold">With Email</div>
-                        <div class="fs-3 fw-bold text-primary">{{ number_format($stats['with_email'] ?? 0) }}</div>
+                        <div class="text-muted small text-uppercase fw-semibold">Active Clients</div>
+                        <div class="fs-3 fw-bold text-primary">{{ number_format($stats['active'] ?? 0) }}</div>
+                        <div class="text-muted small">Activity in last 30 days</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-xl">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-semibold">With Phone</div>
-                        <div class="fs-3 fw-bold text-success">{{ number_format($stats['with_phone'] ?? 0) }}</div>
+                        <div class="text-muted small text-uppercase fw-semibold">New Clients This Month</div>
+                        <div class="fs-3 fw-bold text-success">{{ number_format($stats['new_this_month'] ?? 0) }}</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-xl">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-semibold">With Lots</div>
-                        <div class="fs-3 fw-bold text-warning">{{ number_format($stats['with_lots'] ?? 0) }}</div>
+                        <div class="text-muted small text-uppercase fw-semibold">Inactive Clients</div>
+                        <div class="fs-3 fw-bold text-danger">{{ number_format($stats['inactive'] ?? 0) }}</div>
+                        <div class="text-muted small">No activity in 6 months</div>
                     </div>
                 </div>
             </div>
@@ -74,16 +89,18 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.clients.index') }}" class="row g-3 align-items-end mb-4">
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
                         <label for="client_search" class="form-label fw-semibold">Search</label>
-                        <input
-                            id="client_search"
-                            type="text"
-                            name="search"
-                            class="form-control"
-                            value="{{ $currentSearch }}"
-                            placeholder="Name, email, phone, or address"
-                        >
+                        <input id="client_search" type="text" name="search" class="form-control" value="{{ $currentSearch }}" placeholder="Name, email, phone, or address">
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <label for="client_activity_filter" class="form-label fw-semibold">Activity</label>
+                        <select id="client_activity_filter" name="activity" class="form-select">
+                            <option value="">All</option>
+                            <option value="active" @selected($currentActivity === 'active')>Active (30d)</option>
+                            <option value="inactive" @selected($currentActivity === 'inactive')>Inactive (6mo)</option>
+                            <option value="new" @selected($currentActivity === 'new')>New this month</option>
+                        </select>
                     </div>
                     <div class="col-md-4 col-lg-2">
                         <label for="client_has_lots_filter" class="form-label fw-semibold">Lots</label>
@@ -111,9 +128,13 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Client</th>
-                                <th>Contact</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
                                 <th>Address</th>
+                                <th>Date Added</th>
+                                <th>Last Activity</th>
+                                <th>Status</th>
                                 <th class="text-end" style="width: 70px;"></th>
                             </tr>
                         </thead>
@@ -121,10 +142,8 @@
                             @forelse ($clients as $client)
                                 <tr class="client-row" data-href="{{ route('admin.clients.show', $client) }}" tabindex="0" role="button" aria-label="View {{ $client->full_name }}">
                                     <td class="fw-semibold">{{ $client->full_name }}</td>
-                                    <td>
-                                        <div>{{ $client->email ?: '—' }}</div>
-                                        <div class="text-muted small">{{ $client->phone ?: '—' }}</div>
-                                    </td>
+                                    <td>{{ $client->email ?: '—' }}</td>
+                                    <td>{{ $client->phone ?: '—' }}</td>
                                     <td>
                                         @php
                                             $addressParts = array_filter([
@@ -138,6 +157,15 @@
                                             ]);
                                         @endphp
                                         <span class="text-muted">{{ !empty($addressParts) ? implode(', ', $addressParts) : '—' }}</span>
+                                    </td>
+                                    <td>{{ optional($client->created_at)->format('Y-m-d') }}</td>
+                                    <td>{{ $client->last_activity_at ? $client->last_activity_at->format('Y-m-d') : '—' }}</td>
+                                    <td>
+                                        @if (($client->activity_status ?? 'active') === 'inactive')
+                                            <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                        @else
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                        @endif
                                     </td>
                                     <td class="text-end client-actions">
                                         <div class="dropdown">
@@ -174,7 +202,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">No clients found.</td>
+                                    <td colspan="8" class="text-center text-muted py-4">No clients found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -255,11 +283,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        @include('admin.clients.partials.form_fields', ['idPrefix' => 'create_'])
-                    </div>
-                </div>
+                @include('admin.clients.partials.form_fields', ['idPrefix' => 'create_'])
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
@@ -284,6 +308,10 @@
                     return;
                 }
                 if (el.type === 'hidden' || el.type === 'submit' || el.type === 'button' || el.type === 'reset') return;
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    el.checked = false;
+                    return;
+                }
                 el.value = '';
             });
         };
@@ -311,11 +339,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        @include('admin.clients.partials.form_fields', ['idPrefix' => 'edit_'])
-                    </div>
-                </div>
+                @include('admin.clients.partials.form_fields', ['idPrefix' => 'edit_'])
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
@@ -337,4 +361,3 @@
     </script>
 @endif
 @endsection
-

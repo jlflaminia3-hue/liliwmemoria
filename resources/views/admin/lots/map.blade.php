@@ -203,10 +203,10 @@
         background: #ffffff;
         border: 1px solid rgba(0, 0, 0, 0.12);
         border-radius: 10px;
-        padding: 10px 12px;
+        padding: 6px 10px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
         color: #212529;
-        max-width: 260px;
+        max-width: 160px;
     }
 
     .leaflet-tooltip.lot-hover-tooltip::before {
@@ -215,7 +215,21 @@
 
     .lot-hover-title {
         font-weight: 700;
-        margin-bottom: 4px;
+        margin-bottom: 0;
+    }
+
+    /* Reserve button inside Leaflet popup: match LiliwMemoria theme color */
+    .leaflet-popup-content .btn-lot-reserve {
+        background-color: #142C14 !important;
+        border-color: #142C14 !important;
+        color: #ffffff !important;
+    }
+
+    .leaflet-popup-content .btn-lot-reserve:hover,
+    .leaflet-popup-content .btn-lot-reserve:focus {
+        background-color: #0f1f0f !important;
+        border-color: #0f1f0f !important;
+        color: #ffffff !important;
     }
 
     .lot-hover-meta {
@@ -650,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (status === 'available') {
-                popupContent += '<br><a class="btn btn-sm btn-primary mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
+                popupContent += '<br><a class="btn btn-sm btn-lot-reserve mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
             }
 
             var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
@@ -670,6 +684,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (status === 'occupied') {
                 hoverContent += '<div class="lot-hover-line"><em>No deceased recorded</em></div>';
             }
+
+            // Cursor hover should only show the plot/lot ID.
+            hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>';
 
             layer.addTo(map);
             layer.bindPopup(popupContent);

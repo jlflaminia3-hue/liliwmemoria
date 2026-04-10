@@ -24,9 +24,19 @@ class Client extends Model
         'postal_code',
         'country',
         'notes',
+        'consent_given',
+        'consent_given_at',
     ];
 
     protected $appends = ['full_name'];
+
+    protected function casts(): array
+    {
+        return [
+            'consent_given' => 'boolean',
+            'consent_given_at' => 'datetime',
+        ];
+    }
 
     public function getFullNameAttribute(): string
     {
@@ -54,6 +64,11 @@ class Client extends Model
     public function communications(): HasMany
     {
         return $this->hasMany(ClientCommunication::class);
+    }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
     }
 
     public function familyLinks(): HasMany

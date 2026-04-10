@@ -13,6 +13,10 @@
                     <i data-feather="user-plus" class="me-1" style="height: 16px; width: 16px;"></i>
                     Add Client
                 </a>
+                <a href="{{ route('admin.analytics.clients') }}" class="btn btn-outline-secondary btn-sm">
+                    <i data-feather="bar-chart-2" class="me-1" style="height: 16px; width: 16px;"></i>
+                    Client Analytics
+                </a>
                 <a href="{{ route('admin.lots.create') }}" class="btn btn-primary btn-sm">
                     <i data-feather="plus-square" class="me-1" style="height: 16px; width: 16px;"></i>
                     Add Lot

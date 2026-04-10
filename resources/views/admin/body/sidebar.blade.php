@@ -116,12 +116,64 @@
                                 </a>
                             </li>
 
+
                             <li>
-                                <a href="{{ route('admin.reports.payments') }}" class="tp-link">
+                                <a href="#sidebarAnalytics" data-bs-toggle="collapse">
                                     <i data-feather="bar-chart-2"></i>
-                                    <span> Reports </span>
+                                    <span> Analytics </span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <div class="collapse" id="sidebarAnalytics">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="{{ route('admin.analytics.index') }}" class="tp-link">Overview</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.clients') }}" class="tp-link">Clients Analytics</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.plots') }}" class="tp-link">Plots Analytics</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.payments') }}" class="tp-link">Payments Analytics</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.documents') }}" class="tp-link">Documents Analytics</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.interments') }}" class="tp-link">Interments Analytics</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.analytics.visitors') }}" class="tp-link">Visitors Analytics</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
+
+                            <li>
+                                <a href="#sidebarReports" data-bs-toggle="collapse">
+                                    <i data-feather="file-text"></i>
+                                    <span> Reports </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarReports">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="{{ route('admin.reports.index') }}" class="tp-link">Overview</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.reports.clients') }}" class="tp-link">Clients Report</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.reports.plots') }}" class="tp-link">Plots Report</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.reports.payments') }}" class="tp-link">Payments Report</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
 
                             <li>
                                 <a href="#" class="tp-link">
