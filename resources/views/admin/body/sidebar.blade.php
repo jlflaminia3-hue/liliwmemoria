@@ -110,6 +110,13 @@
                             </li>
 
                             <li>
+                                <a href="{{ route('admin.exhumations.index') }}" class="tp-link">
+                                    <i data-feather="repeat"></i>
+                                    <span> Exhumations </span>
+                                </a>
+                            </li>
+
+                            <li>
                                 <a href="{{ route('admin.payments.index') }}" class="tp-link">
                                     <i data-feather="credit-card"></i>
                                     <span> Payments </span>

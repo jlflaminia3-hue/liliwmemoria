@@ -254,6 +254,27 @@ class LotController extends Controller
             ->header('Pragma', 'no-cache');
     }
 
+    public function snapshot(Lot $lot, LotStateService $lotState)
+    {
+        $lotState->sync((int) $lot->id);
+
+        $fresh = Lot::query()
+            ->with([
+                'deceased' => function ($query) {
+                    $query
+                        ->select(['id', 'lot_id', 'first_name', 'last_name', 'date_of_birth', 'date_of_death', 'status'])
+                        ->where('status', '!=', 'exhumed')
+                        ->latest('burial_date')
+                        ->latest('id');
+                },
+            ])
+            ->findOrFail($lot->id);
+
+        return response()->json([
+            'lot' => $fresh,
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
     public function nextLotNumber()
     {
         $request = request();

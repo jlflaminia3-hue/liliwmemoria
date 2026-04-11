@@ -27,14 +27,27 @@
     </div>
     <div class="col-md-6">
         <label for="{{ $idPrefix }}client_id" class="form-label fw-semibold">Associated Client</label>
-        <select id="{{ $idPrefix }}client_id" name="client_id" class="form-select">
-            <option value="">Select a client</option>
-            @foreach ($clients as $client)
-                <option value="{{ $client->id }}" @selected((string) old('client_id', $record?->client_id) === (string) $client->id)>
-                    {{ $client->full_name }}
-                </option>
-            @endforeach
-        </select>
+        <div class="js-client-picker position-relative">
+            <input
+                type="text"
+                class="form-control js-client-picker-input"
+                placeholder="Search and select a client"
+                autocomplete="off"
+                role="combobox"
+                aria-expanded="false"
+                aria-haspopup="listbox"
+            >
+            <select id="{{ $idPrefix }}client_id" name="client_id" class="form-select js-client-picker-select d-none">
+                <option value="">Select a client</option>
+                @foreach ($clients as $client)
+                    <option value="{{ $client->id }}" @selected((string) old('client_id', $record?->client_id) === (string) $client->id)>
+                        {{ $client->full_name }}
+                    </option>
+                @endforeach
+            </select>
+            <div class="dropdown-menu w-100 mt-1 js-client-picker-menu" style="max-height: 260px; overflow:auto;"></div>
+            <div class="form-text">Click the field to open the list, then type to filter.</div>
+        </div>
     </div>
     <div class="col-md-6">
         <label for="{{ $idPrefix }}lot_id" class="form-label fw-semibold">Lot</label>
@@ -50,14 +63,10 @@
             >
             <select id="{{ $idPrefix }}lot_id" name="lot_id" class="form-select js-lot-picker-select d-none" required>
                 <option value="">Select a lot</option>
-                @foreach ($lots as $lot)
-                    <option value="{{ $lot->id }}" @selected((string) old('lot_id', $record?->lot_id) === (string) $lot->id)>
-                        {{ $lot->lot_id }} - {{ $lot->lot_category_label }}
-                    </option>
-                @endforeach
             </select>
+            <input type="hidden" class="js-lot-picker-initial-value" value="{{ old('lot_id', $record?->lot_id) }}">
             <div class="dropdown-menu w-100 mt-1 js-lot-picker-menu" style="max-height: 260px; overflow:auto;"></div>
-            <div class="form-text">Click the field to open the list, then type to filter.</div>
+            <div class="form-text">Select a client first, then choose from their lots.</div>
         </div>
     </div>
     <div class="col-md-4">

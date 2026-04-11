@@ -8,8 +8,10 @@ use App\Models\Deceased;
 use App\Models\Lot;
 use App\Models\PaymentPlan;
 use App\Models\PaymentTransaction;
+use App\Models\VisitorLog;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {
@@ -332,8 +334,60 @@ class AnalyticsController extends Controller
         ));
     }
 
-    public function visitors()
+    public function visitors(Request $request)
     {
-        return view('admin.analytics.visitors');
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
+            'per_page' => 'nullable|in:10,20,50,100',
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+        $from = $validated['from'] ?? null;
+        $to = $validated['to'] ?? null;
+        $perPage = (int) ($validated['per_page'] ?? 20);
+
+        $query = VisitorLog::query()
+            ->with([
+                'deceased:id,lot_id,first_name,last_name',
+                'deceased.lot:id,lot_number,section',
+            ])
+            ->latest('visited_at')
+            ->latest('id');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('visitor_name', 'like', '%'.$search.'%')
+                    ->orWhere('contact_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('deceased', function ($dq) use ($search) {
+                        $dq->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('deceased.lot', function ($lq) use ($search) {
+                        $lq->where('section', 'like', '%'.$search.'%')
+                            ->orWhereRaw('CAST(lot_number AS CHAR) LIKE ?', ['%'.$search.'%']);
+                    });
+            });
+        }
+
+        if ($from) {
+            $query->whereDate('visited_at', '>=', $from);
+        }
+        if ($to) {
+            $query->whereDate('visited_at', '<=', $to);
+        }
+
+        $logs = $query->paginate($perPage)->withQueryString();
+
+        $today = CarbonImmutable::today();
+        $weekStart = $today->startOfWeek();
+        $stats = [
+            'total' => VisitorLog::query()->count(),
+            'today' => VisitorLog::query()->whereDate('visited_at', $today->toDateString())->count(),
+            'this_week' => VisitorLog::query()->whereDate('visited_at', '>=', $weekStart->toDateString())->count(),
+        ];
+
+        return view('admin.analytics.visitors', compact('logs', 'stats', 'search', 'from', 'to', 'perPage'));
     }
 }

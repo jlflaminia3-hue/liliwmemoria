@@ -16,11 +16,12 @@ use App\Services\Payments\PaymentPlanGenerator;
 use App\Services\Reservations\LotReservationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class ReservationController extends Controller
@@ -75,7 +76,7 @@ class ReservationController extends Controller
                         $lotQuery
                             ->where('section', 'like', '%'.$search.'%')
                             ->orWhere('block', 'like', '%'.$search.'%')
-                            ->orWhereRaw("CAST(lot_number AS CHAR) LIKE ?", ['%'.$search.'%'])
+                            ->orWhereRaw('CAST(lot_number AS CHAR) LIKE ?', ['%'.$search.'%'])
                             ->orWhere('name', 'like', '%'.$search.'%');
                     });
             });
@@ -119,10 +120,6 @@ class ReservationController extends Controller
             ->orderBy('lot_number')
             ->get(['id', 'lot_number', 'section', 'block', 'name', 'status', 'is_occupied']);
 
-        $paymentPlans = PaymentPlan::query()
-            ->orderByDesc('id')
-            ->get(['id', 'plan_number', 'client_id', 'lot_id', 'status']);
-
         $prefillLotId = $request->integer('lot_id') ?: null;
         $openCreateModal = (string) ($validated['create'] ?? '') === '1';
 
@@ -131,7 +128,6 @@ class ReservationController extends Controller
             'stats',
             'clients',
             'lots',
-            'paymentPlans',
             'prefillLotId',
             'openCreateModal',
         ));
@@ -144,21 +140,15 @@ class ReservationController extends Controller
         PaymentPlanGenerator $generator,
         ContractPaymentPlanSyncService $contractPlans,
         ContractPdfService $pdfs,
-    )
-    {
+    ) {
         $validated = $request->validate([
             'client_id' => 'required|integer|exists:clients,id',
             'lot_id' => 'required|integer|exists:lots,id',
             'reserved_at' => 'required|date',
-            'expires_at' => 'nullable|date|after_or_equal:reserved_at',
-            'contract_duration_months' => ['nullable', Rule::in([12, 18, 24])],
+            'contract_duration_months' => ['required', Rule::in([12, 18, 24])],
             'total_amount' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
-            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'narra', 'mausoleum'])],
-            'payment_status' => ['nullable', Rule::in(Reservation::PAYMENT_STATUSES)],
-            'payment_terms' => 'nullable|string',
-            'payment_plan_id' => 'nullable|integer|exists:payment_plans,id',
-            'contract' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'payment_status' => ['required', Rule::in(Reservation::PAYMENT_STATUSES)],
             'notes' => 'nullable|string',
             'email_pdf' => 'nullable|boolean',
             '_modal' => 'nullable|string',
@@ -173,7 +163,7 @@ class ReservationController extends Controller
         $contractId = null;
         $emailPdf = (bool) ($validated['email_pdf'] ?? false);
 
-        DB::transaction(function () use ($request, $validated, $lotState, $lotReservations, $generator, $contractPlans, $today, &$contractId) {
+        DB::transaction(function () use ($validated, $lotState, $lotReservations, $generator, $contractPlans, $today, &$contractId) {
             $lot = Lot::query()->lockForUpdate()->findOrFail((int) $validated['lot_id']);
 
             $hasInterment = Deceased::query()
@@ -203,39 +193,16 @@ class ReservationController extends Controller
                 ]);
             }
 
-            $expiresAt = $validated['expires_at'] ?? null;
             $durationMonths = (int) ($validated['contract_duration_months'] ?? 0);
-            if (! $expiresAt && in_array($durationMonths, [12, 18, 24], true)) {
-                $expiresAt = \Illuminate\Support\Carbon::parse($validated['reserved_at'])
-                    ->addMonthsNoOverflow($durationMonths)
-                    ->toDateString();
-            }
-
-            $contractPath = null;
-            if ($request->hasFile('contract')) {
-                $contractPath = $request->file('contract')->store('reservations/contracts', 'public');
-            }
-
-            $paymentPlanId = $validated['payment_plan_id'] ?? null;
-            if ($paymentPlanId) {
-                $plan = PaymentPlan::query()->find($paymentPlanId);
-                if ($plan && (int) $plan->client_id !== (int) $validated['client_id']) {
-                    throw ValidationException::withMessages([
-                        'payment_plan_id' => 'Selected payment plan does not match the client.',
-                    ]);
-                }
-                if ($plan && $plan->lot_id && (int) $plan->lot_id !== (int) $validated['lot_id']) {
-                    throw ValidationException::withMessages([
-                        'payment_plan_id' => 'Selected payment plan does not match the lot.',
-                    ]);
-                }
-            }
+            $expiresAt = Carbon::parse($validated['reserved_at'])
+                ->addMonthsNoOverflow($durationMonths)
+                ->toDateString();
 
             $contract = ClientContract::create([
                 'client_id' => $validated['client_id'],
                 'created_by_user_id' => auth()->id(),
                 'lot_id' => $validated['lot_id'],
-                'lot_kind' => $validated['lot_kind'] ?? null,
+                'lot_kind' => $lot->section ?? null,
                 'contract_type' => 'reservation',
                 'status' => 'active',
                 'total_amount' => $validated['total_amount'] ?? null,
@@ -243,7 +210,7 @@ class ReservationController extends Controller
                 'signed_at' => $validated['reserved_at'],
                 'contract_duration_months' => $durationMonths ?: null,
                 'due_date' => $expiresAt,
-                'notes' => $validated['payment_terms'] ?? null,
+                'notes' => null,
             ]);
 
             if (empty($contract->contract_number)) {
@@ -262,14 +229,14 @@ class ReservationController extends Controller
             $reservation = Reservation::create([
                 'client_id' => $validated['client_id'],
                 'lot_id' => $validated['lot_id'],
-                'payment_plan_id' => $paymentPlanId ?? $planId,
+                'payment_plan_id' => $planId,
                 'client_contract_id' => $contract->id,
                 'reserved_at' => $validated['reserved_at'],
                 'expires_at' => $expiresAt,
                 'status' => Reservation::STATUS_ACTIVE,
                 'payment_status' => $validated['payment_status'] ?? null,
-                'payment_terms' => $validated['payment_terms'] ?? null,
-                'contract_path' => $contractPath,
+                'payment_terms' => null,
+                'contract_path' => null,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
@@ -280,7 +247,7 @@ class ReservationController extends Controller
                     lotId: (int) $reservation->lot_id,
                     startedAt: $validated['reserved_at'],
                     endedAt: $expiresAt,
-                    lotKind: $validated['lot_kind'] ?? null,
+                    lotKind: null,
                     lotFieldForErrors: 'lot_id',
                 );
             }
@@ -293,7 +260,7 @@ class ReservationController extends Controller
             $contract = ClientContract::query()->with('client')->find($contractId);
             if ($contract) {
                 $pdfBinary = $pdfs->renderPdfBinary($contract);
-                $path = 'contracts/contract-' . $contract->id . '.pdf';
+                $path = 'contracts/contract-'.$contract->id.'.pdf';
                 Storage::disk('local')->put($path, $pdfBinary);
 
                 $contract->pdf_path = $path;
@@ -304,7 +271,7 @@ class ReservationController extends Controller
                     if (! $client?->email) {
                         $emailWarning = 'Client has no email on file, so the contract PDF was not emailed.';
                     } else {
-                        $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+                        $filename = 'Contract-'.($contract->contract_number ?? $contract->id).'.pdf';
                         try {
                             Mail::to($client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
                             $contract->pdf_emailed_at = now();
@@ -338,48 +305,19 @@ class ReservationController extends Controller
         LotReservationService $lotReservations,
         PaymentPlanGenerator $generator,
         ContractPaymentPlanSyncService $contractPlans,
-    )
-    {
+    ) {
         $validated = $request->validate([
             'client_id' => 'required|integer|exists:clients,id',
             'reserved_at' => 'required|date',
-            'expires_at' => 'nullable|date|after_or_equal:reserved_at',
             'status' => ['required', Rule::in(self::STATUSES)],
-            'contract_duration_months' => ['nullable', Rule::in([12, 18, 24])],
+            'contract_duration_months' => ['required', Rule::in([12, 18, 24])],
             'total_amount' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
-            'lot_kind' => ['nullable', Rule::in(['phase_1', 'phase_2', 'garden_lot', 'back_office_lot', 'narra', 'mausoleum'])],
-            'payment_status' => ['nullable', Rule::in(Reservation::PAYMENT_STATUSES)],
-            'payment_terms' => 'nullable|string',
-            'payment_plan_id' => 'nullable|integer|exists:payment_plans,id',
-            'contract' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'payment_status' => ['required', Rule::in(Reservation::PAYMENT_STATUSES)],
             'notes' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($request, $validated, $reservation, $lotState, $lotReservations, $generator, $contractPlans) {
-            $contractPath = $reservation->contract_path;
-            if ($request->hasFile('contract')) {
-                if ($contractPath) {
-                    Storage::disk('public')->delete($contractPath);
-                }
-                $contractPath = $request->file('contract')->store('reservations/contracts', 'public');
-            }
-
-            $paymentPlanId = $validated['payment_plan_id'] ?? null;
-            if ($paymentPlanId) {
-                $plan = PaymentPlan::query()->find($paymentPlanId);
-                if ($plan && (int) $plan->client_id !== (int) $validated['client_id']) {
-                    throw ValidationException::withMessages([
-                        'payment_plan_id' => 'Selected payment plan does not match the client.',
-                    ]);
-                }
-                if ($plan && $plan->lot_id && (int) $plan->lot_id !== (int) $reservation->lot_id) {
-                    throw ValidationException::withMessages([
-                        'payment_plan_id' => 'Selected payment plan does not match the lot.',
-                    ]);
-                }
-            }
-
+        DB::transaction(function () use ($validated, $reservation, $lotState, $lotReservations, $generator, $contractPlans) {
             $status = (string) $validated['status'];
             $fulfilledAt = $reservation->fulfilled_at;
             if ($status === Reservation::STATUS_FULFILLED && ! $fulfilledAt) {
@@ -389,15 +327,18 @@ class ReservationController extends Controller
                 $fulfilledAt = null;
             }
 
+            $durationMonths = (int) $validated['contract_duration_months'];
+            $expiresAt = Carbon::parse($validated['reserved_at'])
+                ->addMonthsNoOverflow($durationMonths)
+                ->toDateString();
+
             $reservation->update([
                 'client_id' => $validated['client_id'],
                 'reserved_at' => $validated['reserved_at'],
-                'expires_at' => $validated['expires_at'] ?? null,
+                'expires_at' => $expiresAt,
                 'status' => $status,
                 'payment_status' => $validated['payment_status'] ?? null,
-                'payment_terms' => $validated['payment_terms'] ?? null,
-                'payment_plan_id' => $paymentPlanId,
-                'contract_path' => $contractPath,
+                'payment_terms' => null,
                 'notes' => $validated['notes'] ?? null,
                 'fulfilled_at' => $fulfilledAt,
             ]);
@@ -408,29 +349,22 @@ class ReservationController extends Controller
                 default => 'active',
             };
 
-            $durationMonths = (int) ($validated['contract_duration_months'] ?? 0);
-            $expiresAt = $validated['expires_at'] ?? null;
-            if (! $expiresAt && in_array($durationMonths, [12, 18, 24], true)) {
-                $expiresAt = \Illuminate\Support\Carbon::parse($validated['reserved_at'])
-                    ->addMonthsNoOverflow($durationMonths)
-                    ->toDateString();
-                $reservation->expires_at = $expiresAt;
-                $reservation->save();
-            }
-
             if ($reservation->client_contract_id) {
                 $contract = ClientContract::query()->find((int) $reservation->client_contract_id);
                 if ($contract) {
                     $contract->client_id = $reservation->client_id;
                     $contract->lot_id = $reservation->lot_id;
-                    $contract->lot_kind = $validated['lot_kind'] ?? $contract->lot_kind;
+                    $lot = Lot::query()->find((int) $reservation->lot_id);
+                    if ($lot && $lot->section) {
+                        $contract->lot_kind = $lot->section;
+                    }
                     $contract->status = $contractStatus;
                     $contract->total_amount = $validated['total_amount'] ?? $contract->total_amount;
                     $contract->amount_paid = $validated['amount_paid'] ?? $contract->amount_paid;
                     $contract->signed_at = $validated['reserved_at'];
                     $contract->contract_duration_months = $durationMonths ?: $contract->contract_duration_months;
                     $contract->due_date = $expiresAt;
-                    $contract->notes = $validated['payment_terms'] ?? $contract->notes;
+                    $contract->notes = $contract->notes;
                     $contract->save();
 
                     $contractPlans->sync($contract, $generator);
@@ -444,7 +378,7 @@ class ReservationController extends Controller
                     lotId: (int) $reservation->lot_id,
                     startedAt: $validated['reserved_at'],
                     endedAt: $expiresAt,
-                    lotKind: $validated['lot_kind'] ?? null,
+                    lotKind: null,
                     lotFieldForErrors: 'lot_id',
                 );
             }

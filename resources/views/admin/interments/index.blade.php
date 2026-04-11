@@ -139,8 +139,8 @@
                         </thead>
                         <tbody>
                             @forelse ($interments as $record)
-                                @php($missingItems = $record->missingComplianceItems())
                                 @php
+                                    $missingItems = $record->missingComplianceItems();
                                     $recordJson = [
                                         'id' => $record->id,
                                         'client_id' => $record->client_id,
@@ -218,6 +218,15 @@
                                                 <i data-feather="more-vertical"></i>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-end">
+                                                @if ($record->latestExhumation)
+                                                    <a class="dropdown-item" href="{{ route('admin.exhumations.show', $record->latestExhumation) }}">Exhumation Case</a>
+                                                @else
+                                                    <form method="POST" action="{{ route('admin.exhumations.store', $record) }}" class="dropdown-item p-0">
+                                                        @csrf
+                                                        <input type="hidden" name="status" value="requested">
+                                                        <button type="submit" class="btn btn-link dropdown-item m-0">Start Exhumation</button>
+                                                    </form>
+                                                @endif
                                                 <button
                                                     type="button"
                                                     class="dropdown-item js-edit-interment"
@@ -343,7 +352,40 @@
             wrapper.classList.remove('is-open');
         }
 
-        function initLotPickers(scope) {
+        function renderClientMenu(menuEl, items, onPick) {
+            menuEl.innerHTML = '';
+
+            if (!items.length) {
+                var empty = document.createElement('div');
+                empty.className = 'dropdown-item text-muted';
+                empty.textContent = 'No matching clients';
+                menuEl.appendChild(empty);
+                return;
+            }
+
+            items.slice(0, 80).forEach(function (item) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'dropdown-item';
+                btn.textContent = item.text;
+                btn.addEventListener('click', function () { onPick(item); });
+                menuEl.appendChild(btn);
+            });
+        }
+
+        function showClientMenu(wrapper, inputEl, menuEl) {
+            menuEl.classList.add('show');
+            inputEl.setAttribute('aria-expanded', 'true');
+            wrapper.classList.add('is-open');
+        }
+
+        function hideClientMenu(wrapper, inputEl, menuEl) {
+            menuEl.classList.remove('show');
+            inputEl.setAttribute('aria-expanded', 'false');
+            wrapper.classList.remove('is-open');
+        }
+
+        function initLotPickers(scope, clientIdValue) {
             var wrappers = scope.querySelectorAll('.js-lot-picker');
             wrappers.forEach(function (wrapper) {
                 var inputEl = wrapper.querySelector('.js-lot-picker-input');
@@ -351,12 +393,12 @@
                 var menuEl = wrapper.querySelector('.js-lot-picker-menu');
                 if (!inputEl || !selectEl || !menuEl) return;
 
-                var all = optionData(selectEl);
-
                 // Prefill input from current select value.
                 setLotPickerValue(selectEl, inputEl, selectEl.value);
 
                 function refreshMenu() {
+                    // Get current options each time instead of using cached value
+                    var all = optionData(selectEl);
                     var q = (inputEl.value || '').trim().toLowerCase();
                     var filtered = q === ''
                         ? all
@@ -397,6 +439,131 @@
             });
         }
 
+        function initClientPickers(scope) {
+            var wrappers = scope.querySelectorAll('.js-client-picker');
+            wrappers.forEach(function (wrapper) {
+                var inputEl = wrapper.querySelector('.js-client-picker-input');
+                var selectEl = wrapper.querySelector('.js-client-picker-select');
+                var menuEl = wrapper.querySelector('.js-client-picker-menu');
+                if (!inputEl || !selectEl || !menuEl) return;
+
+                // Derive the prefix from the select id (e.g. "create_client_id" -> "create_")
+                // The input has no id, so relying on inputEl.id breaks lot lookups.
+                var idPrefix = '';
+                if (selectEl.id && selectEl.id.indexOf('client_id') !== -1) {
+                    idPrefix = selectEl.id.replace(/client_id$/, '');
+                }
+                var lotSelectForPrefix = idPrefix
+                    ? scope.querySelector('#' + idPrefix + 'lot_id.js-lot-picker-select') || scope.querySelector('#' + idPrefix + 'lot_id')
+                    : null;
+                var lotPickerWrapper = lotSelectForPrefix
+                    ? lotSelectForPrefix.closest('.js-lot-picker')
+                    : scope.querySelector('.js-lot-picker');
+
+                var all = optionData(selectEl);
+
+                // Prefill input from current select value.
+                var currentValue = selectEl.value;
+                var selected = Array.from(selectEl.options).find(function (opt) { return opt.value === currentValue; });
+                inputEl.value = (selected && selected.value) ? selected.text : '';
+
+                function refreshMenu() {
+                    var q = (inputEl.value || '').trim().toLowerCase();
+                    var filtered = q === ''
+                        ? all
+                        : all.filter(function (it) { return it.text.toLowerCase().indexOf(q) !== -1; });
+
+                    renderClientMenu(menuEl, filtered, function (picked) {
+                        selectEl.value = picked.value;
+                        inputEl.value = picked.text;
+                        hideClientMenu(wrapper, inputEl, menuEl);
+
+                        // When client is selected, fetch their lots
+                        if (picked.value) {
+                            var initialLotValue = lotPickerWrapper.querySelector('.js-lot-picker-initial-value').value;
+                            fetchClientLots(picked.value, scope, idPrefix, initialLotValue);
+                        } else {
+                            // Reset to all lots
+                            resetLotsToAll(scope);
+                        }
+                    });
+                }
+
+                inputEl.addEventListener('focus', function () {
+                    refreshMenu();
+                    showClientMenu(wrapper, inputEl, menuEl);
+                });
+
+                inputEl.addEventListener('click', function () {
+                    refreshMenu();
+                    showClientMenu(wrapper, inputEl, menuEl);
+                });
+
+                inputEl.addEventListener('input', function () {
+                    refreshMenu();
+                    showClientMenu(wrapper, inputEl, menuEl);
+                });
+
+                inputEl.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        hideClientMenu(wrapper, inputEl, menuEl);
+                    }
+                });
+
+                // Hide when clicking outside.
+                document.addEventListener('click', function (e) {
+                    if (wrapper.contains(e.target)) return;
+                    hideClientMenu(wrapper, inputEl, menuEl);
+                });
+            });
+        }
+
+        function fetchClientLots(clientId, scope, idPrefix, initialLotId) {
+            var lotsUrl = "{{ url('admin/interments/api/clients') }}/" + clientId + "/lots";
+
+            fetch(lotsUrl)
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    updateLotOptions(data, scope, idPrefix, initialLotId);
+                })
+                .catch(function (error) { console.error('Error fetching lots:', error); });
+        }
+
+        function updateLotOptions(lots, scope, idPrefix, initialLotId) {
+            var selectEl = scope.querySelector('#' + idPrefix + 'lot_id.js-lot-picker-select');
+            var inputEl = scope.querySelector('#' + idPrefix + 'lot_id').parentElement.querySelector('.js-lot-picker-input');
+            if (!selectEl) return;
+
+            // Clear existing options except the first one
+            while (selectEl.options.length > 1) {
+                selectEl.remove(1);
+            }
+
+            // Add new options
+            lots.forEach(function (lot) {
+                var option = document.createElement('option');
+                option.value = lot.id;
+                option.text = lot.label;
+                selectEl.appendChild(option);
+            });
+
+            // Restore initial value if provided
+            if (initialLotId) {
+                selectEl.value = initialLotId;
+                var selected = Array.from(selectEl.options).find(function (opt) { return opt.value === (initialLotId ? String(initialLotId) : ''); });
+                if (selected && inputEl) {
+                    inputEl.value = selected.text;
+                }
+            } else if (inputEl) {
+                inputEl.value = '';
+            }
+        }
+
+        function resetLotsToAll(scope) {
+            // This would reset to all lots - for now we keep the filtered list
+            // This could be called if client is deselected
+        }
+
         function syncStatusRequirements(scope) {
             var statusInput = scope.querySelector('.js-interment-status');
             var burialDateInput = scope.querySelector('.js-burial-date');
@@ -412,6 +579,7 @@
         }
 
         document.querySelectorAll('#createIntermentModal, #editIntermentModal').forEach(function (modal) {
+            initClientPickers(modal);
             initLotPickers(modal);
             modal.querySelectorAll('.js-interment-status').forEach(function (statusInput) {
                 statusInput.addEventListener('change', function () {
@@ -449,6 +617,12 @@
                 setValue('edit_status', record.status);
                 setValue('edit_notes', record.notes);
 
+                // Set the initial lot value in the hidden input
+                var lotInitialInput = document.querySelector('#edit_lot_id').parentElement.querySelector('.js-lot-picker-initial-value');
+                if (lotInitialInput) {
+                    lotInitialInput.value = record.lot_id || '';
+                }
+
                 var permitInput = document.getElementById('edit_burial_permit');
                 if (permitInput) {
                     permitInput.value = '';
@@ -456,7 +630,24 @@
                 }
 
                 var modalEl = document.getElementById('editIntermentModal');
-                initLotPickers(modalEl);
+
+                // When editing, if a client is selected, fetch their lots
+                if (record.client_id) {
+                    fetchClientLots(record.client_id, modalEl, 'edit_', record.lot_id);
+                    // Set the client picker input
+                    var clientSelectEl = modalEl.querySelector('#edit_client_id.js-client-picker-select');
+                    var clientInputEl = modalEl.querySelector('.js-client-picker-input');
+                    if (clientSelectEl && clientInputEl) {
+                        var clientOption = Array.from(clientSelectEl.options).find(function (opt) {
+                            return opt.value === (record.client_id ? String(record.client_id) : '');
+                        });
+                        if (clientOption) {
+                            clientInputEl.value = clientOption.text;
+                        }
+                    }
+                }
+
+                initClientPickers(modalEl);
                 syncStatusRequirements(modalEl);
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();
             });

@@ -39,6 +39,7 @@ class IntermentController extends Controller
             ->with([
                 'lot:id,lot_number,section,name,status,is_occupied',
                 'client:id,first_name,last_name',
+                'latestExhumation',
             ]);
 
         if ($search !== '') {
@@ -55,7 +56,7 @@ class IntermentController extends Controller
                         $lotQuery
                             ->where('name', 'like', '%'.$search.'%')
                             ->orWhere('section', 'like', '%'.$search.'%')
-                            ->orWhereRaw("CAST(lot_number AS CHAR) LIKE ?", ['%'.$search.'%']);
+                            ->orWhereRaw('CAST(lot_number AS CHAR) LIKE ?', ['%'.$search.'%']);
                     });
             });
         }
@@ -188,6 +189,81 @@ class IntermentController extends Controller
         abort_if(! $path || ! Storage::disk('public')->exists($path), 404);
 
         return Storage::disk('public')->download($path, basename($path));
+    }
+
+    public function clientLots(Client $client)
+    {
+        // Owned/purchased lots
+        $ownedLots = $client
+            ->lotOwnerships()
+            ->with('lot:id,lot_number,section,name')
+            ->get()
+            ->map(function ($ownership) {
+                $lot = $ownership->lot;
+
+                return [
+                    'id' => $lot->id,
+                    'lot_id' => $lot->lot_id,
+                    'label' => $lot->lot_id.' - '.self::lotCategoryLabel($lot),
+                ];
+            });
+
+        // Reserved lots (active or fulfilled)
+        $reservedLots = $client
+            ->reservations()
+            ->whereIn('status', ['active', 'fulfilled'])
+            ->with('lot:id,lot_number,section,name')
+            ->get()
+            ->map(function ($reservation) {
+                $lot = $reservation->lot;
+
+                return [
+                    'id' => $lot->id,
+                    'lot_id' => $lot->lot_id,
+                    'label' => $lot->lot_id.' - '.self::lotCategoryLabel($lot),
+                ];
+            });
+
+        // Contract lots (active or pending, regardless of payment status)
+        $contractLots = $client
+            ->contracts()
+            ->whereIn('status', ['active', 'pending'])
+            ->whereNotNull('lot_id')
+            ->with('lot:id,lot_number,section,name')
+            ->get()
+            ->map(function ($contract) {
+                $lot = $contract->lot;
+
+                return [
+                    'id' => $lot->id,
+                    'lot_id' => $lot->lot_id,
+                    'label' => $lot->lot_id.' - '.self::lotCategoryLabel($lot),
+                ];
+            });
+
+        // Combine and deduplicate by lot id
+        $lots = collect()
+            ->merge($ownedLots)
+            ->merge($reservedLots)
+            ->merge($contractLots)
+            ->unique('id')
+            ->sortBy('lot_id')
+            ->values();
+
+        return response()->json($lots);
+    }
+
+    private static function lotCategoryLabel($lot): string
+    {
+        return match ($lot->section ?? '') {
+            'phase_1' => 'Phase 1',
+            'phase_2' => 'Phase 2',
+            'garden_lot' => 'Garden Lot',
+            'back_office_lot' => 'Back Office',
+            'narra' => 'Narra',
+            'mausoleum' => 'Mausoleum',
+            default => 'Lot',
+        };
     }
 
     private function validateInterment(Request $request, ?Deceased $deceased = null): array

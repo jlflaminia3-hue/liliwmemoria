@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Deceased extends Model
 {
@@ -48,6 +50,16 @@ class Deceased extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function exhumations(): HasMany
+    {
+        return $this->hasMany(Exhumation::class);
+    }
+
+    public function latestExhumation(): HasOne
+    {
+        return $this->hasOne(Exhumation::class)->latestOfMany();
     }
 
     public function getFullNameAttribute(): string

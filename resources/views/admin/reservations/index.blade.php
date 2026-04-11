@@ -196,8 +196,9 @@
                                                 data-expires-at="{{ $reservation->expires_at ? optional($reservation->expires_at)->format('Y-m-d') : '' }}"
                                                 data-status="{{ $reservation->status }}"
                                                 data-payment-status="{{ $reservation->payment_status ?? '' }}"
-                                                data-payment-terms="{{ e($reservation->payment_terms ?? '') }}"
-                                                data-payment-plan-id="{{ $reservation->payment_plan_id ?? '' }}"
+                                                data-contract-duration-months="{{ $reservation->contract?->contract_duration_months ?? '' }}"
+                                                data-total-amount="{{ $reservation->contract?->total_amount ?? '' }}"
+                                                data-amount-paid="{{ $reservation->contract?->amount_paid ?? '' }}"
                                                 data-notes="{{ e($reservation->notes ?? '') }}"
                                             >Edit</button>
                                             <form method="POST" action="{{ route('admin.reservations.destroy', $reservation) }}" onsubmit="return confirm('Delete this reservation?');">
@@ -230,6 +231,26 @@
         overflow: auto;
         max-height: calc(100vh - 220px);
     }
+
+    .reservation-modal-scroll .modal-header {
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .reservation-modal-scroll .modal-title {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .reservation-modal-scroll .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.35rem;
+    }
+
+    .reservation-modal-scroll .form-text {
+        color: #64748b;
+    }
 </style>
 
 <!-- Create Modal -->
@@ -260,12 +281,22 @@
                                 <option value="">Select an available lot…</option>
                                 @foreach ($lots as $lot)
                                     @php($label = ($lot->lot_id ?? ('L-'.$lot->lot_number)).' — '.($lot->lot_category_label ?? $lot->section).' • Block '.($lot->block ?: '—'))
-                                    <option value="{{ $lot->id }}" @selected((string) old('lot_id', $prefillLotId) === (string) $lot->id)>{{ $label }}</option>
+                                    <option
+                                        value="{{ $lot->id }}"
+                                        data-lot-kind="{{ $lot->section }}"
+                                        data-lot-category="{{ $lot->lot_category_label ?? $lot->section }}"
+                                        @selected((string) old('lot_id', $prefillLotId) === (string) $lot->id)
+                                    >{{ $label }}</option>
                                 @endforeach
                             </select>
                             <div class="dropdown-menu w-100 mt-1 js-lot-picker-menu" style="max-height: 260px; overflow:auto;"></div>
                             <div class="form-text">Tip: pick a lot from the map and click “Reserve this lot”.</div>
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lot category</label>
+                        <input type="text" class="form-control" id="create_lot_category_display" value="—" readonly>
+                        <div class="form-text">Auto-filled from the selected lot.</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Client</label>
@@ -276,72 +307,45 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 order-3 order-md-3">
                         <label class="form-label fw-semibold">Reservation date</label>
                         <input type="date" class="form-control" name="reserved_at" value="{{ old('reserved_at', now()->format('Y-m-d')) }}" required>
+                        <div class="form-text">Expiry data is auto-calculated from reservation date + duration.</div>
+
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Expiry date (optional)</label>
-                        <input type="date" class="form-control" name="expires_at" value="{{ old('expires_at') }}">
-                        <div class="form-text">If you set a duration, expiry auto-fills.</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Contract duration (optional)</label>
-                        <select class="form-select js-contract-duration" name="contract_duration_months">
-                            <option value="">—</option>
+                    {{-- <div class="col-md-6 order-4 order-md-4">
+                        <label class="form-label fw-semibold">Expiry date</label>
+                        <input type="date" class="form-control" name="expires_at" id="create_expires_at" value="{{ old('expires_at') }}" readonly>
+                        <div class="form-text">Auto-calculated from reservation date + duration.</div>
+                    </div> --}}
+                    <div class="col-md-6 order-2 order-md-2">
+                        <label class="form-label fw-semibold">Contract duration</label>
+                        <select class="form-select js-contract-duration" name="contract_duration_months" required>
+                            <option value="">Select duration…</option>
                             <option value="12" @selected((string) old('contract_duration_months') === '12')>12 months</option>
                             <option value="18" @selected((string) old('contract_duration_months') === '18')>18 months</option>
                             <option value="24" @selected((string) old('contract_duration_months') === '24')>24 months</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Lot category override (optional)</label>
-                        <select class="form-select" name="lot_kind">
-                            <option value="">—</option>
-                            <option value="phase_1" @selected(old('lot_kind') === 'phase_1')>Phase 1</option>
-                            <option value="phase_2" @selected(old('lot_kind') === 'phase_2')>Phase 2</option>
-                            <option value="garden_lot" @selected(old('lot_kind') === 'garden_lot')>Garden Lot</option>
-                            <option value="back_office_lot" @selected(old('lot_kind') === 'back_office_lot')>Back Office Lot</option>
-                            <option value="narra" @selected(old('lot_kind') === 'narra')>Narra</option>
-                            <option value="mausoleum" @selected(old('lot_kind') === 'mausoleum')>Mausoleum</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 order-1 order-md-1">
                         <label class="form-label fw-semibold">Payment status</label>
-                        <select class="form-select" name="payment_status">
-                                <option value="">—</option>
+                        <select class="form-select" name="payment_status" required>
+                                <option value="">Select payment status…</option>
                                 <option value="downpayment" @selected(old('payment_status') === 'downpayment')>Downpayment</option>
                                 <option value="installment" @selected(old('payment_status') === 'installment')>Installment</option>
                                 <option value="fully_paid" @selected(old('payment_status') === 'fully_paid')>Fully paid</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Contract amount (optional)</label>
+                        <label class="form-label fw-semibold">Contract amount</label>
                         <input type="number" step="0.01" min="0" class="form-control" name="total_amount" value="{{ old('total_amount') }}" placeholder="0.00">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Downpayment (optional)</label>
+                        <label class="form-label fw-semibold">Downpayment</label>
                         <input type="number" step="0.01" min="0" class="form-control" name="amount_paid" value="{{ old('amount_paid') }}" placeholder="0.00">
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Payment plan (optional)</label>
-                        <select class="form-select" name="payment_plan_id">
-                            <option value="">—</option>
-                                @foreach ($paymentPlans as $plan)
-                                    <option value="{{ $plan->id }}" @selected((string) old('payment_plan_id') === (string) $plan->id)>{{ $plan->plan_number }} ({{ $plan->status }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Payment terms / notes (optional)</label>
-                            <textarea class="form-control" name="payment_terms" rows="2" placeholder="Installment schedule, discounts, downpayment details, etc.">{{ old('payment_terms') }}</textarea>
-                        </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Contract upload (optional)</label>
-                        <input type="file" class="form-control" name="contract" accept=".pdf,.jpg,.jpeg,.png">
-                        <div class="form-text">PDF or image, max 5MB.</div>
-                    </div>
-                    <div class="col-12">
+
+                    <div class="col-12 order-4 order-md-4">
                         <div class="form-check">
                             <input
                                 class="form-check-input js-email-pdf"
@@ -357,8 +361,8 @@
                         </div>
                         <div class="form-text text-warning d-none" id="reservation_no_email_warning">Client has no email on file.</div>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Special arrangements / notes (optional)</label>
+                    <div class="col-12 order-5 order-md-5">
+                        <label class="form-label fw-semibold">Notes (optional)</label>
                         <textarea class="form-control" name="notes" rows="3">{{ old('notes') }}</textarea>
                     </div>
                 </div>
@@ -405,42 +409,42 @@
                                 <option value="fulfilled">Fulfilled</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 order-3 order-md-3">
                             <label class="form-label fw-semibold">Reservation date</label>
                             <input type="date" class="form-control" name="reserved_at" id="edit_reserved_at" required>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Expiry date (optional)</label>
-                            <input type="date" class="form-control" name="expires_at" id="edit_expires_at">
+                        <div class="col-md-6 order-2 order-md-2">
+                            <label class="form-label fw-semibold">Contract duration</label>
+                            <select class="form-select" name="contract_duration_months" id="edit_contract_duration_months" required>
+                                <option value="">Select duration…</option>
+                                <option value="12">12 months</option>
+                                <option value="18">18 months</option>
+                                <option value="24">24 months</option>
+                            </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 order-4 order-md-4">
+                            <label class="form-label fw-semibold">Expiry date</label>
+                            <input type="date" class="form-control" name="expires_at" id="edit_expires_at" readonly>
+                            <div class="form-text">Auto-calculated from reservation date + duration.</div>
+                        </div>
+                        <div class="col-md-6 order-1 order-md-1">
                             <label class="form-label fw-semibold">Payment status</label>
-                            <select class="form-select" name="payment_status" id="edit_payment_status">
-                                <option value="">—</option>
+                            <select class="form-select" name="payment_status" id="edit_payment_status" required>
+                                <option value="">Select payment status…</option>
                                 <option value="downpayment">Downpayment</option>
                                 <option value="installment">Installment</option>
                                 <option value="fully_paid">Fully paid</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Payment plan (optional)</label>
-                            <select class="form-select" name="payment_plan_id" id="edit_payment_plan_id">
-                                <option value="">—</option>
-                                @foreach ($paymentPlans as $plan)
-                                    <option value="{{ $plan->id }}">{{ $plan->plan_number }} ({{ $plan->status }})</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-semibold">Contract amount (optional)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="total_amount" id="edit_total_amount" placeholder="0.00">
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Payment terms / notes (optional)</label>
-                            <textarea class="form-control" name="payment_terms" id="edit_payment_terms" rows="2"></textarea>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Downpayment (optional)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="amount_paid" id="edit_amount_paid" placeholder="0.00">
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Replace contract (optional)</label>
-                            <input type="file" class="form-control" name="contract" accept=".pdf,.jpg,.jpeg,.png">
-                            <div class="form-text">Uploads overwrite the existing file.</div>
-                        </div>
-                        <div class="col-12">
+                        <div class="col-12 order-5 order-md-5">
                             <label class="form-label fw-semibold">Special arrangements / notes (optional)</label>
                             <textarea class="form-control" name="notes" id="edit_notes" rows="3"></textarea>
                         </div>
@@ -462,10 +466,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var editStatus = document.getElementById('edit_status');
     var editReservedAt = document.getElementById('edit_reserved_at');
     var editExpiresAt = document.getElementById('edit_expires_at');
+    var editContractDuration = document.getElementById('edit_contract_duration_months');
     var editPaymentStatus = document.getElementById('edit_payment_status');
-    var editPaymentTerms = document.getElementById('edit_payment_terms');
-    var editPaymentPlanId = document.getElementById('edit_payment_plan_id');
+    var editTotalAmount = document.getElementById('edit_total_amount');
+    var editAmountPaid = document.getElementById('edit_amount_paid');
     var editNotes = document.getElementById('edit_notes');
+
+    var createExpiresAt = document.getElementById('create_expires_at');
+    var createLotCategoryDisplay = document.getElementById('create_lot_category_display');
 
     function setDateInputValue(input, value) {
         if (!input) return;
@@ -532,6 +540,15 @@ document.addEventListener('DOMContentLoaded', function () {
             var all = optionData(selectEl);
             setLotPickerValue(selectEl, inputEl, selectEl.value);
 
+            function syncLotMeta() {
+                if (!createLotCategoryDisplay) return;
+                if (!scope || scope.id !== 'createReservationModal') return;
+
+                var selected = selectEl.selectedOptions && selectEl.selectedOptions[0];
+                var category = selected ? String(selected.getAttribute('data-lot-category') || '').trim() : '';
+                createLotCategoryDisplay.value = category !== '' ? category : '—';
+            }
+
             function refreshMenu() {
                 var q = (inputEl.value || '').trim().toLowerCase();
                 var filtered = q === ''
@@ -540,6 +557,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 renderLotMenu(menuEl, filtered, function (picked) {
                     setLotPickerValue(selectEl, inputEl, picked.value);
+                    syncLotMeta();
                     hideLotMenu(wrapper, inputEl, menuEl);
                 });
             }
@@ -569,6 +587,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (wrapper.contains(e.target)) return;
                 hideLotMenu(wrapper, inputEl, menuEl);
             });
+
+            syncLotMeta();
         });
     }
 
@@ -585,10 +605,22 @@ document.addEventListener('DOMContentLoaded', function () {
             if (editClientId) editClientId.value = btn.getAttribute('data-client-id') || '';
             if (editStatus) editStatus.value = btn.getAttribute('data-status') || 'active';
             setDateInputValue(editReservedAt, btn.getAttribute('data-reserved-at') || '');
-            setDateInputValue(editExpiresAt, btn.getAttribute('data-expires-at') || '');
+
+            var durationMonths = btn.getAttribute('data-contract-duration-months') || '';
+            if (editContractDuration) editContractDuration.value = durationMonths;
+            if (editTotalAmount) editTotalAmount.value = btn.getAttribute('data-total-amount') || '';
+            if (editAmountPaid) editAmountPaid.value = btn.getAttribute('data-amount-paid') || '';
+
+            var reservedAtValue = btn.getAttribute('data-reserved-at') || '';
+            var expiresAtValue = btn.getAttribute('data-expires-at') || '';
+            var m = parseInt(durationMonths || '0', 10);
+            if ([12, 18, 24].includes(m)) {
+                var computed = addMonthsNoOverflow(reservedAtValue, m);
+                if (computed) expiresAtValue = computed;
+            }
+
+            setDateInputValue(editExpiresAt, expiresAtValue);
             if (editPaymentStatus) editPaymentStatus.value = btn.getAttribute('data-payment-status') || '';
-            if (editPaymentTerms) editPaymentTerms.value = btn.getAttribute('data-payment-terms') || '';
-            if (editPaymentPlanId) editPaymentPlanId.value = btn.getAttribute('data-payment-plan-id') || '';
             if (editNotes) editNotes.value = btn.getAttribute('data-notes') || '';
         });
     });
@@ -617,11 +649,23 @@ document.addEventListener('DOMContentLoaded', function () {
         return target.getUTCFullYear() + '-' + mm + '-' + dd;
     }
 
+    function syncEditExpiry() {
+        if (!editReservedAt || !editContractDuration || !editExpiresAt) return;
+        var m = parseInt(editContractDuration.value || '0', 10);
+        if (![12, 18, 24].includes(m)) return;
+        var computed = addMonthsNoOverflow(editReservedAt.value, m);
+        if (!computed) return;
+        setDateInputValue(editExpiresAt, computed);
+    }
+
+    if (editReservedAt) editReservedAt.addEventListener('change', syncEditExpiry);
+    if (editContractDuration) editContractDuration.addEventListener('change', syncEditExpiry);
+
     var createModal = document.getElementById('createReservationModal');
     if (createModal) {
         var reservedAt = createModal.querySelector('input[name="reserved_at"]');
         var duration = createModal.querySelector('select[name="contract_duration_months"]');
-        var expiresAt = createModal.querySelector('input[name="expires_at"]');
+        var expiresAt = createExpiresAt;
         var clientSelect = createModal.querySelector('.js-reservation-client');
         var emailTarget = document.getElementById('reservation_email_target');
         var emailCheckbox = createModal.querySelector('.js-email-pdf');
@@ -649,22 +693,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function syncExpiry() {
             if (!reservedAt || !duration || !expiresAt) return;
-            if (expiresAt.value) return;
             var m = parseInt(duration.value || '0', 10);
             if (![12, 18, 24].includes(m)) return;
             var computed = addMonthsNoOverflow(reservedAt.value, m);
-            if (computed) expiresAt.value = computed;
+            if (computed) {
+                expiresAt.value = computed;
+            }
         }
 
         if (reservedAt) reservedAt.addEventListener('change', function () {
-            if (expiresAt && !expiresAt.value) syncExpiry();
+            syncExpiry();
         });
         if (duration) duration.addEventListener('change', function () {
-            if (expiresAt && !expiresAt.value) syncExpiry();
+            syncExpiry();
         });
         if (clientSelect) clientSelect.addEventListener('change', syncEmailUi);
         if (emailCheckbox) emailCheckbox.addEventListener('change', syncEmailUi);
         syncEmailUi();
+        syncExpiry();
     }
 
     if (@json($shouldOpenCreate)) {

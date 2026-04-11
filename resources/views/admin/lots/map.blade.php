@@ -20,7 +20,7 @@
                     </div>
                 </div>
 
-                <div id="map" style="height: 500px; width: 100%;"></div>
+                <div id="map" style="height: 700px; width: 100%;"></div>
 
                 <div class="mt-3">
                     <span class="lot-legend me-3"><span class="lot-swatch lot-swatch--available"></span> Available</span>
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    var imageUrl = "{{ asset('backend/assets/images/map.png') }}";
+    var imageUrl = "{{ asset('backend/assets/images/map.jpg') }}";
 
     // Legacy bounds from the old lat/lng overlay (used only to transform older records).
     var legacyA = [14.5995, 120.9842];
@@ -321,10 +321,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var lots = @json($lots);
     var reservationsUrl = @json(route('admin.reservations.index'));
+    var lotSnapshotUrlTemplate = @json(route('admin.lots.snapshot', ['lot' => 0]));
     var newLotId = @json(session('new_lot_id'));
     var focusedLotId = @json(request('lot'));
     var newLotLayer = null;
     var focusedLotLayer = null;
+    var lotRefreshInFlight = {};
+
+    function lotSnapshotUrl(lotId) {
+        return String(lotSnapshotUrlTemplate).replace(/\/0\/snapshot$/, '/' + encodeURIComponent(String(lotId)) + '/snapshot');
+    }
 
     loadImageDimensions(imageUrl, function(dim) {
         imageW = dim.width || 1000;
@@ -592,6 +598,88 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    function lotStatus(lot) {
+        var status = (lot && lot.status) ? String(lot.status) : (lot && lot.is_occupied ? 'occupied' : 'available');
+        if (status !== 'available' && status !== 'occupied' && status !== 'reserved') status = 'available';
+        return status;
+    }
+
+    function buildPopupContent(lot) {
+        var status = lotStatus(lot);
+        var lotIdLabel = lot.lot_id ? String(lot.lot_id) : ('L-' + String(lot.lot_number || lot.id));
+
+        var popupContent = '<b>' + lotIdLabel + '</b><br>' +
+            'Owner: ' + (lot.name || '') + '<br>' +
+            'Status: ' + titleStatus(status) + '<br>' +
+            'Lot Category: ' + categoryLabel(lot.section) + '<br>' +
+            'Block: ' + (lot.block || '—') + '<br>';
+
+        if (lot.deceased && lot.deceased.length > 0) {
+            lot.deceased.forEach(function(d) {
+                popupContent += '<br><strong>Deceased:</strong> ' + d.first_name + ' ' + d.last_name + '<br>';
+                if (d.date_of_birth) popupContent += 'Born: ' + d.date_of_birth + '<br>';
+                if (d.date_of_death) popupContent += 'Died: ' + d.date_of_death + '<br>';
+            });
+        } else {
+            popupContent += '<br><em>No deceased recorded</em>';
+        }
+
+        if (status === 'available') {
+            popupContent += '<br><a class="btn btn-sm btn-lot-reserve mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
+        }
+
+        return popupContent;
+    }
+
+    function buildHoverContent(lot) {
+        var lotIdLabel = lot.lot_id ? String(lot.lot_id) : ('L-' + String(lot.lot_number || lot.id));
+        return '<div class="lot-hover-title">' + lotIdLabel + '</div>';
+    }
+
+    function applyLotToLayer(layer, lot) {
+        var status = lotStatus(lot);
+        layer.setStyle(statusStyle(status, !!layer.__isNew));
+
+        if (layer.getPopup && layer.getPopup()) {
+            layer.getPopup().setContent(buildPopupContent(lot));
+        }
+
+        if (layer.getTooltip && layer.getTooltip()) {
+            layer.getTooltip().setContent(buildHoverContent(lot));
+        }
+    }
+
+    function refreshLotLayer(layer) {
+        if (!layer || !layer.__lotId) return;
+        if (currentTool !== 'select') return;
+
+        var lotId = String(layer.__lotId);
+        if (lotRefreshInFlight[lotId]) return;
+        lotRefreshInFlight[lotId] = true;
+
+        fetch(lotSnapshotUrl(lotId), { headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function(data) {
+                var lot = data && data.lot ? data.lot : null;
+                if (!lot) return;
+
+                for (var i = 0; i < lots.length; i++) {
+                    if (String(lots[i].id) === String(lot.id)) {
+                        lots[i] = lot;
+                        break;
+                    }
+                }
+
+                applyLotToLayer(layer, lot);
+            })
+            .catch(function() {
+                // no-op
+            })
+            .then(function() {
+                lotRefreshInFlight[lotId] = false;
+            });
+    }
+
     function lotAnchorLatLng(lot) {
         var lat = Number(lot.latitude);
         var lng = Number(lot.longitude);
@@ -640,8 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderLots() {
         lots.forEach(function(lot) {
             var isNew = newLotId !== null && String(lot.id) === String(newLotId);
-            var status = lot.status || (lot.is_occupied ? 'occupied' : 'available');
-            if (status !== 'available' && status !== 'occupied' && status !== 'reserved') status = 'available';
+            var status = lotStatus(lot);
 
             var layer = lotToLayer(lot, statusStyle(status, isNew));
             if (!layer) return;
@@ -696,6 +783,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 opacity: 1,
                 sticky: true,
             });
+
+            layer.__lotId = lot.id;
+            layer.__isNew = isNew;
+            layer.on('popupopen', function() { refreshLotLayer(this); });
 
             if (isNew) newLotLayer = layer;
             if (focusedLotId !== null && String(lot.id) === String(focusedLotId)) {

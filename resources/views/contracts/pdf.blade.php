@@ -97,7 +97,7 @@
         <table class="kv">
             <tr>
                 <td>Contract Amount</td>
-                <td>{{ is_null($contract->total_amount) ? '-' : ('₱'.number_format((float) $contract->total_amount, 2)) }}</td>
+                <td>{{ is_null($contract->total_amount) ? '-' : ("\u{20B1}".number_format((float) $contract->total_amount, 2)) }}</td>
             </tr>
             <tr>
                 <td>Effective</td>
@@ -133,6 +133,7 @@
                     <li><strong>Termination & Default:</strong> Material breach, violation of park rules, or continued non-payment after notice may constitute default and may result in termination, without prejudice to other remedies under law.</li>
                     <li><strong>Transfer & Succession:</strong> Upon the Purchaser's death, rights may pass to lawful heirs/designated successors upon submission of sufficient proof and completion of record updates.</li>
                     <li><strong>Liability & Compliance:</strong> The Memorial Park is not liable for force majeure or third-party acts (including vandalism), except as required by law. The Purchaser shall comply with all rules and ordinances.</li>
+                    <li><strong>Data Privacy Consent:</strong> The Client hereby consents to the collection, storage, and processing of their personal data, including but not limited to name, contact information, and property details, in accordance with the Data Privacy Act of 2012 and the Company's Privacy Policy. The Client understands that this data will be used solely for administrative, legal, and operational purposes related to cemetery management. The Client may withdraw consent at any time by providing written notice, subject to applicable laws and regulations.</li>
                     <li><strong>Governing Law:</strong> This Contract is governed by the laws of the Republic of the Philippines. Disputes shall be filed before the proper courts or forum with jurisdiction.</li>
                 </ol>
             </div>

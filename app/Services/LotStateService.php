@@ -73,7 +73,8 @@ class LotStateService
                 ->where(function ($q) use ($today) {
                     $q->whereNull('ended_at')->orWhere('ended_at', '>=', $today->toDateString());
                 })
-                ->latest('id')
+                ->orderByDesc('updated_at')
+                ->orderByDesc('id')
                 ->first();
 
             $lot->is_occupied = false;
@@ -90,4 +91,3 @@ class LotStateService
         }, 3);
     }
 }
-
