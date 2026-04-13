@@ -202,8 +202,23 @@
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-end pt-3">
-                        <div>{{ $lots->links() }}</div>
+                    <div class="d-flex justify-content-between align-items-center pt-3">
+                        <div class="text-muted small">
+                            Showing {{ $lots->firstItem() ?? 0 }} to {{ $lots->lastItem() ?? 0 }} of {{ $lots->total() }} results
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($lots->onFirstPage())
+                                <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                            @else
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ $lots->previousPageUrl() }}">Previous</a>
+                            @endif
+                            <span class="text-muted">Page {{ $lots->currentPage() }} of {{ $lots->lastPage() }}</span>
+                            @if ($lots->hasMorePages())
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ $lots->nextPageUrl() }}">Next</a>
+                            @else
+                                <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

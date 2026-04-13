@@ -112,8 +112,23 @@
                     </table>
                 </div>
 
-                <div class="mt-3">
-                    {{ $logs->links() }}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted small">
+                        Showing {{ $logs->firstItem() ?? 0 }} to {{ $logs->lastItem() ?? 0 }} of {{ $logs->total() }} results
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($logs->onFirstPage())
+                            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                        @else
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $logs->previousPageUrl() }}">Previous</a>
+                        @endif
+                        <span class="text-muted">Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}</span>
+                        @if ($logs->hasMorePages())
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $logs->nextPageUrl() }}">Next</a>
+                        @else
+                            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

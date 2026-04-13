@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Lot;
 use App\Models\Reservation;
 use App\Services\LotStateService;
@@ -247,9 +248,13 @@ class LotController extends Controller
         }
 
         $lots = Lot::with('deceased')->get();
+        $clients = Client::query()
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
 
         return response()
-            ->view('admin.lots.map', compact('lots'))
+            ->view('admin.lots.map', compact('lots', 'clients'))
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
             ->header('Pragma', 'no-cache');
     }

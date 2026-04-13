@@ -63,6 +63,10 @@ Route::post('/visit', [VisitorLogController::class, 'store'])->name('public.visi
 Route::get('/visit/{visitorLog}/locator', [VisitorLogController::class, 'locator'])->name('public.visit.locator');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/pending-approval', function () {
+        return view('auth.pending-approval');
+    })->name('approval.pending');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -139,7 +143,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [IntermentController::class, 'index'])->name('index');
             Route::post('/', [IntermentController::class, 'store'])->name('store');
             Route::get('/api/clients/{client}/lots', [IntermentController::class, 'clientLots'])->name('api.clientLots');
+            Route::get('/api/lot-info', [IntermentController::class, 'lotInfo'])->name('lotInfo');
+            Route::get('/api/check-lot-eligibility', [IntermentController::class, 'checkLotEligibility'])->name('checkLotEligibility');
             Route::get('/{deceased}/documents/{document}', [IntermentController::class, 'downloadDocument'])->name('documents.download');
+            Route::get('/{deceased}/contract', [IntermentController::class, 'pdf'])->name('contract.pdf');
+            Route::get('/{deceased}/contract/download', [IntermentController::class, 'downloadContract'])->name('contract.download');
+            Route::post('/{deceased}/contract/send', [IntermentController::class, 'sendContract'])->name('contract.send');
+            Route::post('/{deceased}/payment', [IntermentController::class, 'updatePayment'])->name('updatePayment');
             Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
             Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
         });

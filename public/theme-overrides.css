@@ -621,3 +621,13 @@ body[data-menu-color] .content-page {
     max-width: 260px;
   }
 }
+
+/* Hide large SVG/icon placeholders in content area */
+.content svg[width]:not([width="16"]),
+.content svg[width]:not([width="24"]),
+.content svg[width]:not([width="32"]) {
+  max-width: 200px !important;
+  max-height: 200px !important;
+  width: auto !important;
+  height: auto !important;
+}

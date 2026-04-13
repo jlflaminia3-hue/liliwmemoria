@@ -1,6 +1,6 @@
 @php($logs = $auditLogs)
 
-<div class="table-responsive">
+<div class="table-cesponsive">
     <table class="table table-striped table-hover mb-0">
         <thead class="table-light">
             <tr>
@@ -92,6 +92,23 @@
     </table>
 </div>
 
-<div class="p-3">
-    {{ $logs->links() }}
+<div class="d-flex justify-content-between align-items-center p-3">
+    <div class="text-muted small">
+        Showing {{ $logs->firstItem() ?? 0 }} to {{ $logs->lastItem() ?? 0 }} of {{ $logs->total() }} results
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if ($logs->onFirstPage())
+            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+        @else
+            <a class="btn btn-sm btn-outline-secondary" href="{{ $logs->previousPageUrl() }}">Previous</a>
+        @endif
+        
+        <span class="text-muted">Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}</span>
+        
+        @if ($logs->hasMorePages())
+            <a class="btn btn-sm btn-outline-secondary" href="{{ $logs->nextPageUrl() }}">Next</a>
+        @else
+            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+        @endif
+    </div>
 </div>

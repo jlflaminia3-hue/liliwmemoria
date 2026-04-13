@@ -107,6 +107,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary">Update Lot</button>
+                    <a href="{{ route('admin.lots.map') }}" class="btn btn-info" target="_blank">View Map</a>
                     <a href="{{ route('admin.lots.index') }}" class="btn btn-secondary">Cancel</a>
                 </form>
             </div>

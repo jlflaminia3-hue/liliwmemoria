@@ -20,10 +20,6 @@
                     <i data-feather="map" class="me-1" style="height: 16px; width: 16px;"></i>
                     Open Map
                 </a>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createIntermentModal">
-                    <i data-feather="plus" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Add Interment
-                </button>
             </div>
         </div>
 
@@ -77,8 +73,16 @@
             <div class="col-md-6 col-xl">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted small text-uppercase fw-semibold">Needs Attention</div>
-                        <div class="fs-3 fw-bold text-danger">{{ number_format($stats['missing_docs']) }}</div>
+                        <div class="text-muted small text-uppercase fw-semibold">Unpaid</div>
+                        <div class="fs-3 fw-bold text-danger">{{ number_format($stats['unpaid']) }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold">Fully Paid</div>
+                        <div class="fs-3 fw-bold text-success">{{ number_format($stats['fully_paid']) }}</div>
                     </div>
                 </div>
             </div>
@@ -131,9 +135,8 @@
                                 <th>Interment</th>
                                 <th>Lot</th>
                                 <th>Status</th>
-                                <th>Client</th>
-                                <th>Documents</th>
-                                <th>Compliance</th>
+                                <th>Payment</th>
+                                <th>Contract</th>
                                 <th class="text-end" style="width: 70px;"></th>
                             </tr>
                         </thead>
@@ -158,7 +161,7 @@
                                 <tr>
                                     <td>
                                         <div class="fw-semibold">{{ $record->full_name }}</div>
-                                        <div class="text-muted small">Died {{ $record->date_of_death?->format('Y-m-d') ?? 'Not recorded' }}</div>
+                                        <div class="text-muted small">{{ $record->interment_number ?? 'INT-' . $record->id }}</div>
                                     </td>
                                     <td>
                                         <div>{{ $record->burial_date?->format('Y-m-d') ?? 'Pending schedule' }}</div>
@@ -182,35 +185,48 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($record->client)
-                                            <div>{{ $record->client->full_name }}</div>
-                                        @else
-                                            <span class="text-muted">No linked client</span>
+                                        @php
+                                            $paymentClass = match($record->payment_status) {
+                                                'fully_paid' => 'success',
+                                                'partial' => 'warning',
+                                                default => 'danger'
+                                            };
+                                            $paymentBgClass = match($record->payment_status) {
+                                                'fully_paid' => 'bg-success-subtle text-success border-success-subtle',
+                                                'partial' => 'bg-warning-subtle text-warning border-warning-subtle',
+                                                default => 'bg-danger-subtle text-danger border-danger-subtle'
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $paymentBgClass }}">{{ $record->payment_status_label }}</span>
+                                        @if ($record->interment_fee)
+                                            <div class="text-muted small mt-1">
+                                                ₱{{ number_format((float) ($record->payment_before_excavation ?? 0) + (float) ($record->payment_after_interment ?? 0), 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
+                                            </div>
                                         @endif
                                     </td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
-                                            @if ($record->death_certificate_path)
-                                                <a href="{{ route('admin.interments.documents.download', [$record, 'death_certificate']) }}" class="btn btn-soft-primary btn-sm">Death Cert</a>
-                                            @endif
-                                            @if ($record->burial_permit_path)
-                                                <a href="{{ route('admin.interments.documents.download', [$record, 'burial_permit']) }}" class="btn btn-soft-success btn-sm">Permit</a>
-                                            @endif
-                                            @if ($record->interment_form_path)
-                                                <a href="{{ route('admin.interments.documents.download', [$record, 'interment_form']) }}" class="btn btn-soft-secondary btn-sm">Other File</a>
-                                            @endif
-                                            @if (! $record->death_certificate_path && ! $record->burial_permit_path && ! $record->interment_form_path)
-                                                <span class="text-muted small">No files</span>
+                                            @if ($record->contract_path)
+                                                <a href="{{ route('admin.interments.contract.download', $record) }}" class="btn btn-soft-dark btn-sm">
+                                                    <i data-feather="download" class="me-1" style="height: 12px; width: 12px;"></i>
+                                                    Download
+                                                </a>
+                                                @if ($record->client?->email)
+                                                    <form method="POST" action="{{ route('admin.interments.contract.send', $record) }}" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-soft-primary btn-sm">
+                                                            <i data-feather="send" class="me-1" style="height: 12px; width: 12px;"></i>
+                                                            Email
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-secondary">No Contract</span>
+                                                @if ($record->payment_status === 'fully_paid')
+                                                    <span class="text-muted small">Complete payment to generate</span>
+                                                @endif
                                             @endif
                                         </div>
-                                    </td>
-                                    <td>
-                                        @if ($missingItems === [])
-                                            <span class="text-success fw-semibold">Complete</span>
-                                        @else
-                                            <div class="text-danger fw-semibold">Missing {{ count($missingItems) }}</div>
-                                            <div class="text-muted small">{{ implode(', ', $missingItems) }}</div>
-                                        @endif
                                     </td>
                                     <td class="text-end">
                                         <div class="dropdown">
@@ -227,17 +243,46 @@
                                                         <button type="submit" class="btn btn-link dropdown-item m-0">Start Exhumation</button>
                                                     </form>
                                                 @endif
+                                                @if ($record->death_certificate_path)
+                                                    <a class="dropdown-item" href="{{ route('admin.interments.documents.download', [$record, 'death_certificate']) }}">
+                                                        <i data-feather="file" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                        Download Death Cert
+                                                    </a>
+                                                @endif
+                                                @if ($record->burial_permit_path)
+                                                    <a class="dropdown-item" href="{{ route('admin.interments.documents.download', [$record, 'burial_permit']) }}">
+                                                        <i data-feather="file" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                        Download Permit
+                                                    </a>
+                                                @endif
+                                                <button
+                                                    type="button"
+                                                    class="dropdown-item js-record-payment"
+                                                    data-record-id="{{ $record->id }}"
+                                                    data-record-name="{{ $record->full_name }}"
+                                                    data-payment-status="{{ $record->payment_status }}"
+                                                    data-payment-before="{{ $record->payment_before_excavation ?? 0 }}"
+                                                    data-payment-after="{{ $record->payment_after_interment ?? 0 }}"
+                                                    data-interment-fee="{{ $record->interment_fee ?? 15000 }}"
+                                                >
+                                                    <i data-feather="credit-card" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                    Record Payment
+                                                </button>
                                                 <button
                                                     type="button"
                                                     class="dropdown-item js-edit-interment"
                                                     data-record='@json($recordJson)'
                                                 >
+                                                    <i data-feather="edit-2" class="me-1" style="height: 14px; width: 14px;"></i>
                                                     Edit
                                                 </button>
                                                 <form method="POST" action="{{ route('admin.interments.destroy', $record) }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this interment record?')">Delete</button>
+                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this interment record?')">
+                                                        <i data-feather="trash-2" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                        Delete
+                                                    </button>
                                                 </form>
                                             </div>
                                         </div>
@@ -245,38 +290,33 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted">No interment records found.</td>
+                                    <td colspan="7" class="text-center py-4 text-muted">No interment records found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <div class="pt-3 d-flex justify-content-end">
-                    {{ $interments->links() }}
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <div class="text-muted small">
+                        Showing {{ $interments->firstItem() ?? 0 }} to {{ $interments->lastItem() ?? 0 }} of {{ $interments->total() }} results
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($interments->onFirstPage())
+                            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                        @else
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $interments->previousPageUrl() }}">Previous</a>
+                        @endif
+                        <span class="text-muted">Page {{ $interments->currentPage() }} of {{ $interments->lastPage() }}</span>
+                        @if ($interments->hasMorePages())
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $interments->nextPageUrl() }}">Next</a>
+                        @else
+                            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="modal fade" id="createIntermentModal" tabindex="-1" aria-labelledby="createIntermentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <form method="POST" action="{{ route('admin.interments.store') }}" enctype="multipart/form-data" class="modal-content">
-            @csrf
-            <input type="hidden" name="_modal" value="create">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createIntermentModalLabel">Add Interment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @include('admin.interments.partials.form-fields', ['idPrefix' => 'create_'])
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Interment</button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -297,6 +337,59 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="recordPaymentForm" method="POST" action="" class="modal-content">
+            @csrf
+            <input type="hidden" name="_modal" value="payment">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recordPaymentModalLabel">Record Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border mb-3">
+                    <div class="mb-2">
+                        <strong>Deceased:</strong> <span id="payment_deceased_name">—</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Total Fee:</strong> ₱<span id="payment_total_fee">0.00</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Already Paid:</strong> ₱<span id="payment_already_paid">0.00</span>
+                    </div>
+                    <div>
+                        <strong>Remaining:</strong> ₱<span id="payment_remaining" class="text-danger fw-semibold">0.00</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="payment_type" class="form-label fw-semibold">Payment For</label>
+                    <select id="payment_type" name="payment_type" class="form-select" required>
+                        <option value="before_excavation">Before Excavation (₱7,500.00)</option>
+                        <option value="after_interment">After Interment (₱7,500.00)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="payment_amount" class="form-label fw-semibold">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₱</span>
+                        <input type="number" step="0.01" min="0" id="payment_amount" name="amount" class="form-control" value="0" required>
+                    </div>
+                </div>
+
+                <div class="form-text">
+                    Payment before excavation: ₱7,500.00 | Payment after interment: ₱7,500.00 | Total: ₱15,000.00
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Record Payment</button>
             </div>
         </form>
     </div>
@@ -578,7 +671,7 @@
             burialPermitInput.required = confirmed && !burialPermitInput.dataset.hasExisting;
         }
 
-        document.querySelectorAll('#createIntermentModal, #editIntermentModal').forEach(function (modal) {
+        document.querySelectorAll('#editIntermentModal').forEach(function (modal) {
             initClientPickers(modal);
             initLotPickers(modal);
             modal.querySelectorAll('.js-interment-status').forEach(function (statusInput) {
@@ -652,14 +745,52 @@
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();
             });
         });
+
+        // Record Payment Modal
+        var paymentModal = document.getElementById('recordPaymentModal');
+        var paymentForm = document.getElementById('recordPaymentForm');
+        var paymentButtons = document.querySelectorAll('.js-record-payment');
+
+        paymentButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var recordId = button.getAttribute('data-record-id');
+                var recordName = button.getAttribute('data-record-name');
+                var paymentStatus = button.getAttribute('data-payment-status');
+                var paymentBefore = parseFloat(button.getAttribute('data-payment-before')) || 0;
+                var paymentAfter = parseFloat(button.getAttribute('data-payment-after')) || 0;
+                var totalFee = parseFloat(button.getAttribute('data-interment-fee')) || 15000;
+
+                var alreadyPaid = paymentBefore + paymentAfter;
+                var remaining = Math.max(0, totalFee - alreadyPaid);
+
+                document.getElementById('payment_deceased_name').textContent = recordName;
+                document.getElementById('payment_total_fee').textContent = totalFee.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                document.getElementById('payment_already_paid').textContent = alreadyPaid.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                document.getElementById('payment_remaining').textContent = remaining.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                if (paymentStatus === 'fully_paid') {
+                    document.getElementById('payment_remaining').closest('div').querySelector('strong').textContent = 'Remaining:';
+                    document.getElementById('payment_remaining').classList.remove('text-danger');
+                    document.getElementById('payment_remaining').classList.add('text-success');
+                    document.getElementById('payment_remaining').textContent = '0.00 (Paid)';
+                }
+
+                paymentForm.action = "{{ url('admin/interments') }}/" + recordId + "/payment";
+
+                bootstrap.Modal.getOrCreateInstance(paymentModal).show();
+            });
+        });
+
+        if (paymentModal) {
+            paymentModal.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('payment_amount').value = '0';
+                document.getElementById('payment_type').value = 'before_excavation';
+                document.getElementById('payment_remaining').classList.remove('text-success');
+                document.getElementById('payment_remaining').classList.add('text-danger');
+            });
+        }
     })();
 </script>
-
-@if ($errors->any() && old('_modal') === 'create')
-    <script>
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('createIntermentModal')).show();
-    </script>
-@endif
 
 @if ($errors->any() && old('_modal') === 'edit')
     <script>

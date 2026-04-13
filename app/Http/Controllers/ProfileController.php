@@ -30,9 +30,18 @@ class ProfileController extends Controller
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
+            $request->user()->forceFill([
+                'email_verification_otp_hash' => null,
+                'email_verification_otp_expires_at' => null,
+                'email_verification_otp_sent_at' => null,
+            ]);
         }
 
         $request->user()->save();
+
+        if ($request->user()->wasChanged('email')) {
+            $request->user()->sendEmailVerificationNotification();
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

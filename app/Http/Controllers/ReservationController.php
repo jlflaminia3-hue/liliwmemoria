@@ -287,10 +287,25 @@ class ReservationController extends Controller
         }
 
         if ($emailWarning) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reservation created successfully.',
+                    'warning' => $emailWarning,
+                ]);
+            }
+
             return redirect()
                 ->route('admin.reservations.index')
                 ->with('warning', $emailWarning)
                 ->with('success', 'Reservation created successfully.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Reservation created successfully.',
+            ]);
         }
 
         return redirect()

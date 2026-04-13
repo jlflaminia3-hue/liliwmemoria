@@ -117,8 +117,23 @@
                     </table>
                 </div>
 
-                <div class="pt-3 d-flex justify-content-end">
-                    {{ $exhumations->links() }}
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <div class="text-muted small">
+                        Showing {{ $exhumations->firstItem() ?? 0 }} to {{ $exhumations->lastItem() ?? 0 }} of {{ $exhumations->total() }} results
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($exhumations->onFirstPage())
+                            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                        @else
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $exhumations->previousPageUrl() }}">Previous</a>
+                        @endif
+                        <span class="text-muted">Page {{ $exhumations->currentPage() }} of {{ $exhumations->lastPage() }}</span>
+                        @if ($exhumations->hasMorePages())
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $exhumations->nextPageUrl() }}">Next</a>
+                        @else
+                            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

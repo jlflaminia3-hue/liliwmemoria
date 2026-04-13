@@ -3,29 +3,65 @@
 @section('admin')
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="card-title">Cemetery Map</h4>
-                    <div>
-                        <div class="btn-group" role="group" aria-label="Map tools">
-                            <button type="button" class="btn btn-outline-secondary" id="toolSelect">Select</button>
-                            <button type="button" class="btn btn-outline-secondary" id="toolRect">
-                                <i data-feather="plus"></i> Rectangle
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" id="toolPoly">Polygon</button>
-                            <button type="button" class="btn btn-outline-secondary" id="btnFinishPoly" disabled>Finish</button>
-                            <button type="button" class="btn btn-outline-secondary" id="btnCancelDraw" disabled>Cancel</button>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+                <div class="map-toolbar">
+                    <div class="map-toolbar__left">
+                        <h4 class="map-toolbar__title mb-0">
+                            <i data-feather="map" class="me-2" style="height: 20px; width: 20px;"></i>Cemetery Map
+                        </h4>
+                    </div>
+                    <div class="map-toolbar__center">
+                        <div class="map-toolbar__search">
+                            <i data-feather="search" class="map-toolbar__search-icon"></i>
+                            <input type="text" id="lotSearchInput" class="form-control" placeholder="Search lots...">
                         </div>
+                        <div class="map-toolbar__divider"></div>
+                        <div class="btn-group map-toolbar__draw-tools" role="group" aria-label="Drawing tools">
+                            <button type="button" class="btn btn-sm btn-outline-secondary active" id="toolSelect" title="Select (S)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="m13 13 6 6"/></svg>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toolRect" title="Draw Rectangle (R)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toolPoly" title="Draw Polygon (P)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-success" id="btnFinishPoly" disabled title="Finish Drawing">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="btnCancelDraw" disabled title="Cancel Drawing">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-toolbar__right">
+                        <a href="{{ route('admin.reservations.index') }}" class="btn btn-sm btn-outline-primary">
+                            <i data-feather="calendar"></i>
+                            <span class="d-none d-md-inline">Reservations</span>
+                        </a>
+                        <a href="{{ route('admin.interments.index') }}" class="btn btn-sm btn-outline-primary">
+                            <i data-feather="map-pin"></i>
+                            <span class="d-none d-md-inline">Interments</span>
+                        </a>
                     </div>
                 </div>
 
-                <div id="map" style="height: 700px; width: 100%;"></div>
+                <div id="map" class="map-container"></div>
 
-                <div class="mt-3">
-                    <span class="lot-legend me-3"><span class="lot-swatch lot-swatch--available"></span> Available</span>
-                    <span class="lot-legend me-3"><span class="lot-swatch lot-swatch--occupied"></span> Occupied</span>
-                    <span class="lot-legend me-3"><span class="lot-swatch lot-swatch--reserved"></span> Reserved</span>
+                <div class="lot-legend-container">
+                    <span class="lot-legend">
+                        <span class="lot-swatch lot-swatch--available"></span>
+                        Available
+                    </span>
+                    <span class="lot-legend">
+                        <span class="lot-swatch lot-swatch--reserved"></span>
+                        Reserved
+                    </span>
+                    <span class="lot-legend">
+                        <span class="lot-swatch lot-swatch--occupied"></span>
+                        Occupied
+                    </span>
                 </div>
             </div>
         </div>
@@ -128,9 +164,355 @@
             </form>
         </div>
     </div>
- </div>
+  </div>
+
+<!-- Reservation Modal -->
+<div class="modal fade" id="reserveLotModal" tabindex="-1" aria-labelledby="reserveLotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form method="POST" action="{{ route('admin.reservations.store') }}" id="reserveLotForm" enctype="multipart/form-data" class="modal-content">
+            @csrf
+            <input type="hidden" name="_modal" value="map">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reserveLotModalLabel">Reserve Lot</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border small mb-3">
+                    <span class="fw-semibold">Lot:</span> <span id="reserve_lot_label">—</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lot</label>
+                        <select class="form-select js-lot-picker-select" name="lot_id" id="reserve_lot_id" required>
+                            <option value="">Select an available lot…</option>
+                            @foreach ($lots->filter(fn($lot) => ($lot->status === 'available' || $lot->status === null) && !$lot->is_occupied) as $lot)
+                                @php($label = ($lot->lot_id ?? ('L-'.$lot->lot_number)).' — '.($lot->lot_category_label ?? $lot->section).' • Block '.($lot->block ?: '—'))
+                                <option value="{{ $lot->id }}" data-lot-category="{{ $lot->lot_category_label ?? $lot->section }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lot category</label>
+                        <input type="text" class="form-control" id="reserve_lot_category_display" value="—" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Client</label>
+                        <select class="form-select js-reservation-client" name="client_id" id="reserve_client_id" required>
+                            <option value="">Select client…</option>
+                            @foreach ($clients as $client)
+                                <option value="{{ $client->id }}" data-email="{{ $client->email }}">{{ $client->full_name }}{{ $client->phone ? ' • '.$client->phone : '' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Payment status</label>
+                        <select class="form-select" name="payment_status" id="reserve_payment_status" required>
+                            <option value="">Select payment status…</option>
+                            <option value="downpayment">Downpayment</option>
+                            <option value="installment">Installment</option>
+                            <option value="fully_paid">Fully paid</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Contract duration</label>
+                        <select class="form-select js-contract-duration" name="contract_duration_months" id="reserve_contract_duration" required>
+                            <option value="">Select duration…</option>
+                            <option value="12">12 months</option>
+                            <option value="18">18 months</option>
+                            <option value="24">24 months</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Reservation date</label>
+                        <input type="date" class="form-control" name="reserved_at" id="reserve_reserved_at" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Contract amount</label>
+                        <input type="number" step="0.01" min="0" class="form-control" name="total_amount" id="reserve_total_amount" placeholder="0.00">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Downpayment</label>
+                        <input type="number" step="0.01" min="0" class="form-control" name="amount_paid" id="reserve_amount_paid" placeholder="0.00">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input js-email-pdf" type="checkbox" value="1" id="reserve_email_pdf" name="email_pdf" checked>
+                            <label class="form-check-label" for="reserve_email_pdf">
+                                Email contract PDF to client <span id="reserve_email_target" class="text-muted"></span>
+                            </label>
+                        </div>
+                        <div class="form-text text-warning d-none" id="reserve_no_email_warning">Client has no email on file.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Notes (optional)</label>
+                        <textarea class="form-control" name="notes" id="reserve_notes" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save reservation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Interment Modal -->
+<div class="modal fade" id="intermentLotModal" tabindex="-1" aria-labelledby="intermentLotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form method="POST" action="{{ route('admin.interments.store') }}" id="intermentLotForm" enctype="multipart/form-data" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title" id="intermentLotModalLabel">Add Interment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="alert alert-light border small mb-0">
+                            <span class="fw-semibold">Lot:</span> <span id="interment_lot_label">—</span>
+                            <span class="text-muted mx-2">|</span>
+                            <span class="fw-semibold">Owner:</span> <span id="interment_client_name">—</span>
+                            <span class="text-muted mx-2">|</span>
+                            <span id="interment_client_email_wrap" style="display: none;">
+                                <span class="fw-semibold">Email:</span> <span id="interment_client_email">—</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div id="interment_lot_eligibility" class="alert alert-info py-2 px-3 small mt-4" style="display: none;">
+                    <span id="interment_lot_eligibility_text"></span>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label for="interment_first_name" class="form-label fw-semibold">First Name</label>
+                        <input type="text" id="interment_first_name" name="first_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="interment_last_name" class="form-label fw-semibold">Last Name</label>
+                        <input type="text" id="interment_last_name" name="last_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="interment_client_id" class="form-label fw-semibold">Client</label>
+                        <select class="form-select" name="client_id" id="interment_client_id" required>
+                            <option value="">Select client…</option>
+                            @foreach ($clients as $client)
+                                <option value="{{ $client->id }}" data-full-name="{{ $client->full_name }}" data-email="{{ $client->email }}">{{ $client->full_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="interment_lot_id" class="form-label fw-semibold">Lot</label>
+                        <input type="hidden" name="lot_id" id="interment_lot_id">
+                        <input type="text" class="form-control" id="interment_lot_display" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_status" class="form-label fw-semibold">Status</label>
+                        <select id="interment_status" name="status" class="form-select" required>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_burial_date" class="form-label fw-semibold">Interment Date</label>
+                        <input type="date" id="interment_burial_date" name="burial_date" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_date_of_death" class="form-label fw-semibold">Date of Death</label>
+                        <input type="date" id="interment_date_of_death" name="date_of_death" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_date_of_birth" class="form-label fw-semibold">Date of Birth</label>
+                        <input type="date" id="interment_date_of_birth" name="date_of_birth" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_death_certificate" class="form-label fw-semibold">Death Certificate</label>
+                        <input type="file" id="interment_death_certificate" name="death_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="interment_burial_permit" class="form-label fw-semibold">Burial Permit</label>
+                        <input type="file" id="interment_burial_permit" name="burial_permit" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                    </div>
+
+                    <input type="hidden" name="interment_fee" value="15000">
+
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="interment_excavation_scheduled" name="excavation_scheduled" value="1">
+                            <label class="form-check-label" for="interment_excavation_scheduled">
+                                Excavation Scheduled
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="interment_excavation_date" class="form-label fw-semibold">Excavation Date</label>
+                        <input type="date" id="interment_excavation_date" name="excavation_date" class="form-control">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="interment_notes" class="form-label fw-semibold">Notes</label>
+                        <textarea id="interment_notes" name="notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Interment</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <style>
+    /* Map Toolbar */
+    .map-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .map-toolbar__left {
+        flex-shrink: 0;
+    }
+
+    .map-toolbar__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+    }
+
+    .map-toolbar__center {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .map-toolbar__search {
+        position: relative;
+        min-width: 220px;
+    }
+
+    .map-toolbar__search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .map-toolbar__search .form-control {
+        padding-left: 2.5rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 0.875rem;
+        height: 38px;
+    }
+
+    .map-toolbar__search .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+    }
+
+    .map-toolbar__divider {
+        width: 1px;
+        height: 24px;
+        background: #e2e8f0;
+    }
+
+    .map-toolbar__draw-tools .btn {
+        padding: 0.375rem 0.5rem;
+        border-radius: 6px;
+    }
+
+    .map-toolbar__draw-tools .btn.active {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+    
+    .map-toolbar__draw-tools .btn:hover:not(.active) {
+        background: #f1f5f9;
+    }
+
+    .map-toolbar__right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .map-toolbar__right .btn {
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .map-toolbar__right .btn i {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.25rem;
+    }
+
+    .map-toolbar__status {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    /* Map Container */
+    .map-container {
+        height: 520px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Legend Styles */
+    .lot-legend-container {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 0.875rem 0;
+        border-top: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+    }
+
+    .lot-legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .lot-swatch {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .lot-swatch--available { background: #22c55e; }
+    .lot-swatch--reserved { background: #3b82f6; }
+    .lot-swatch--occupied { background: #ef4444; }
+
+    /* Lot Marker Styles */
     .lot-marker-icon {
         background: transparent !important;
         border: 0 !important;
@@ -143,22 +525,10 @@
         transform: translateZ(0);
     }
 
-    .lot-marker--available {
-        --lot-color: #28a745;
-        --lot-rgb: 40, 167, 69;
-    }
+    .lot-marker--available { --lot-color: #28a745; --lot-rgb: 34, 197, 94; }
+    .lot-marker--occupied { --lot-color: #dc3545; --lot-rgb: 239, 68, 68; }
+    .lot-marker--reserved { --lot-color: #0d6efd; --lot-rgb: 59, 130, 246; }
 
-    .lot-marker--occupied {
-        --lot-color: #dc3545;
-        --lot-rgb: 220, 53, 69;
-    }
-
-    .lot-marker--reserved {
-        --lot-color: #0d6efd;
-        --lot-rgb: 13, 110, 253;
-    }
-
-    /* Simple flat rectangle marker (like the reference image) */
     .lot-marker__rect {
         width: 14px;
         height: 14px;
@@ -178,35 +548,28 @@
         100% { transform: scale(1); }
     }
 
-    .lot-legend {
-        display: inline-flex;
-        align-items: center;
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
+    /* Legend Swatches */
     .lot-swatch {
         display: inline-block;
-        width: 14px;
-        height: 14px;
-        border-radius: 2px;
-        border: 1px solid rgba(0, 0, 0, 0.25);
-        margin-right: 8px;
-        background: rgba(var(--lot-rgb), var(--lot-alpha, 0.65));
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
 
-    .lot-swatch--available { --lot-rgb: 40, 167, 69; }
-    .lot-swatch--occupied { --lot-rgb: 220, 53, 69; }
-    .lot-swatch--reserved { --lot-rgb: 13, 110, 253; }
+    .lot-swatch--available { background: #22c55e; }
+    .lot-swatch--reserved { background: #3b82f6; }
+    .lot-swatch--occupied { background: #ef4444; }
 
     .leaflet-tooltip.lot-hover-tooltip {
         background: #ffffff;
         border: 1px solid rgba(0, 0, 0, 0.12);
         border-radius: 10px;
-        padding: 6px 10px;
+        padding: 8px 12px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
         color: #212529;
         max-width: 160px;
+        font-size: 0.85rem;
     }
 
     .leaflet-tooltip.lot-hover-tooltip::before {
@@ -216,26 +579,6 @@
     .lot-hover-title {
         font-weight: 700;
         margin-bottom: 0;
-    }
-
-    /* Reserve button inside Leaflet popup: match LiliwMemoria theme color */
-    .leaflet-popup-content .btn-lot-reserve {
-        background-color: #142C14 !important;
-        border-color: #142C14 !important;
-        color: #ffffff !important;
-    }
-
-    .leaflet-popup-content .btn-lot-reserve:hover,
-    .leaflet-popup-content .btn-lot-reserve:focus {
-        background-color: #0f1f0f !important;
-        border-color: #0f1f0f !important;
-        color: #ffffff !important;
-    }
-
-    .lot-hover-meta {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 6px;
     }
 
     .lot-hover-grid {
@@ -250,15 +593,15 @@
         grid-template-columns: 64px 1fr;
         column-gap: 10px;
         align-items: start;
+        font-size: 0.8rem;
     }
 
     .lot-hover-k {
-        font-size: 0.8rem;
         color: #6c757d;
+        font-weight: 500;
     }
 
     .lot-hover-v {
-        font-size: 0.85rem;
         color: #212529;
         line-height: 1.25;
     }
@@ -266,6 +609,108 @@
     .lot-hover-line {
         font-size: 0.9rem;
         line-height: 1.3;
+    }
+
+    /* Leaflet Popup Styles */
+    .leaflet-popup-content .btn-lot-reserve {
+        background-color: #142C14 !important;
+        border-color: #142C14 !important;
+        color: #ffffff !important;
+        font-size: 0.85rem;
+    }
+
+    .leaflet-popup-content .btn-lot-reserve:hover,
+    .leaflet-popup-content .btn-lot-reserve:focus {
+        background-color: #0f1f0f !important;
+        border-color: #0f1f0f !important;
+        color: #ffffff !important;
+    }
+
+    .leaflet-popup-content .btn-lot-interment {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #ffffff !important;
+        font-size: 0.85rem;
+    }
+
+    .leaflet-popup-content .btn-lot-interment:hover,
+    .leaflet-popup-content .btn-lot-interment:focus {
+        background-color: #157347 !important;
+        border-color: #157347 !important;
+        color: #ffffff !important;
+    }
+
+    /* Leaflet Control Positioning */
+    #map .leaflet-control-container { 
+        position: absolute !important; 
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important; 
+        pointer-events: none; 
+    }
+
+    #map .leaflet-control { 
+        pointer-events: auto; 
+    }
+
+    #map .leaflet-control-zoom { 
+        position: absolute !important; 
+        top: 12px !important; 
+        left: 12px !important; 
+        z-index: 999 !important; 
+    }
+
+    /* Reservation Modal Styles */
+    #reserveLotModal .modal-body {
+        overflow: auto;
+        max-height: calc(100vh - 220px);
+    }
+
+    #reserveLotModal .modal-header {
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    #reserveLotModal .modal-title {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    #reserveLotModal .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.35rem;
+    }
+
+    #reserveLotModal .form-text {
+        color: #64748b;
+    }
+
+    /* Interment Modal Styles */
+    #intermentLotModal .modal-body {
+        overflow: auto;
+        max-height: calc(100vh - 220px);
+    }
+
+    #intermentLotModal .modal-header {
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    #intermentLotModal .modal-title {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    #intermentLotModal .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.35rem;
+    }
+
+    #intermentLotModal .form-text {
+        color: #64748b;
     }
 </style>
 
@@ -319,7 +764,8 @@ document.addEventListener('DOMContentLoaded', function() {
         map.setView(overlayBounds.getCenter(), zoom, { animate: false });
     }
 
-    var lots = @json($lots);
+        var lots = @json($lots);
+    var allLots = lots.slice(); // Keep original unfiltered list
     var reservationsUrl = @json(route('admin.reservations.index'));
     var lotSnapshotUrlTemplate = @json(route('admin.lots.snapshot', ['lot' => 0]));
     var newLotId = @json(session('new_lot_id'));
@@ -327,6 +773,35 @@ document.addEventListener('DOMContentLoaded', function() {
     var newLotLayer = null;
     var focusedLotLayer = null;
     var lotRefreshInFlight = {};
+    var lotLayers = {}; // Track lot layers for quick access
+    var mapViewUrl = @json(route('admin.lots.map'));
+
+    // Search functionality
+    var searchInput = document.getElementById('lotSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            var query = String(e.target.value || '').toLowerCase().trim();
+            
+            if (!query) {
+                lots = allLots.slice();
+            } else {
+                lots = allLots.filter(function(lot) {
+                    var lotId = String(lot.lot_id || '').toLowerCase();
+                    var owner = String(lot.name || '').toLowerCase();
+                    return lotId.includes(query) || owner.includes(query);
+                });
+            }
+            
+            // Re-render the map
+            map.eachLayer(function(layer) {
+                if (layer.__lotId !== undefined) {
+                    map.removeLayer(layer);
+                }
+            });
+            lotLayers = {};
+            renderLots();
+        });
+    }
 
     function lotSnapshotUrl(lotId) {
         return String(lotSnapshotUrlTemplate).replace(/\/0\/snapshot$/, '/' + encodeURIComponent(String(lotId)) + '/snapshot');
@@ -446,87 +921,6 @@ document.addEventListener('DOMContentLoaded', function() {
         syncModalFields();
     }
 
-    if (false) {
-    lots.forEach(function(lot) {
-        var isNew = newLotId !== null && String(lot.id) === String(newLotId);
-
-        var status = lot.status || (lot.is_occupied ? 'occupied' : 'available');
-        if (status !== 'available' && status !== 'occupied' && status !== 'reserved') {
-            status = 'available';
-        }
-
-        var markerClass = 'lot-marker--' + status;
-        if (isNew) markerClass += ' lot-marker--new';
-
-        var markerHtml =
-            '<div class="lot-marker ' + markerClass + '">' +
-                '<div class="lot-marker__rect"></div>' +
-            '</div>';
-
-        var icon = L.divIcon({
-            className: 'lot-marker-icon',
-            html: markerHtml,
-            iconSize: [14, 14],
-            iconAnchor: [7, 7],
-            popupAnchor: [0, -12],
-        });
-
-        var statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-
-        var lotIdLabel = lot.lot_id ? String(lot.lot_id) : ('L-' + String(lot.lot_number || lot.id));
-        var popupContent = '<b>' + lotIdLabel + '</b><br>';
-        popupContent += 'Owner: ' + lot.name + '<br>';
-        popupContent += 'Status: ' + statusLabel + '<br>';
-        popupContent += 'Lot Category: ' + categoryLabel(lot.section) + '<br>';
-        
-        if (lot.deceased && lot.deceased.length > 0) {
-            lot.deceased.forEach(function(d) {
-                popupContent += '<br><strong>Deceased:</strong> ' + d.first_name + ' ' + d.last_name + '<br>';
-                if (d.date_of_birth) popupContent += 'Born: ' + d.date_of_birth + '<br>';
-                if (d.date_of_death) popupContent += 'Died: ' + d.date_of_death + '<br>';
-            });
-        } else {
-            popupContent += '<br><em>No deceased recorded</em>';
-        }
-
-        var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
-            '<div class="lot-hover-grid">' +
-                '<div class="lot-hover-row"><div class="lot-hover-k">Owner</div><div class="lot-hover-v">' + lot.name + '</div></div>' +
-                '<div class="lot-hover-row"><div class="lot-hover-k">Status</div><div class="lot-hover-v">' + statusLabel + '</div></div>' +
-                '<div class="lot-hover-row"><div class="lot-hover-k">Lot Category</div><div class="lot-hover-v">' + categoryLabel(lot.section) + '</div></div>' +
-            '</div>';
-
-        if (lot.deceased && lot.deceased.length > 0) {
-            var d0 = lot.deceased[0];
-            hoverContent += '<div class="lot-hover-line"><strong>' + d0.first_name + ' ' + d0.last_name + '</strong></div>';
-            if (lot.deceased.length > 1) {
-                hoverContent += '<div class="lot-hover-line" style="color:#6c757d;">+' + (lot.deceased.length - 1) + ' more</div>';
-            }
-        } else if (status === 'occupied') {
-            hoverContent += '<div class="lot-hover-line"><em>No deceased recorded</em></div>';
-        }
-
-        var marker = L.marker([lot.latitude, lot.longitude], {icon: icon}).addTo(map);
-        marker.bindPopup(popupContent);
-        marker.bindTooltip(hoverContent, {
-            className: 'lot-hover-tooltip',
-            direction: 'top',
-            opacity: 1,
-            offset: [0, -10],
-        });
-
-        if (isNew) {
-            newLotMarker = marker;
-        }
-    });
-
-    if (newLotMarker) {
-        // Bring the newly-added lot into focus after saving.
-        map.panTo(newLotMarker.getLatLng(), { animate: true, duration: 0.6 });
-        newLotMarker.openTooltip();
-    }
-    }
-
     // Tooling + drawing behavior replaces the old "click anywhere to add a lot" flow.
     setTool('select');
 
@@ -555,14 +949,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function setActiveToolButton(tool) {
         [toolSelectBtn, toolRectBtn, toolPolyBtn].forEach(function(btn) {
             if (!btn) return;
-            btn.classList.remove('btn-secondary');
-            btn.classList.add('btn-outline-secondary');
+            btn.classList.remove('active');
         });
         var active = tool === 'rect' ? toolRectBtn : (tool === 'poly' ? toolPolyBtn : toolSelectBtn);
         if (active) {
-            active.classList.remove('btn-outline-secondary');
-            active.classList.add('btn-secondary');
+            active.classList.add('active');
         }
+        if (window.feather && typeof window.feather.replace === 'function') window.feather.replace();
     }
 
     function titleStatus(status) {
@@ -625,7 +1018,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (status === 'available') {
-            popupContent += '<br><a class="btn btn-sm btn-lot-reserve mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
+            popupContent += '<br><button class="btn btn-sm btn-lot-reserve mt-2" type="button" onclick="openReserveModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\', \'' + escapeHtml(categoryLabel(lot.section)) + '\')">Reserve this lot</button>';
+        }
+
+        if (status === 'reserved') {
+            popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
         }
 
         return popupContent;
@@ -751,7 +1148,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (status === 'available') {
-                popupContent += '<br><a class="btn btn-sm btn-lot-reserve mt-2" href="' + reservationsUrl + '?lot_id=' + encodeURIComponent(String(lot.id)) + '&create=1">Reserve this lot</a>';
+                popupContent += '<br><button class="btn btn-sm btn-lot-reserve mt-2" type="button" onclick="openReserveModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\', \'' + escapeHtml(categoryLabel(lot.section)) + '\')">Reserve this lot</button>';
+            }
+
+            if (status === 'reserved') {
+                popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
             }
 
             var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
@@ -776,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>';
 
             layer.addTo(map);
+            lotLayers[lot.id] = layer;
             layer.bindPopup(popupContent);
             layer.bindTooltip(hoverContent, {
                 className: 'lot-hover-tooltip',
@@ -918,6 +1320,263 @@ document.addEventListener('DOMContentLoaded', function() {
         img.onerror = function() { cb({ width: 1000, height: 700 }); };
         img.src = src;
     }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    window.openReserveModal = function(lotId, lotLabel, lotCategory) {
+        var lotSelect = document.getElementById('reserve_lot_id');
+        var lotLabelDisplay = document.getElementById('reserve_lot_label');
+        var lotCategoryDisplay = document.getElementById('reserve_lot_category_display');
+        
+        if (lotSelect) lotSelect.value = lotId;
+        if (lotLabelDisplay) lotLabelDisplay.textContent = lotLabel;
+        if (lotCategoryDisplay) lotCategoryDisplay.value = lotCategory || '—';
+
+        var modalEl = document.getElementById('reserveLotModal');
+        if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    };
+
+    var reserveForm = document.getElementById('reserveLotForm');
+    if (reserveForm) {
+        reserveForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(reserveForm);
+            var submitBtn = reserveForm.querySelector('button[type="submit"]');
+            var originalText = submitBtn ? submitBtn.textContent : 'Save';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+            }
+
+            fetch(reserveForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+            .then(function(response) {
+                if (response.redirected) {
+                    window.location.href = response.url || mapViewUrl;
+                    return;
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data && data.success) {
+                    var modalEl = document.getElementById('reserveLotModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    // Refresh the map to show updated lot status
+                    window.location.reload();
+                } else if (data && data.errors) {
+                    var errorMessages = Object.values(data.errors).flat().join('\n');
+                    alert('Error: ' + errorMessages);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(function() {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        });
+    }
+
+    var reserveClientSelect = document.getElementById('reserve_client_id');
+    var reserveEmailTarget = document.getElementById('reserve_email_target');
+    var reserveEmailCheckbox = document.getElementById('reserve_email_pdf');
+    var reserveNoEmailWarning = document.getElementById('reserve_no_email_warning');
+    var reserveLotSelect = document.getElementById('reserve_lot_id');
+    var reserveLotCategoryDisplay = document.getElementById('reserve_lot_category_display');
+
+    function syncReserveEmailUi() {
+        if (!reserveClientSelect || !reserveEmailTarget) return;
+        var opt = reserveClientSelect.selectedOptions && reserveClientSelect.selectedOptions[0];
+        var email = opt ? String(opt.getAttribute('data-email') || '').trim() : '';
+        reserveEmailTarget.textContent = email ? '(' + email + ')' : '(no email)';
+        var wantsEmail = reserveEmailCheckbox && reserveEmailCheckbox.checked;
+        var showWarn = wantsEmail && !email;
+        if (reserveNoEmailWarning) {
+            reserveNoEmailWarning.classList.toggle('d-none', !showWarn);
+        }
+    }
+
+    function syncReserveLotCategory() {
+        if (!reserveLotSelect || !reserveLotCategoryDisplay) return;
+        var opt = reserveLotSelect.selectedOptions && reserveLotSelect.selectedOptions[0];
+        var category = opt ? String(opt.getAttribute('data-lot-category') || '').trim() : '';
+        reserveLotCategoryDisplay.value = category !== '' ? category : '—';
+    }
+
+    if (reserveClientSelect) reserveClientSelect.addEventListener('change', syncReserveEmailUi);
+    if (reserveEmailCheckbox) reserveEmailCheckbox.addEventListener('change', syncReserveEmailUi);
+    if (reserveLotSelect) reserveLotSelect.addEventListener('change', syncReserveLotCategory);
+    syncReserveEmailUi();
+
+    // Interment Modal
+    window.openIntermentModal = function(lotId, lotLabel) {
+        var lotIdInput = document.getElementById('interment_lot_id');
+        var lotDisplay = document.getElementById('interment_lot_display');
+        var lotLabelDisplay = document.getElementById('interment_lot_label');
+        var eligibilityInfo = document.getElementById('interment_lot_eligibility');
+        var eligibilityText = document.getElementById('interment_lot_eligibility_text');
+        var clientSelect = document.getElementById('interment_client_id');
+        var submitBtn = document.querySelector('#intermentLotForm button[type="submit"]');
+        var modalEl = document.getElementById('intermentLotModal');
+        
+        if (lotIdInput) lotIdInput.value = lotId;
+        if (lotDisplay) lotDisplay.value = lotLabel;
+        if (lotLabelDisplay) lotLabelDisplay.textContent = lotLabel;
+
+        // Show modal immediately
+        if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        // Show loading state
+        if (eligibilityInfo) {
+            eligibilityInfo.style.display = 'block';
+            eligibilityInfo.className = 'alert alert-info py-2 px-3 small mb-3';
+            eligibilityText.textContent = 'Loading lot information...';
+        }
+
+        // Fetch lot info asynchronously
+        fetch('/admin/interments/api/lot-info?lot_id=' + encodeURIComponent(lotId))
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var clientNameEl = document.getElementById('interment_client_name');
+                var clientEmailEl = document.getElementById('interment_client_email');
+                var clientEmailWrap = document.getElementById('interment_client_email_wrap');
+                
+                // Auto-populate client if available
+                if (data.client && clientSelect) {
+                    clientSelect.value = data.client.id;
+                    if (clientNameEl) clientNameEl.textContent = data.client.full_name;
+                    if (clientEmailEl) clientEmailEl.textContent = data.client.email || '—';
+                    if (clientEmailWrap) {
+                        clientEmailWrap.style.display = data.client.email ? 'inline' : 'none';
+                    }
+                } else {
+                    if (clientNameEl) clientNameEl.textContent = '—';
+                    if (clientEmailEl) clientEmailEl.textContent = '—';
+                    if (clientEmailWrap) clientEmailWrap.style.display = 'none';
+                }
+
+                // Show eligibility status
+                if (!data.eligible) {
+                    if (eligibilityInfo) {
+                        eligibilityInfo.style.display = 'block';
+                        eligibilityInfo.className = 'alert alert-danger py-2 px-3 small mb-3';
+                        eligibilityText.textContent = data.reason || 'Cannot add interment to this lot.';
+                    }
+                    if (submitBtn) submitBtn.disabled = true;
+                } else {
+                    if (eligibilityInfo) {
+                        eligibilityInfo.style.display = 'block';
+                        eligibilityInfo.className = 'alert alert-success py-2 px-3 small mb-3';
+                        eligibilityText.textContent = 'Lot eligible (' + data.interment_count + '/' + data.max_interments + ' interments). Owner: ' + (data.client ? data.client.full_name : 'Not registered');
+                    }
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            })
+            .catch(function(error) {
+                console.error('Error fetching lot info:', error);
+                if (eligibilityInfo) {
+                    eligibilityInfo.style.display = 'block';
+                    eligibilityInfo.className = 'alert alert-warning py-2 px-3 small mb-3';
+                    eligibilityText.textContent = 'Could not load lot information.';
+                }
+                if (submitBtn) submitBtn.disabled = false;
+            });
+    };
+
+    // Update info bar when client selection changes
+    var intermentClientSelect = document.getElementById('interment_client_id');
+    if (intermentClientSelect) {
+        intermentClientSelect.addEventListener('change', function() {
+            var clientNameEl = document.getElementById('interment_client_name');
+            var clientEmailEl = document.getElementById('interment_client_email');
+            var clientEmailWrap = document.getElementById('interment_client_email_wrap');
+            var selectedOption = this.options[this.selectedIndex];
+            
+            if (selectedOption && selectedOption.value) {
+                var fullName = selectedOption.getAttribute('data-full-name') || selectedOption.textContent;
+                var email = selectedOption.getAttribute('data-email') || '';
+                if (clientNameEl) clientNameEl.textContent = fullName;
+                if (clientEmailEl) clientEmailEl.textContent = email || '—';
+                if (clientEmailWrap) clientEmailWrap.style.display = email ? 'inline' : 'none';
+            } else {
+                if (clientNameEl) clientNameEl.textContent = '—';
+                if (clientEmailEl) clientEmailEl.textContent = '—';
+                if (clientEmailWrap) clientEmailWrap.style.display = 'none';
+            }
+        });
+    }
+
+    var intermentForm = document.getElementById('intermentLotForm');
+    if (intermentForm) {
+        intermentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(intermentForm);
+            var submitBtn = intermentForm.querySelector('button[type="submit"]');
+            var originalText = submitBtn ? submitBtn.textContent : 'Save';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+            }
+
+            fetch(intermentForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: formData,
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    var modalEl = document.getElementById('intermentLotModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    window.location.reload();
+                } else if (response.status === 422) {
+                    return response.json().then(function(data) {
+                        var errorMessages = Object.values(data.errors || {}).flat().join('\n') || 'Validation failed.';
+                        alert('Error: ' + errorMessages);
+                        throw new Error(errorMessages);
+                    });
+                } else {
+                    alert('An error occurred. Please try again.');
+                    throw new Error('Request failed');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(function() {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        });
+    }
+
+    if (window.feather && typeof window.feather.replace === 'function') window.feather.replace();
 });
 </script>
 @endsection

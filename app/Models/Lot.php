@@ -131,4 +131,14 @@ class Lot extends Model
     {
         return $this->hasMany(Deceased::class);
     }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function lotOwnerships(): HasMany
+    {
+        return $this->hasMany(ClientLotOwnership::class);
+    }
 }

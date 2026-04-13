@@ -22,10 +22,6 @@
                     <i data-feather="map" class="me-1" style="height: 16px; width: 16px;"></i>
                     Open Map
                 </a>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createReservationModal">
-                    <i data-feather="plus" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Add Reservation
-                </button>
             </div>
         </div>
 
@@ -218,8 +214,23 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-end pt-3">
-                    <div>{{ $reservations->links() }}</div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <div class="text-muted small">
+                        Showing {{ $reservations->firstItem() ?? 0 }} to {{ $reservations->lastItem() ?? 0 }} of {{ $reservations->total() }} results
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($reservations->onFirstPage())
+                            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                        @else
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $reservations->previousPageUrl() }}">Previous</a>
+                        @endif
+                        <span class="text-muted">Page {{ $reservations->currentPage() }} of {{ $reservations->lastPage() }}</span>
+                        @if ($reservations->hasMorePages())
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $reservations->nextPageUrl() }}">Next</a>
+                        @else
+                            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -313,11 +324,6 @@
                         <div class="form-text">Expiry data is auto-calculated from reservation date + duration.</div>
 
                     </div>
-                    {{-- <div class="col-md-6 order-4 order-md-4">
-                        <label class="form-label fw-semibold">Expiry date</label>
-                        <input type="date" class="form-control" name="expires_at" id="create_expires_at" value="{{ old('expires_at') }}" readonly>
-                        <div class="form-text">Auto-calculated from reservation date + duration.</div>
-                    </div> --}}
                     <div class="col-md-6 order-2 order-md-2">
                         <label class="form-label fw-semibold">Contract duration</label>
                         <select class="form-select js-contract-duration" name="contract_duration_months" required>

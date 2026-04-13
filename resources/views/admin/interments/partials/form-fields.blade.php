@@ -2,6 +2,8 @@
     $record = $interment ?? null;
 @endphp
 
+<input type="hidden" name="interment_fee" value="{{ $record?->interment_fee ?? 15000 }}">
+
 <div class="row g-3">
     <div class="col-md-6">
         <label for="{{ $idPrefix }}first_name" class="form-label fw-semibold">First Name</label>
@@ -67,6 +69,13 @@
             <input type="hidden" class="js-lot-picker-initial-value" value="{{ old('lot_id', $record?->lot_id) }}">
             <div class="dropdown-menu w-100 mt-1 js-lot-picker-menu" style="max-height: 260px; overflow:auto;"></div>
             <div class="form-text">Select a client first, then choose from their lots.</div>
+            <div class="invalid-feedback" id="{{ $idPrefix }}lot_eligibility_feedback"></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="alert alert-info py-2 px-3 small mb-0" id="{{ $idPrefix }}lot_eligibility_info" style="display: none;">
+            <i data-feather="info" class="me-1" style="height: 14px; width: 14px;"></i>
+            <span id="{{ $idPrefix }}lot_eligibility_text"></span>
         </div>
     </div>
     <div class="col-md-4">
@@ -128,7 +137,28 @@
             <div class="form-text">Current file available for download.</div>
         @endif
     </div>
-    <div class="col-md-12">
+
+    <div class="col-md-6">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="{{ $idPrefix }}excavation_scheduled" name="excavation_scheduled" value="1" @checked(old('excavation_scheduled', $record?->excavation_scheduled))>
+            <label class="form-check-label" for="{{ $idPrefix }}excavation_scheduled">
+                Excavation Scheduled
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <label for="{{ $idPrefix }}excavation_date" class="form-label fw-semibold">Excavation Date</label>
+        <input
+            type="date"
+            id="{{ $idPrefix }}excavation_date"
+            name="excavation_date"
+            class="form-control"
+            value="{{ old('excavation_date', $record?->excavation_date?->format('Y-m-d')) }}"
+        >
+    </div>
+
+    <div class="col-12">
         <label for="{{ $idPrefix }}interment_form" class="form-label fw-semibold">Other Supporting Document</label>
         <input type="file" id="{{ $idPrefix }}interment_form" name="interment_form" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
         @if ($record?->interment_form_path)

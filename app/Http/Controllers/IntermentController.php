@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\IntermentContractMail;
 use App\Models\Client;
+use App\Models\ClientLotOwnership;
 use App\Models\Deceased;
 use App\Models\Lot;
+use App\Models\Reservation;
+use App\Services\Contracts\IntermentPdfService;
 use App\Services\LotStateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class IntermentController extends Controller
 {
@@ -27,18 +33,20 @@ class IntermentController extends Controller
             'search' => 'nullable|string|max:255',
             'status' => ['nullable', Rule::in(self::STATUSES)],
             'compliance' => ['nullable', Rule::in(['all', 'missing', 'ready'])],
+            'payment_status' => ['nullable', Rule::in(['all', 'unpaid', 'partial', 'fully_paid'])],
             'per_page' => ['nullable', Rule::in([10, 20, 50, 100])],
         ]);
 
         $search = trim((string) ($validated['search'] ?? ''));
         $status = (string) ($validated['status'] ?? '');
         $compliance = (string) ($validated['compliance'] ?? 'all');
+        $paymentStatus = (string) ($validated['payment_status'] ?? 'all');
         $perPage = (int) ($validated['per_page'] ?? 20);
 
         $query = Deceased::query()
             ->with([
                 'lot:id,lot_number,section,name,status,is_occupied',
-                'client:id,first_name,last_name',
+                'client:id,first_name,last_name,email',
                 'latestExhumation',
             ]);
 
@@ -47,6 +55,7 @@ class IntermentController extends Controller
                 $builder
                     ->where('first_name', 'like', '%'.$search.'%')
                     ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('interment_number', 'like', '%'.$search.'%')
                     ->orWhereHas('client', function ($clientQuery) use ($search) {
                         $clientQuery
                             ->where('first_name', 'like', '%'.$search.'%')
@@ -87,6 +96,10 @@ class IntermentController extends Controller
                 ->whereNotNull('burial_permit_path');
         }
 
+        if ($paymentStatus !== 'all') {
+            $query->where('payment_status', $paymentStatus);
+        }
+
         $interments = $query
             ->orderByRaw('CASE WHEN burial_date IS NULL THEN 1 ELSE 0 END')
             ->orderByDesc('burial_date')
@@ -111,6 +124,9 @@ class IntermentController extends Controller
                             ->whereNull('burial_permit_path');
                     });
             })->count(),
+            'unpaid' => (clone $statsBase)->where('payment_status', Deceased::PAYMENT_STATUS_UNPAID)->count(),
+            'partial' => (clone $statsBase)->where('payment_status', Deceased::PAYMENT_STATUS_PARTIAL)->count(),
+            'fully_paid' => (clone $statsBase)->where('payment_status', Deceased::PAYMENT_STATUS_FULLY_PAID)->count(),
         ];
 
         $lots = Lot::query()
@@ -126,12 +142,34 @@ class IntermentController extends Controller
         return view('admin.interments.index', compact('interments', 'stats', 'lots', 'clients'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, IntermentPdfService $pdfService)
     {
         $validated = $this->validateInterment($request);
+        $this->validateIntermentRules($request, $validated);
 
         DB::transaction(function () use ($request, $validated) {
-            $deceased = Deceased::create($this->buildPayload($request, $validated));
+            $lotId = (int) ($validated['lot_id'] ?? 0);
+
+            $canInter = Deceased::canAddInterment($lotId);
+            if (! $canInter['allowed']) {
+                throw ValidationException::withMessages([
+                    'lot_id' => $canInter['reason'],
+                ]);
+            }
+
+            $intermentNumber = Deceased::generateIntermentNumber();
+
+            $deceased = Deceased::create(array_merge(
+                $this->buildPayload($request, $validated),
+                [
+                    'interment_fee' => (float) ($validated['interment_fee'] ?? Deceased::INTERMENT_FEE_TOTAL),
+                    'payment_status' => Deceased::PAYMENT_STATUS_UNPAID,
+                    'excavation_scheduled' => ($validated['excavation_scheduled'] ?? false),
+                    'excavation_date' => $validated['excavation_date'] ?? null,
+                    'interment_number' => $intermentNumber,
+                ]
+            ));
+
             $this->syncLotState((int) $deceased->lot_id);
         });
 
@@ -140,14 +178,66 @@ class IntermentController extends Controller
             ->with('success', 'Interment record created successfully.');
     }
 
-    public function update(Request $request, Deceased $deceased)
+    public function update(Request $request, Deceased $deceased, IntermentPdfService $pdfService)
     {
         $validated = $this->validateInterment($request, $deceased);
+        $this->validateIntermentRules($request, $validated, $deceased);
 
-        DB::transaction(function () use ($request, $validated, $deceased) {
+        DB::transaction(function () use ($request, $validated, $deceased, $pdfService) {
             $oldLotId = (int) $deceased->lot_id;
 
-            $deceased->update($this->buildPayload($request, $validated, $deceased));
+            if ((int) ($validated['lot_id'] ?? 0) !== $oldLotId) {
+                $canInter = Deceased::canAddInterment((int) $validated['lot_id']);
+                if (! $canInter['allowed']) {
+                    throw ValidationException::withMessages([
+                        'lot_id' => $canInter['reason'],
+                    ]);
+                }
+            }
+
+            $paymentBefore = (float) ($deceased->payment_before_excavation ?? 0);
+            $paymentAfter = (float) ($deceased->payment_after_interment ?? 0);
+            $newPaymentBefore = (float) ($validated['payment_before_excavation'] ?? 0);
+            $newPaymentAfter = (float) ($validated['payment_after_interment'] ?? 0);
+            $totalFee = (float) ($validated['interment_fee'] ?? $deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+            if ($newPaymentBefore > $paymentBefore || $newPaymentAfter > $paymentAfter) {
+                $paymentBefore = max($paymentBefore, $newPaymentBefore);
+                $paymentAfter = max($paymentAfter, $newPaymentAfter);
+            }
+
+            $paymentStatus = Deceased::PAYMENT_STATUS_UNPAID;
+            if ($paymentBefore >= Deceased::INTERMENT_FEE_BEFORE_EXCAVATION && $paymentAfter >= Deceased::INTERMENT_FEE_AFTER_INTERMENT) {
+                $paymentStatus = Deceased::PAYMENT_STATUS_FULLY_PAID;
+            } elseif ($paymentBefore > 0 || $paymentAfter > 0) {
+                $paymentStatus = Deceased::PAYMENT_STATUS_PARTIAL;
+            }
+
+            $updatePayload = $this->buildPayload($request, $validated, $deceased);
+
+            if ($validated['payment_before_excavation_date'] ?? null) {
+                $updatePayload['payment_before_excavation_date'] = $validated['payment_before_excavation_date'];
+            }
+            if ($validated['payment_after_interment_date'] ?? null) {
+                $updatePayload['payment_after_interment_date'] = $validated['payment_after_interment_date'];
+            }
+
+            $deceased->update(array_merge($updatePayload, [
+                'interment_fee' => $totalFee,
+                'payment_before_excavation' => $paymentBefore ?: null,
+                'payment_after_interment' => $paymentAfter ?: null,
+                'payment_status' => $paymentStatus,
+                'excavation_scheduled' => ($validated['excavation_scheduled'] ?? false),
+                'excavation_date' => $validated['excavation_date'] ?? null,
+            ]));
+
+            if ($paymentStatus === Deceased::PAYMENT_STATUS_FULLY_PAID && ! $deceased->contract_path) {
+                $pdfBinary = $pdfService->renderPdfBinary($deceased);
+                $path = 'interments/contracts/interment-contract-'.$deceased->id.'.pdf';
+                Storage::disk('local')->put($path, $pdfBinary);
+                $deceased->contract_path = $path;
+                $deceased->save();
+            }
 
             $this->syncLotState($oldLotId);
             if ((int) $deceased->lot_id !== $oldLotId) {
@@ -171,6 +261,10 @@ class IntermentController extends Controller
                 }
             }
 
+            if ($deceased->contract_path) {
+                Storage::disk('local')->delete($deceased->contract_path);
+            }
+
             $deceased->delete();
             $this->syncLotState($lotId);
         });
@@ -191,9 +285,174 @@ class IntermentController extends Controller
         return Storage::disk('public')->download($path, basename($path));
     }
 
+    public function downloadContract(Deceased $deceased)
+    {
+        if (! $deceased->contract_path) {
+            abort(404, 'Contract not available. Complete payment to generate contract.');
+        }
+
+        $path = $deceased->contract_path;
+        abort_if(! Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->download($path, 'Interment-Contract-'.($deceased->interment_number ?? $deceased->id).'.pdf');
+    }
+
+    public function pdf(Deceased $interment, IntermentPdfService $pdfService)
+    {
+        $pdfBinary = $pdfService->renderPdfBinary($interment);
+        $filename = 'Interment-Contract-'.($interment->interment_number ?? $interment->id).'.pdf';
+
+        return response($pdfBinary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Length' => strlen($pdfBinary),
+        ]);
+    }
+
+    public function sendContract(Deceased $deceased, IntermentPdfService $pdfService)
+    {
+        if (! $deceased->contract_path) {
+            $pdfBinary = $pdfService->renderPdfBinary($deceased);
+            $path = 'interments/contracts/interment-contract-'.$deceased->id.'.pdf';
+            Storage::disk('local')->put($path, $pdfBinary);
+            $deceased->contract_path = $path;
+            $deceased->save();
+        }
+
+        $client = $deceased->client;
+        if (! $client?->email) {
+            return back()->with('warning', 'Client has no email on file.');
+        }
+
+        try {
+            $pdfBinary = Storage::disk('local')->get($deceased->contract_path);
+            Mail::to($client->email)->send(new IntermentContractMail($deceased, $pdfBinary));
+
+            $deceased->contract_sent_at = now();
+            $deceased->save();
+
+            return back()->with('success', 'Contract sent to '.$client->email.' successfully.');
+        } catch (\Exception $e) {
+            report($e);
+
+            return back()->with('warning', 'Failed to send contract email. Please check your mail server settings.');
+        }
+    }
+
+    public function updatePayment(Request $request, Deceased $deceased, IntermentPdfService $pdfService)
+    {
+        $validated = $request->validate([
+            'payment_type' => ['required', Rule::in(['before_excavation', 'after_interment'])],
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($validated, $deceased, $pdfService) {
+            $paymentType = $validated['payment_type'];
+            $amount = (float) $validated['amount'];
+
+            if ($paymentType === 'before_excavation') {
+                $deceased->payment_before_excavation = $amount;
+                $deceased->payment_before_excavation_date = now()->toDateString();
+            } else {
+                $deceased->payment_after_interment = $amount;
+                $deceased->payment_after_interment_date = now()->toDateString();
+            }
+
+            $totalPaid = (float) ($deceased->payment_before_excavation ?? 0) + (float) ($deceased->payment_after_interment ?? 0);
+            $totalFee = (float) ($deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+            if ($totalPaid >= $totalFee) {
+                $deceased->payment_status = Deceased::PAYMENT_STATUS_FULLY_PAID;
+
+                if (! $deceased->contract_path) {
+                    $pdfBinary = $pdfService->renderPdfBinary($deceased);
+                    $path = 'interments/contracts/interment-contract-'.$deceased->id.'.pdf';
+                    Storage::disk('local')->put($path, $pdfBinary);
+                    $deceased->contract_path = $path;
+                }
+            } elseif ($totalPaid > 0) {
+                $deceased->payment_status = Deceased::PAYMENT_STATUS_PARTIAL;
+            }
+
+            $deceased->save();
+            $this->syncLotState((int) $deceased->lot_id);
+        });
+
+        return back()->with('success', 'Payment updated successfully.');
+    }
+
+    public function checkLotEligibility(Request $request)
+    {
+        $lotId = $request->input('lot_id');
+        abort_unless($lotId, 400);
+
+        $canInter = Deceased::canAddInterment((int) $lotId);
+        $nextEligible = Deceased::getNextEligibleDate((int) $lotId);
+
+        return response()->json([
+            'eligible' => $canInter['allowed'],
+            'reason' => $canInter['reason'] ?? null,
+            'interment_count' => $canInter['interment_count'] ?? 0,
+            'max_interments' => Deceased::MAX_INTERMENTS_PER_LOT,
+            'next_eligible_date' => $nextEligible?->format('Y-m-d'),
+            'min_years_gap' => Deceased::MIN_YEARS_BETWEEN_INTERMENTS,
+        ]);
+    }
+
+    public function lotInfo(Request $request)
+    {
+        $lotId = $request->input('lot_id');
+        abort_unless($lotId, 400);
+
+        $lot = Lot::find($lotId);
+        abort_unless($lot, 404);
+
+        $client = null;
+
+        // Get the client from lot ownerships first
+        $ownership = ClientLotOwnership::with('client')
+            ->where('lot_id', $lotId)
+            ->whereNull('ended_at')
+            ->first();
+
+        if ($ownership && $ownership->client) {
+            $client = $ownership->client;
+        } else {
+            // Fallback: get the client from the lot's active/fulfilled reservation
+            $reservation = Reservation::with('client')
+                ->where('lot_id', $lotId)
+                ->whereIn('status', ['active', 'fulfilled'])
+                ->first();
+
+            $client = $reservation?->client;
+        }
+
+        $canInter = Deceased::canAddInterment((int) $lotId);
+        $nextEligible = Deceased::getNextEligibleDate((int) $lotId);
+
+        return response()->json([
+            'lot_id' => $lot->id,
+            'lot_number' => $lot->lot_id,
+            'section' => $lot->section,
+            'lot_category_label' => $lot->lot_category_label,
+            'client' => $client ? [
+                'id' => $client->id,
+                'full_name' => $client->full_name,
+                'email' => $client->email,
+                'phone' => $client->phone,
+                'address' => $client->address,
+            ] : null,
+            'eligible' => $canInter['allowed'],
+            'reason' => $canInter['reason'] ?? null,
+            'interment_count' => $canInter['interment_count'] ?? 0,
+            'max_interments' => Deceased::MAX_INTERMENTS_PER_LOT,
+            'next_eligible_date' => $nextEligible?->format('Y-m-d'),
+            'min_years_gap' => Deceased::MIN_YEARS_BETWEEN_INTERMENTS,
+        ]);
+    }
+
     public function clientLots(Client $client)
     {
-        // Owned/purchased lots
         $ownedLots = $client
             ->lotOwnerships()
             ->with('lot:id,lot_number,section,name')
@@ -208,7 +467,6 @@ class IntermentController extends Controller
                 ];
             });
 
-        // Reserved lots (active or fulfilled)
         $reservedLots = $client
             ->reservations()
             ->whereIn('status', ['active', 'fulfilled'])
@@ -224,7 +482,6 @@ class IntermentController extends Controller
                 ];
             });
 
-        // Contract lots (active or pending, regardless of payment status)
         $contractLots = $client
             ->contracts()
             ->whereIn('status', ['active', 'pending'])
@@ -241,7 +498,6 @@ class IntermentController extends Controller
                 ];
             });
 
-        // Combine and deduplicate by lot id
         $lots = collect()
             ->merge($ownedLots)
             ->merge($reservedLots)
@@ -268,7 +524,7 @@ class IntermentController extends Controller
 
     private function validateInterment(Request $request, ?Deceased $deceased = null): array
     {
-        $validated = $request->validate([
+        $rules = [
             'client_id' => 'nullable|exists:clients,id',
             'lot_id' => 'required|exists:lots,id',
             'first_name' => 'required|string|max:255',
@@ -281,9 +537,19 @@ class IntermentController extends Controller
             'death_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'burial_permit' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'interment_form' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'interment_fee' => 'nullable|numeric|min:0',
+            'payment_before_excavation' => 'nullable|numeric|min:0',
+            'payment_after_interment' => 'nullable|numeric|min:0',
+            'payment_before_excavation_date' => 'nullable|date',
+            'payment_after_interment_date' => 'nullable|date',
+            'excavation_scheduled' => 'nullable|boolean',
+            'excavation_date' => 'nullable|date',
+            'email_contract' => 'nullable|boolean',
             '_modal' => 'nullable|string',
             '_record_id' => 'nullable|integer',
-        ]);
+        ];
+
+        $validated = $request->validate($rules);
 
         $burialPermitPresent = $request->hasFile('burial_permit')
             || (bool) ($deceased?->burial_permit_path);
@@ -303,6 +569,18 @@ class IntermentController extends Controller
         }
 
         return $validated;
+    }
+
+    private function validateIntermentRules(Request $request, array $validated, ?Deceased $deceased = null): void
+    {
+        $lotId = (int) ($validated['lot_id'] ?? 0);
+
+        $canInter = Deceased::canAddInterment($lotId);
+        if (! $canInter['allowed']) {
+            throw ValidationException::withMessages([
+                'lot_id' => $canInter['reason'],
+            ]);
+        }
     }
 
     private function buildPayload(Request $request, array $validated, ?Deceased $deceased = null): array

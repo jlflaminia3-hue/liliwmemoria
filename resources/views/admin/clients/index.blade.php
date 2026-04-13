@@ -209,8 +209,23 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-end pt-3">
-                    <div>{{ $clients->links() }}</div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <div class="text-muted small">
+                        Showing {{ $clients->firstItem() ?? 0 }} to {{ $clients->lastItem() ?? 0 }} of {{ $clients->total() }} results
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($clients->onFirstPage())
+                            <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                        @else
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $clients->previousPageUrl() }}">Previous</a>
+                        @endif
+                        <span class="text-muted">Page {{ $clients->currentPage() }} of {{ $clients->lastPage() }}</span>
+                        @if ($clients->hasMorePages())
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ $clients->nextPageUrl() }}">Next</a>
+                        @else
+                            <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

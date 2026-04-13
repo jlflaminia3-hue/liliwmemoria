@@ -59,6 +59,18 @@ class VisitorLogController extends Controller
 
         abort_if(! $visitorLog->deceased?->lot, 404);
 
+        $lanes = [];
+        $lanesPath = config('cemetery.lanes_json');
+        if (is_string($lanesPath) && $lanesPath !== '') {
+            $fullPath = public_path(ltrim($lanesPath, '/\\'));
+            if (is_file($fullPath)) {
+                $decoded = json_decode((string) file_get_contents($fullPath), true);
+                if (is_array($decoded)) {
+                    $lanes = $decoded;
+                }
+            }
+        }
+
         return view('visit.locator', [
             'log' => $visitorLog,
             'deceased' => $visitorLog->deceased,
@@ -69,6 +81,8 @@ class VisitorLogController extends Controller
                 'y' => (float) config('cemetery.entrance_y'),
                 'label' => (string) config('cemetery.entrance_label'),
             ],
+            'lanes' => $lanes,
+            'lanesSnapDistance' => (float) config('cemetery.lanes_snap_distance', 80),
         ]);
     }
 }

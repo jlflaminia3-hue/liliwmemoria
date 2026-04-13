@@ -82,8 +82,23 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-3">
-                {{ $users->links() }}
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted small">
+                    Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ $users->total() }} results
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if ($users->onFirstPage())
+                        <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+                    @else
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ $users->previousPageUrl() }}">Previous</a>
+                    @endif
+                    <span class="text-muted">Page {{ $users->currentPage() }} of {{ $users->lastPage() }}</span>
+                    @if ($users->hasMorePages())
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ $users->nextPageUrl() }}">Next</a>
+                    @else
+                        <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
