@@ -30,6 +30,9 @@
   <link rel="stylesheet" href="{{ asset('frontend/assets/css/niceselect.css') }}">
   <link rel="stylesheet" href="{{ asset('frontend/assets/css/animate.min.css') }}">
 
+  <!-- Flatpickr (date picker) -->
+  <link href="{{ asset('backend/assets/libs/flatpickr/flatpickr.min.css') }}" rel="stylesheet" type="text/css">
+
 
 
   <!-- Code Editor  -->
@@ -82,6 +85,9 @@
   <!-- Inquiry Modal -->
   @include('home.body.inquiry_modal')
 
+  <!-- Appointment Modal -->
+  @include('home.body.appointment_modal')
+
 
   <!-- Main -->
   @yield('home')
@@ -118,6 +124,8 @@
   <script src="{{ asset('frontend/assets/js/slick.js') }}"></script>
 
   <script src="{{ asset('frontend/assets/js/app.js') }}"></script>
+  <script src="{{ asset('backend/assets/libs/flatpickr/flatpickr.min.js') }}"></script>
+  <script src="{{ asset('backend/assets/js/pages/admin-datepickers.js') }}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var inquiryShouldOpen = @json(session('inquiry_status') || $errors->inquiry->any());
@@ -136,6 +144,13 @@
           }
         });
       });
+
+      var appointmentShouldOpen = @json(session('appointment_status') || $errors->appointment->any());
+      var appointmentModalEl = document.getElementById('appointmentModal');
+
+      if (appointmentShouldOpen && appointmentModalEl && window.bootstrap) {
+        window.bootstrap.Modal.getOrCreateInstance(appointmentModalEl).show();
+      }
     });
   </script>
 

@@ -5,10 +5,7 @@ use App\Models\Deceased;
 use App\Models\Lot;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-
-uses(Tests\TestCase::class, RefreshDatabase::class);
 
 it('lets an admin create a confirmed interment and marks the lot occupied', function () {
     Storage::fake('public');

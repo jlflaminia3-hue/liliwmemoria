@@ -30,6 +30,9 @@
               </nav>
             </div>
           </div>
+          {{-- <div class="lonyo-header-info-wraper2">
+            <a class="lonyo-default-btn lonyo-header-btn liliwmemoria-appointment-trigger" href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book an Appointment</a>
+          </div> --}}
           <div class="lonyo-header-info-wraper2">
             <a class="lonyo-default-btn lonyo-header-btn liliwmemoria-inquiry-trigger" href="#" data-bs-toggle="modal" data-bs-target="#inquiryModal">Inquire</a>
           </div>

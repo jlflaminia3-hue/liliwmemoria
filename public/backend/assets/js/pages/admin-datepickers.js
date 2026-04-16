@@ -10,7 +10,7 @@
 
         fp.altInput.required = !!input.required;
         fp.altInput.disabled = !!input.disabled;
-        fp.altInput.readOnly = !!input.readOnly;
+        fp.altInput.readOnly = false;
         fp.altInput.autocomplete = "off";
 
         var describedBy = input.getAttribute("aria-describedby");
@@ -30,10 +30,11 @@
             allowInput: true,
             altInput: true,
             altInputClass: altClass,
-            altFormat: "F j, Y",
+            altFormat: "M j, Y",
             dateFormat: "Y-m-d",
             minDate: input.getAttribute("min") || undefined,
             maxDate: input.getAttribute("max") || undefined,
+            disableMobile: true,
             onReady: function (_, __, fp) {
                 syncAltInputAttributes(fp, input);
             }
@@ -50,12 +51,35 @@
             allowInput: true,
             altInput: true,
             altInputClass: altClass,
-            altFormat: "F j, Y H:i",
+            altFormat: "M j, Y g:i K",
             dateFormat: "Y-m-d\\TH:i",
             enableTime: true,
-            time_24hr: true,
+            time_24hr: false,
             minDate: input.getAttribute("min") || undefined,
             maxDate: input.getAttribute("max") || undefined,
+            disableMobile: true,
+            onReady: function (_, __, fp) {
+                syncAltInputAttributes(fp, input);
+            }
+        });
+    }
+
+    function initTimePicker(input) {
+        if (!input || input._flatpickr || !hasFlatpickr()) return;
+
+        var cssClass = (input.getAttribute("class") || "").trim();
+        var altClass = cssClass || "form-control";
+
+        window.flatpickr(input, {
+            allowInput: true,
+            altInput: true,
+            altInputClass: altClass,
+            altFormat: "h:i K",
+            dateFormat: "H:i",
+            enableTime: true,
+            noCalendar: true,
+            time_24hr: false,
+            disableMobile: true,
             onReady: function (_, __, fp) {
                 syncAltInputAttributes(fp, input);
             }
@@ -68,6 +92,7 @@
 
         Array.prototype.forEach.call(scope.querySelectorAll('input[type="date"]'), initDatePicker);
         Array.prototype.forEach.call(scope.querySelectorAll('input[type="datetime-local"]'), initDateTimePicker);
+        Array.prototype.forEach.call(scope.querySelectorAll('input[type="time"]'), initTimePicker);
     }
 
     function setPickerValue(input, value) {

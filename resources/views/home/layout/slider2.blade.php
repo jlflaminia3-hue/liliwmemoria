@@ -7,8 +7,8 @@
             <h2 class="lonyo-slide-title">What can we do for you?</h2>
           </div>
           <div class="col-xl-4 col-lg-4 d-flex align-items-center justify-content-end">
-            <div class="lonyo-title-btn">
-              <a class="lonyo-default-btn hero-btn" href="contact-us.html">Book an Appointment</a>
+            <div class="lonyo-title-btn" data-aos="fade-up" data-aos-duration="900">
+              <a class="lonyo-default-btn hero-btn" href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book an Appointment</a>
             </div>
 
           </div>
@@ -19,11 +19,12 @@
 <div class="lonyo-testimonial-slider-init">
     @php
       $cards = [
-        ['title' => 'BACK OFFICE LOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'BURIAL PLOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'GARDEN LOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'MAUSOLEUM', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'PHASES', 'img' => 'frontend/assets/images/v1/img1.png'],
+        ['title' => 'BACK OFFICE LOTS', 'img' => 'frontend/assets/images/service/backoffice.jpg'],
+        ['title' => 'NARRA', 'img' => 'frontend/assets/images/service/narra.jpg'],
+        ['title' => 'GARDEN LOTS', 'img' => 'frontend/assets/images/service/garden-lot.jpg'],
+        ['title' => 'MAUSOLEUM', 'img' => 'frontend/assets/images/service/mausoleum.jpg'],
+        ['title' => 'PHASES', 'img' => 'frontend/assets/images/service/phase1.jpg'],
+        
       ];
     @endphp
 

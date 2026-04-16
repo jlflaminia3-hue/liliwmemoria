@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\ClientCommunicationController;
 use App\Http\Controllers\ClientContractController;
@@ -211,3 +212,4 @@ Route::post('/verify', [AdminController::class, 'VerificationVerify'])->name('cu
 
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.submit');
 Route::post('/contact-us', [ContactController::class, 'storeInquiry'])->name('contact.inquiry.submit');
+Route::post('/appointment', [AppointmentController::class, 'store'])->name('appointment.store');
