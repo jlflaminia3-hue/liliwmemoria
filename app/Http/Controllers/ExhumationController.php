@@ -6,6 +6,7 @@ use App\Models\ClientCommunication;
 use App\Models\ClientLotOwnership;
 use App\Models\Deceased;
 use App\Models\Exhumation;
+use App\Models\ExhumationPayment;
 use App\Models\Lot;
 use App\Services\Exhumations\TransferCertificateService;
 use Carbon\CarbonImmutable;
@@ -81,6 +82,7 @@ class ExhumationController extends Controller
         $exhumation->loadMissing([
             'deceased.lot',
             'deceased.client',
+            'payments',
         ]);
 
         return view('admin.exhumations.show', compact('exhumation'));
@@ -116,6 +118,28 @@ class ExhumationController extends Controller
         return redirect()
             ->route('admin.exhumations.show', $exhumation)
             ->with('success', 'Exhumation updated.');
+    }
+
+    public function storePayment(Request $request, Exhumation $exhumation)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_date' => 'required|date',
+            'method' => 'required|string',
+            'reference_number' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        ExhumationPayment::create([
+            'exhumation_id' => $exhumation->id,
+            'amount' => $validated['amount'],
+            'payment_date' => $validated['payment_date'],
+            'method' => $validated['method'],
+            'reference_number' => $validated['reference_number'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return back()->with('success', 'Payment recorded successfully.');
     }
 
     public function downloadDocument(Exhumation $exhumation, string $document)

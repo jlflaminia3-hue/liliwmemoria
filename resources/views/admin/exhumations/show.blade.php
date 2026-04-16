@@ -200,6 +200,9 @@
                                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-docs" type="button" role="tab">Documents</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-payments" type="button" role="tab">Payments</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
                                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-destination" type="button" role="tab">Destination</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -311,6 +314,100 @@
                                                 @endif
                                             </div>
                                             <div class="text-muted small mt-2">Tip: Generate the certificate after destination and transport details are filled.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="tab-payments" role="tabpanel">
+                                    <div class="row g-4">
+                                        <div class="col-lg-8">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-4">
+                                                    <div class="p-3 border rounded">
+                                                        <div class="text-muted small">Total Fee</div>
+                                                        <div class="h5 mb-0">₱{{ number_format(\App\Models\Exhumation::EXHUMATION_FEE, 2) }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="p-3 border rounded">
+                                                        <div class="text-muted small">Paid</div>
+                                                        <div class="h5 mb-0">₱{{ number_format((float) $exhumation->total_paid, 2) }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="p-3 border rounded">
+                                                        <div class="text-muted small">Remaining</div>
+                                                        <div class="h5 mb-0">₱{{ number_format((float) $exhumation->remaining_balance, 2) }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <h6 class="mb-2">Payment History</h6>
+                                            @if ($exhumation->payments->isEmpty())
+                                                <div class="alert alert-info">No payments recorded yet.</div>
+                                            @else
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Method</th>
+                                                                <th>Reference</th>
+                                                                <th class="text-end">Amount</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($exhumation->payments as $payment)
+                                                                <tr>
+                                                                    <td>{{ $payment->payment_date->format('Y-m-d') }}</td>
+                                                                    <td>{{ ucfirst($payment->method) }}</td>
+                                                                    <td>{{ $payment->reference_number ?? '-' }}</td>
+                                                                    <td class="text-end">₱{{ number_format((float) $payment->amount, 2) }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="col-lg-4">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <h6 class="card-title mb-3">Record Payment</h6>
+                                                    <form method="POST" action="{{ route('admin.exhumations.storePayment', $exhumation) }}">
+                                                        @csrf
+                                                        <div class="mb-2">
+                                                            <label class="form-label mb-1">Date</label>
+                                                            <input type="date" name="payment_date" class="form-control form-control-sm" value="{{ now()->toDateString() }}" required>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label mb-1">Amount</label>
+                                                            <input type="number" step="0.01" min="0" name="amount" class="form-control form-control-sm" required>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label mb-1">Method</label>
+                                                            <select name="method" class="form-select form-select-sm" required>
+                                                                <option value="cash">Cash</option>
+                                                                <option value="bank">Bank Transfer</option>
+                                                                <option value="gcash">GCash</option>
+                                                                <option value="card">Card</option>
+                                                                <option value="check">Check</option>
+                                                                <option value="other">Other</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label mb-1">Reference No. (optional)</label>
+                                                            <input type="text" name="reference_number" class="form-control form-control-sm">
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label mb-1">Notes (optional)</label>
+                                                            <textarea name="notes" class="form-control form-control-sm" rows="2"></textarea>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary btn-sm w-100">Record Payment</button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

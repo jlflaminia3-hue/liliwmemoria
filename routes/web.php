@@ -150,7 +150,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{deceased}/contract', [IntermentController::class, 'pdf'])->name('contract.pdf');
             Route::get('/{deceased}/contract/download', [IntermentController::class, 'downloadContract'])->name('contract.download');
             Route::post('/{deceased}/contract/send', [IntermentController::class, 'sendContract'])->name('contract.send');
-            Route::post('/{deceased}/payment', [IntermentController::class, 'updatePayment'])->name('updatePayment');
+            Route::post('/{deceased}/payment', [IntermentController::class, 'storePayment'])->name('storePayment');
             Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
             Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
         });
@@ -161,6 +161,7 @@ Route::middleware('auth')->group(function () {
             Route::put('/{exhumation}', [ExhumationController::class, 'update'])->name('update');
             Route::get('/{exhumation}/documents/{document}', [ExhumationController::class, 'downloadDocument'])->name('documents.download');
             Route::delete('/{exhumation}/documents/{document}', [ExhumationController::class, 'destroyDocument'])->name('documents.destroy');
+            Route::post('/{exhumation}/payment', [ExhumationController::class, 'storePayment'])->name('storePayment');
             Route::post('/{exhumation}/transfer-certificate', [ExhumationController::class, 'generateTransferCertificate'])->name('transferCertificate.generate');
             Route::get('/{exhumation}/transfer-certificate/download', [ExhumationController::class, 'downloadTransferCertificate'])->name('transferCertificate.download');
         });

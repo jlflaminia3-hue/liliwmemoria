@@ -200,7 +200,7 @@
                                         <span class="badge {{ $paymentBgClass }}">{{ $record->payment_status_label }}</span>
                                         @if ($record->interment_fee)
                                             <div class="text-muted small mt-1">
-                                                ₱{{ number_format((float) ($record->payment_before_excavation ?? 0) + (float) ($record->payment_after_interment ?? 0), 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
+                                                ₱{{ number_format((float) $record->total_paid, 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
                                             </div>
                                         @endif
                                     </td>
@@ -261,8 +261,7 @@
                                                     data-record-id="{{ $record->id }}"
                                                     data-record-name="{{ $record->full_name }}"
                                                     data-payment-status="{{ $record->payment_status }}"
-                                                    data-payment-before="{{ $record->payment_before_excavation ?? 0 }}"
-                                                    data-payment-after="{{ $record->payment_after_interment ?? 0 }}"
+                                                    data-total-paid="{{ $record->total_paid }}"
                                                     data-interment-fee="{{ $record->interment_fee ?? 15000 }}"
                                                 >
                                                     <i data-feather="credit-card" class="me-1" style="height: 14px; width: 14px;"></i>
@@ -368,11 +367,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="payment_type" class="form-label fw-semibold">Payment For</label>
-                    <select id="payment_type" name="payment_type" class="form-select" required>
-                        <option value="before_excavation">Before Excavation (₱7,500.00)</option>
-                        <option value="after_interment">After Interment (₱7,500.00)</option>
-                    </select>
+                    <label for="payment_date" class="form-label fw-semibold">Payment Date</label>
+                    <input type="date" id="payment_date" name="payment_date" class="form-control" value="{{ now()->toDateString() }}" required>
                 </div>
 
                 <div class="mb-3">
@@ -383,8 +379,26 @@
                     </div>
                 </div>
 
-                <div class="form-text">
-                    Payment before excavation: ₱7,500.00 | Payment after interment: ₱7,500.00 | Total: ₱15,000.00
+                <div class="mb-3">
+                    <label for="payment_method" class="form-label fw-semibold">Method</label>
+                    <select id="payment_method" name="method" class="form-select" required>
+                        <option value="cash">Cash</option>
+                        <option value="bank">Bank Transfer</option>
+                        <option value="gcash">GCash</option>
+                        <option value="card">Card</option>
+                        <option value="check">Check</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="payment_reference" class="form-label fw-semibold">Reference No. (optional)</label>
+                    <input type="text" id="payment_reference" name="reference_number" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="payment_notes" class="form-label fw-semibold">Notes (optional)</label>
+                    <textarea id="payment_notes" name="notes" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -756,11 +770,8 @@
                 var recordId = button.getAttribute('data-record-id');
                 var recordName = button.getAttribute('data-record-name');
                 var paymentStatus = button.getAttribute('data-payment-status');
-                var paymentBefore = parseFloat(button.getAttribute('data-payment-before')) || 0;
-                var paymentAfter = parseFloat(button.getAttribute('data-payment-after')) || 0;
                 var totalFee = parseFloat(button.getAttribute('data-interment-fee')) || 15000;
-
-                var alreadyPaid = paymentBefore + paymentAfter;
+                var alreadyPaid = parseFloat(button.getAttribute('data-total-paid')) || 0;
                 var remaining = Math.max(0, totalFee - alreadyPaid);
 
                 document.getElementById('payment_deceased_name').textContent = recordName;
@@ -784,9 +795,10 @@
         if (paymentModal) {
             paymentModal.addEventListener('hidden.bs.modal', function () {
                 document.getElementById('payment_amount').value = '0';
-                document.getElementById('payment_type').value = 'before_excavation';
                 document.getElementById('payment_remaining').classList.remove('text-success');
                 document.getElementById('payment_remaining').classList.add('text-danger');
+                document.getElementById('payment_reference').value = '';
+                document.getElementById('payment_notes').value = '';
             });
         }
     })();
