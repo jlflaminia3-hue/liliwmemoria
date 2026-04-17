@@ -58,7 +58,8 @@ class IntermentPaymentController extends Controller
                 ->sum(DB::raw('COALESCE(interment_fee, 15000)')),
             'total_partial_amount' => Deceased::whereNotNull('burial_date')
                 ->where('payment_status', 'partial')
-                ->sum(DB::raw('COALESCE(interment_fee, 15000) - (SELECT COALESCE(SUM(amount), 0) FROM interment_payments WHERE deceased_id = deceased.id))')),
+                ->selectRaw('SUM(COALESCE(interment_fee, 15000) - COALESCE((SELECT SUM(amount) FROM interment_payments WHERE deceased_id = deceased.id), 0))')
+                ->value() ?? 0,
         ];
 
         return view('admin.interment-payments.index', compact('interments', 'stats', 'status', 'search'));

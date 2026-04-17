@@ -1,7 +1,6 @@
 @extends('admin.admin_master')
 
 @section('admin')
-<link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
 
 <div class="content">
     <div class="container-xxl">
@@ -84,35 +83,35 @@
     </div>
 </div>
 
-<script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script>
-    (function () {
-        if (!window.ApexCharts) return;
-
-        var statusEl = document.getElementById('plots_status_chart');
-        if (statusEl) {
-            new ApexCharts(statusEl, {
-                chart: { type: 'donut', height: 320 },
-                labels: @json($statusLabels),
-                series: @json($statusSeries),
-                colors: ['#10b981', '#f59e0b', '#ef4444'],
-                legend: { position: 'bottom' },
-            }).render();
-        }
-
-        var sectionEl = document.getElementById('plots_section_chart');
-        if (sectionEl) {
-            new ApexCharts(sectionEl, {
-                chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
-                series: @json($sectionSeries),
-                xaxis: { categories: @json($sectionCategories) },
-                colors: ['#10b981', '#f59e0b', '#ef4444'],
-                plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
-                grid: { strokeDashArray: 4 },
-                legend: { position: 'top' },
-            }).render();
-        }
-    })();
-</script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var statusEl = document.getElementById('plots_status_chart');
+    if (statusEl) {
+        new ApexCharts(statusEl, {
+            chart: { type: 'donut', height: 320 },
+            labels: @json($statusLabels),
+            series: @json($statusSeries),
+            colors: ['#10b981', '#f59e0b', '#ef4444'],
+            legend: { position: 'bottom' },
+        }).render();
+    }
+
+    var sectionEl = document.getElementById('plots_section_chart');
+    if (sectionEl) {
+        new ApexCharts(sectionEl, {
+            chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
+            series: @json($sectionSeries),
+            xaxis: { categories: @json($sectionCategories) },
+            colors: ['#10b981', '#f59e0b', '#ef4444'],
+            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
+            grid: { strokeDashArray: 4 },
+            legend: { position: 'top' },
+        }).render();
+    }
+});
+</script>
+@endpush
 

@@ -1,7 +1,6 @@
 @extends('admin.admin_master')
 
 @section('admin')
-<link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
 
 <div class="content">
     <div class="container-xxl">
@@ -121,23 +120,24 @@
     </div>
 </div>
 
-<script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script>
-    (function () {
-        if (!window.ApexCharts) return;
-        var growthEl = document.getElementById('client_growth_chart');
-        if (!growthEl) return;
-
-        new ApexCharts(growthEl, {
-            chart: { type: 'line', height: 300, toolbar: { show: false } },
-            stroke: { width: 3, curve: 'smooth' },
-            series: [{ name: 'New Clients', data: @json($growthCounts) }],
-            xaxis: { categories: @json($growthMonths) },
-            colors: ['#3b82f6'],
-            grid: { strokeDashArray: 4 },
-            markers: { size: 3 },
-        }).render();
-    })();
-</script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var growthEl = document.getElementById('client_growth_chart');
+    if (!growthEl) return;
+
+    new ApexCharts(growthEl, {
+        chart: { type: 'line', height: 300, toolbar: { show: false } },
+        stroke: { width: 3, curve: 'smooth' },
+        series: [{ name: 'New Clients', data: @json($growthCounts) }],
+        xaxis: { categories: @json($growthMonths) },
+        colors: ['#3b82f6'],
+        grid: { strokeDashArray: 4 },
+        markers: { size: 3 },
+    }).render();
+});
+</script>
+@endpush
 

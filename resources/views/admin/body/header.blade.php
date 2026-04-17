@@ -195,7 +195,7 @@
                                 </li>
 
                                 <li class="d-flex align-items-center">
-                                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+<form method="POST" action="{{ route('admin.logout') }}" class="m-0">
                                         @csrf
                                         <button type="submit" class="btn nav-link px-2">
                                             <i data-feather="log-out" class="noti-icon align-middle"></i>

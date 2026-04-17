@@ -12,18 +12,50 @@ use App\Services\Payments\PaymentPlanGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class PaymentPlanController extends Controller
 {
     public function index(Request $request)
     {
-        $clientId = $request->integer('client_id') ?: null;
+        $validated = $request->validate([
+            'client_id' => 'nullable|exists:clients,id',
+            'status' => ['nullable', 'string', Rule::in(['all', 'active', 'completed', 'canceled'])],
+            'search' => 'nullable|string|max:255',
+        ]);
 
-        $plans = PaymentPlan::query()
-            ->with(['client', 'contract', 'lot', 'installments'])
-            ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
-            ->orderByDesc('id')
-            ->get();
+        $clientId = $validated['client_id'] ?? null;
+        $status = $validated['status'] ?? 'all';
+        $search = trim((string) ($validated['search'] ?? ''));
+
+        $query = PaymentPlan::query()
+            ->with(['client', 'contract', 'lot', 'installments']);
+
+        if ($clientId) {
+            $query->where('client_id', $clientId);
+        }
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('plan_number', 'like', '%' . $search . '%')
+                    ->orWhereHas('client', function ($cq) use ($search) {
+                        $cq->where('first_name', 'like', '%' . $search . '%')
+                            ->orWhere('last_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('lot', function ($lq) use ($search) {
+                        $lq->where('lot_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('contract', function ($coq) use ($search) {
+                        $coq->where('contract_number', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $plans = $query->orderByDesc('id')->get();
 
         $plans->each(function (PaymentPlan $plan) {
             $plan->outstanding_total = $plan->installments->sum(fn (PaymentInstallment $i) => $i->installmentBalance() + $i->penaltyBalance());
@@ -31,8 +63,9 @@ class PaymentPlanController extends Controller
         });
 
         $client = $clientId ? Client::find($clientId) : null;
+        $clients = Client::query()->orderBy('last_name')->orderBy('first_name')->get(['id', 'first_name', 'last_name']);
 
-        return view('admin.payments.index', compact('plans', 'client'));
+        return view('admin.payments.index', compact('plans', 'client', 'clients', 'clientId', 'status', 'search'));
     }
 
     public function create(Request $request)

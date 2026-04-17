@@ -14,16 +14,16 @@
             <a href="{{ route('about.page') }}">About</a>
           </li>
           <li class="menu-item-has-children">
-            <a href="#">Services</a>
+            <a href="{{ route('pricing.page') }}">Pricing</a>
           </li>
           <li class="menu-item-has-children">
             <a href="#">Galleries</a>
           </li>
           <li class="menu-item-has-children">
-            <a href="#">Location</a>
+            <a href="{{ route('location.page') }}">Location</a>
           </li>
           <li>
-            <a href="{{ route('contact.page') }}">Contact</a>
+            <a href="{{ url('/') }}#contact">Contact</a>
           </li>
         </ul>
       </div>

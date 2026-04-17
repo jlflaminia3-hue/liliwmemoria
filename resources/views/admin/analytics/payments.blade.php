@@ -1,8 +1,6 @@
 @extends('admin.admin_master')
 
 @section('admin')
-<link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
-
 <div class="content">
     <div class="container-xxl">
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column gap-3">
@@ -194,60 +192,60 @@
     </div>
 </div>
 
-<script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script>
-    (function () {
-        if (!window.ApexCharts) return;
-
-        var colEl = document.getElementById('payments_collections_chart');
-        if (colEl) {
-            new ApexCharts(colEl, {
-                chart: { type: 'area', height: 320, toolbar: { show: false } },
-                stroke: { width: 3, curve: 'smooth' },
-                series: [{ name: 'Collections', data: @json($collectionsByMonth) }],
-                xaxis: { categories: @json($months) },
-                colors: ['#10b981'],
-                fill: { opacity: 0.2 },
-                grid: { strokeDashArray: 4 },
-                yaxis: { labels: { formatter: function (v) { return '₱' + (v || 0).toFixed(0); } } },
-                tooltip: { y: { formatter: function (v) { return '₱' + (v || 0).toFixed(2); } } },
-            }).render();
-        }
-
-        var iColEl = document.getElementById('interment_collections_chart');
-        if (iColEl) {
-            new ApexCharts(iColEl, {
-                chart: { type: 'bar', height: 320, toolbar: { show: false } },
-                stroke: { width: 3, curve: 'smooth' },
-                series: [{ name: 'Collections', data: @json($intermentCollectionsByMonth) }],
-                xaxis: { categories: @json($months) },
-                colors: ['#3b82f6'],
-                fill: { opacity: 0.8 },
-                grid: { strokeDashArray: 4 },
-                yaxis: { labels: { formatter: function (v) { return '₱' + (v || 0).toFixed(0); } } },
-                tooltip: { y: { formatter: function (v) { return '₱' + (v || 0).toFixed(2); } } },
-            }).render();
-        }
-
-        var mEl = document.getElementById('payments_methods_chart');
-        if (mEl) {
-            new ApexCharts(mEl, {
-                chart: { type: 'donut', height: 320 },
-                labels: @json($methodLabels),
-                series: @json($methodSeries),
-                legend: { position: 'bottom' },
-            }).render();
-        }
-
-        var iMEl = document.getElementById('interment_methods_chart');
-        if (iMEl) {
-            new ApexCharts(iMEl, {
-                chart: { type: 'donut', height: 320 },
-                labels: @json($intermentMethodLabels),
-                series: @json($intermentMethodSeries),
-                legend: { position: 'bottom' },
-            }).render();
-        }
-    })();
-</script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var colEl = document.getElementById('payments_collections_chart');
+    if (colEl) {
+        new ApexCharts(colEl, {
+            chart: { type: 'area', height: 320, toolbar: { show: false } },
+            stroke: { width: 3, curve: 'smooth' },
+            series: [{ name: 'Collections', data: @json($collectionsByMonth) }],
+            xaxis: { categories: @json($months) },
+            colors: ['#10b981'],
+            fill: { opacity: 0.2 },
+            grid: { strokeDashArray: 4 },
+            yaxis: { labels: { formatter: function (v) { return '₱' + (v || 0).toFixed(0); } } },
+            tooltip: { y: { formatter: function (v) { return '₱' + (v || 0).toFixed(2); } } },
+        }).render();
+    }
+
+    var iColEl = document.getElementById('interment_collections_chart');
+    if (iColEl) {
+        new ApexCharts(iColEl, {
+            chart: { type: 'bar', height: 320, toolbar: { show: false } },
+            stroke: { width: 3, curve: 'smooth' },
+            series: [{ name: 'Collections', data: @json($intermentCollectionsByMonth) }],
+            xaxis: { categories: @json($months) },
+            colors: ['#3b82f6'],
+            fill: { opacity: 0.8 },
+            grid: { strokeDashArray: 4 },
+            yaxis: { labels: { formatter: function (v) { return '₱' + (v || 0).toFixed(0); } } },
+            tooltip: { y: { formatter: function (v) { return '₱' + (v || 0).toFixed(2); } } },
+        }).render();
+    }
+
+    var mEl = document.getElementById('payments_methods_chart');
+    if (mEl) {
+        new ApexCharts(mEl, {
+            chart: { type: 'donut', height: 320 },
+            labels: @json($methodLabels),
+            series: @json($methodSeries),
+            legend: { position: 'bottom' },
+        }).render();
+    }
+
+    var iMEl = document.getElementById('interment_methods_chart');
+    if (iMEl) {
+        new ApexCharts(iMEl, {
+            chart: { type: 'donut', height: 320 },
+            labels: @json($intermentMethodLabels),
+            series: @json($intermentMethodSeries),
+            legend: { position: 'bottom' },
+        }).render();
+    }
+});
+</script>
+@endpush

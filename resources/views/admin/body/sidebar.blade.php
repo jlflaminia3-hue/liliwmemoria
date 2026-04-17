@@ -78,7 +78,7 @@
                             </li>
 
                             <li>
-                                <a href="#" class="tp-link">
+                                <a href="{{ route('admin.analytics.visitors') }}" class="tp-link">
                                     <i data-feather="clipboard"></i>
                                     <span> Visitor Logs </span>
                                 </a>
@@ -165,9 +165,9 @@
                                         <li>
                                             <a href="{{ route('admin.analytics.interments') }}" class="tp-link">Interments Analytics</a>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a href="{{ route('admin.analytics.visitors') }}" class="tp-link">Visitors Analytics</a>
-                                        </li>
+                                        </li> --}}
                                     </ul>
                                 </div>
                             </li>

@@ -14,17 +14,17 @@
                   <li class="about liliwmemoria-header-link">
                     <a href="{{ route('about.page') }}">About</a>
                   </li>
-                  <li class="services liliwmemoria-header-link">
-                    <a href="#">Services</a>
+                  <li class="pricing liliwmemoria-header-link">
+                    <a href="{{ route('pricing.page') }}">Pricing</a>
                   </li>
-                  <li class="galleries liliwmemoria-header-link">
+                  {{-- <li class="galleries liliwmemoria-header-link">
                     <a href="#">Galleries</a>
-                  </li>
+                  </li> --}}
                   <li class="location liliwmemoria-header-link">
-                    <a href="#">Location</a>
+                    <a href="{{ route('location.page') }}">Location</a>
                   </li>
                   <li class="liliwmemoria-header-link">
-                    <a href="{{ route('contact.page') }}">Contact</a>
+                    <a href="{{ url('/') }}#contact">Contact</a>
                   </li>
                 </ul>
               </nav>

@@ -30,8 +30,33 @@
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
+                <form method="GET" action="{{ route('admin.payments.index') }}" class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="all" @selected($status === 'all')>All Statuses</option>
+                            <option value="active" @selected($status === 'active')>Active</option>
+                            <option value="completed" @selected($status === 'completed')>Completed</option>
+                            <option value="canceled" @selected($status === 'canceled')>Canceled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="client_id" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Clients</option>
+                            @foreach ($clients as $c)
+                                <option value="{{ $c->id }}" @selected($clientId == $c->id)>{{ $c->full_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Search plan number, client, lot..." value="{{ $search }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-secondary w-100">Search</button>
+                    </div>
+                </form>
+
                 @if ($plans->isEmpty())
-                    <div class="alert alert-info mb-0">No payment plans yet.</div>
+                    <div class="alert alert-info mb-0">No payment plans found.</div>
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover mb-0 align-middle">

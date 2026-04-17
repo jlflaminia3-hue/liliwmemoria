@@ -22,13 +22,9 @@
     }
 
     $warnings = [];
-    $hasExhumationPermit = ! empty($exhumation->exhumation_permit_path);
     $hasTransferPermit = ! empty($exhumation->transfer_permit_path);
     $hasDestination = ! empty($exhumation->destination_cemetery_name);
 
-    if ($currentKey !== 'draft' && $currentKey !== 'submitted' && ! $hasExhumationPermit) {
-        $warnings[] = 'Missing exhumation permit (required to move past Submitted).';
-    }
     if ($currentKey === 'completed') {
         if (! $hasTransferPermit) $warnings[] = 'Missing transfer permit (required for completed transfers).';
         if (! $hasDestination) $warnings[] = 'Missing destination cemetery (required for transfer).';
@@ -130,23 +126,7 @@
                         <hr class="my-3">
 
                         <div class="text-muted small text-uppercase fw-semibold mb-2">Documents</div>
-                        <div class="exh-doc">
-                            <div class="exh-doc__left">
-                                <p class="exh-doc__name mb-0">Exhumation Permit</p>
-                                <p class="exh-doc__meta mb-0">{{ $exhumation->exhumation_permit_path ? basename($exhumation->exhumation_permit_path) : 'No file uploaded yet' }}</p>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="exh-badge {{ $exhumation->exhumation_permit_path ? 'exh-badge--ok' : 'exh-badge--miss' }}">
-                                    {{ $exhumation->exhumation_permit_path ? 'UPLOADED' : 'MISSING' }}
-                                </span>
-                                @if ($exhumation->exhumation_permit_path)
-                                    <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.exhumations.documents.download', [$exhumation, 'exhumation_permit']) }}">Download</a>
-                                    <button type="submit" form="exh-delete-exhumation-permit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete the exhumation permit?')">Delete</button>
-                                @else
-                                    <button type="button" class="btn btn-sm btn-light" data-bs-toggle="pill" data-bs-target="#tab-docs">Upload</button>
-                                @endif
-                            </div>
-                        </div>
+                        {{-- Exhumation permit section removed - to be edited later --}}
                         <div class="exh-doc">
                             <div class="exh-doc__left">
                                 <p class="exh-doc__name mb-0">Transfer Permit</p>
@@ -283,6 +263,7 @@
 
                                 <div class="tab-pane fade" id="tab-docs" role="tabpanel">
                                     <div class="row g-3">
+                                        {{-- Exhumation permit upload removed - to be edited later --}}
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Exhumation Permit Upload</label>
                                             <input type="file" name="exhumation_permit" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
@@ -492,10 +473,7 @@
     @csrf
 </form>
 
-<form id="exh-delete-exhumation-permit" method="POST" action="{{ route('admin.exhumations.documents.destroy', [$exhumation, 'exhumation_permit']) }}">
-    @csrf
-    @method('DELETE')
-</form>
+{{-- Exhumation permit delete form removed - to be edited later --}}
 
 <form id="exh-delete-transfer-permit" method="POST" action="{{ route('admin.exhumations.documents.destroy', [$exhumation, 'transfer_permit']) }}">
     @csrf

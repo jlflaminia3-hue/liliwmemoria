@@ -39,6 +39,10 @@ Route::get('/', function () {
 
 Route::view('/about-us', 'home.about')->name('about.page');
 
+Route::view('/location', 'home.location')->name('location.page');
+
+Route::view('/pricing', 'home.pricing')->name('pricing.page');
+
 Route::get('/contact-us', function () {
     return redirect('/');
 })->name('contact.page');
@@ -230,7 +234,7 @@ Route::prefix('master')->name('master.')->middleware(['auth', 'role:master_admin
 
 require __DIR__.'/auth.php';
 
-Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
+Route::post('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
 
 // Route::post('/admin/login', [AdminController::class, 'AdminLogin'])->name('admin.login');
 Route::middleware('guest')->post('/admin/register', [AdminRegisteredUserController::class, 'store'])->name('admin.register');

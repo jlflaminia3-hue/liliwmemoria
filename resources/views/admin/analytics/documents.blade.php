@@ -1,7 +1,6 @@
 @extends('admin.admin_master')
 
 @section('admin')
-<link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
 
 <div class="content">
     <div class="container-xxl">
@@ -118,25 +117,26 @@
     </div>
 </div>
 
-<script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script>
-    (function () {
-        if (!window.ApexCharts) return;
-        var el = document.getElementById('documents_type_chart');
-        if (!el) return;
-
-        new ApexCharts(el, {
-            chart: { type: 'bar', height: 320, toolbar: { show: false } },
-            series: [{
-                name: 'Uploads',
-                data: @json($documentTypeSeries),
-            }],
-            xaxis: { categories: @json($documentTypeLabels) },
-            colors: ['#6366f1'],
-            grid: { strokeDashArray: 4 },
-            plotOptions: { bar: { horizontal: true, barHeight: '70%' } },
-        }).render();
-    })();
-</script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('documents_type_chart');
+    if (!el) return;
+
+    new ApexCharts(el, {
+        chart: { type: 'bar', height: 320, toolbar: { show: false } },
+        series: [{
+            name: 'Uploads',
+            data: @json($documentTypeSeries),
+        }],
+        xaxis: { categories: @json($documentTypeLabels) },
+        colors: ['#6366f1'],
+        grid: { strokeDashArray: 4 },
+        plotOptions: { bar: { horizontal: true, barHeight: '70%' } },
+    }).render();
+});
+</script>
+@endpush
 

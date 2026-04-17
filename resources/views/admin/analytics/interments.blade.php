@@ -1,7 +1,6 @@
 @extends('admin.admin_master')
 
 @section('admin')
-<link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
 
 <div class="content">
     <div class="container-xxl">
@@ -123,35 +122,35 @@
     </div>
 </div>
 
-<script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script>
-    (function () {
-        if (!window.ApexCharts) return;
-
-        var statusEl = document.getElementById('interments_status_chart');
-        if (statusEl) {
-            new ApexCharts(statusEl, {
-                chart: { type: 'donut', height: 320 },
-                labels: @json($statusLabels),
-                series: @json($statusSeries),
-                colors: ['#f59e0b', '#10b981', '#94a3b8'],
-                legend: { position: 'bottom' },
-            }).render();
-        }
-
-        var burialsEl = document.getElementById('interments_burials_chart');
-        if (burialsEl) {
-            new ApexCharts(burialsEl, {
-                chart: { type: 'line', height: 320, toolbar: { show: false } },
-                stroke: { width: 3, curve: 'smooth' },
-                series: [{ name: 'Burials', data: @json($burialsByMonth) }],
-                xaxis: { categories: @json($months) },
-                colors: ['#0ea5e9'],
-                grid: { strokeDashArray: 4 },
-                markers: { size: 3 },
-            }).render();
-        }
-    })();
-</script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var statusEl = document.getElementById('interments_status_chart');
+    if (statusEl) {
+        new ApexCharts(statusEl, {
+            chart: { type: 'donut', height: 320 },
+            labels: @json($statusLabels),
+            series: @json($statusSeries),
+            colors: ['#f59e0b', '#10b981', '#94a3b8'],
+            legend: { position: 'bottom' },
+        }).render();
+    }
+
+    var burialsEl = document.getElementById('interments_burials_chart');
+    if (burialsEl) {
+        new ApexCharts(burialsEl, {
+            chart: { type: 'line', height: 320, toolbar: { show: false } },
+            stroke: { width: 3, curve: 'smooth' },
+            series: [{ name: 'Burials', data: @json($burialsByMonth) }],
+            xaxis: { categories: @json($months) },
+            colors: ['#0ea5e9'],
+            grid: { strokeDashArray: 4 },
+            markers: { size: 3 },
+        }).render();
+    }
+});
+</script>
+@endpush
 

@@ -1,4 +1,4 @@
-<section class="lonyo-cta-section bg-heading light-bg liliwmemoria-hero-bg">
+<section id="contact" class="lonyo-cta-section bg-heading light-bg liliwmemoria-hero-bg">
   <div class="container">
     <div class="row justify-content-center text-center">
       <div class="col-lg-11">
