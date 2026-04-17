@@ -1,5 +1,4 @@
 @extends('home.home_master')
-
 @section('home')
 <style>
     .visit-page { padding-top: 120px !important; }
