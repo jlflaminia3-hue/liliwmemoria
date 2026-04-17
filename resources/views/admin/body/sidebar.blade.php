@@ -117,10 +117,25 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.payments.index') }}" class="tp-link">
+                                <a href="#sidebarPayments" data-bs-toggle="collapse">
                                     <i data-feather="credit-card"></i>
                                     <span> Payments </span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <div class="collapse" id="sidebarPayments">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="{{ route('admin.lot-payments.index') }}" class="tp-link">Lot Payments</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.payments.index') }}" class="tp-link">Installment Payments</a>
+                                        </li>
+
+                                        <li>
+                                            <a href="{{ route('admin.interment-payments.index') }}" class="tp-link">Interment Payments</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
 
 

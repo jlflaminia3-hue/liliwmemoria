@@ -276,6 +276,20 @@ class IntermentController extends Controller
             ->with('success', 'Interment record deleted successfully.');
     }
 
+    public function show(Deceased $deceased)
+    {
+        $deceased->load(['lot', 'client', 'payments', 'latestExhumation']);
+
+        $totalFee = (float) ($deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+        return view('admin.interments.show', [
+            'deceased' => $deceased,
+            'totalFee' => $totalFee,
+            'totalPaid' => $deceased->total_paid,
+            'remainingBalance' => $deceased->remaining_balance,
+        ]);
+    }
+
     public function downloadDocument(Deceased $deceased, string $document)
     {
         $column = self::DOCUMENT_FIELDS[$document] ?? null;
@@ -349,9 +363,10 @@ class IntermentController extends Controller
             'method' => 'required|string',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
+            'receipt' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png',
         ]);
 
-        DB::transaction(function () use ($validated, $deceased, $pdfService) {
+        DB::transaction(function () use ($validated, $deceased, $pdfService, $request) {
             $payment = IntermentPayment::create([
                 'deceased_id' => $deceased->id,
                 'amount' => $validated['amount'],
@@ -360,6 +375,12 @@ class IntermentController extends Controller
                 'reference_number' => $validated['reference_number'] ?? null,
                 'notes' => $validated['notes'] ?? null,
             ]);
+
+            if ($request->hasFile('receipt')) {
+                $path = Storage::disk('public')->putFile("interment-receipts/{$payment->id}", $request->file('receipt'));
+                $payment->receipt_path = $path;
+                $payment->save();
+            }
 
             $deceased->refresh();
             $totalPaid = $deceased->total_paid;
@@ -376,7 +397,37 @@ class IntermentController extends Controller
             $this->syncLotState((int) $deceased->lot_id);
         });
 
-        return back()->with('success', 'Payment recorded successfully.');
+        return redirect()
+            ->route('admin.interments.show', $deceased)
+            ->with('success', 'Payment recorded successfully.');
+    }
+
+    public function paymentInvoice(Deceased $deceased, IntermentPayment $payment, Request $request)
+    {
+        abort_unless($payment->deceased_id === $deceased->id, 404);
+
+        $view = view('admin.interments.payment-invoice', [
+            'deceased' => $deceased,
+            'payment' => $payment,
+        ]);
+
+        if ($request->boolean('download')) {
+            $filename = "interment-invoice-{$payment->id}.html";
+
+            return response()->streamDownload(function () use ($view) {
+                echo $view->render();
+            }, $filename, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+
+        return $view;
+    }
+
+    public function paymentReceipt(Deceased $deceased, IntermentPayment $payment)
+    {
+        abort_unless($payment->deceased_id === $deceased->id, 404);
+        abort_unless($payment->receipt_path, 404);
+
+        return Storage::disk('public')->download($payment->receipt_path, "Interment-Receipt-{$payment->id}." . pathinfo($payment->receipt_path, PATHINFO_EXTENSION));
     }
 
     public function checkLotEligibility(Request $request)

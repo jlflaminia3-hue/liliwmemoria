@@ -160,8 +160,10 @@
                                 @endphp
                                 <tr>
                                     <td>
-                                        <div class="fw-semibold">{{ $record->full_name }}</div>
-                                        <div class="text-muted small">{{ $record->interment_number ?? 'INT-' . $record->id }}</div>
+                                        <a href="{{ route('admin.interments.show', $record) }}" class="text-decoration-none">
+                                            <div class="fw-semibold text-dark">{{ $record->full_name }}</div>
+                                            <div class="text-muted small">{{ $record->interment_number ?? 'INT-' . $record->id }}</div>
+                                        </a>
                                     </td>
                                     <td>
                                         <div>{{ $record->burial_date?->format('Y-m-d') ?? 'Pending schedule' }}</div>
@@ -198,11 +200,9 @@
                                             };
                                         @endphp
                                         <span class="badge {{ $paymentBgClass }}">{{ $record->payment_status_label }}</span>
-                                        @if ($record->interment_fee)
-                                            <div class="text-muted small mt-1">
-                                                ₱{{ number_format((float) $record->total_paid, 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
-                                            </div>
-                                        @endif
+                                        <div class="text-muted small mt-1">
+                                            ₱{{ number_format((float) $record->total_paid, 2) }} / ₱{{ number_format((float) ($record->interment_fee ?? 15000), 2) }}
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
@@ -239,7 +239,6 @@
                                                 @else
                                                     <form method="POST" action="{{ route('admin.exhumations.store', $record) }}" class="dropdown-item p-0">
                                                         @csrf
-                                                        <input type="hidden" name="status" value="requested">
                                                         <button type="submit" class="btn btn-link dropdown-item m-0">Start Exhumation</button>
                                                     </form>
                                                 @endif
@@ -255,6 +254,10 @@
                                                         Download Permit
                                                     </a>
                                                 @endif
+                                                <a class="dropdown-item" href="{{ route('admin.interments.show', $record) }}">
+                                                    <i data-feather="file-text" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                    View / Payments
+                                                </a>
                                                 <button
                                                     type="button"
                                                     class="dropdown-item js-record-payment"

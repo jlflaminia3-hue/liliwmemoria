@@ -23,13 +23,17 @@
                         \App\Models\Client::class => route('admin.clients.edit', $log->auditable_id),
                         \App\Models\PaymentPlan::class => route('admin.payments.show', $log->auditable_id),
                         \App\Models\User::class => route('master.users.edit', $log->auditable_id),
+                        \App\Models\Deceased::class => route('admin.interments.show', $log->auditable_id),
+                        \App\Models\IntermentPayment::class => route('admin.interment-payments.show', $log->auditable_id),
+                        \App\Models\LotPayment::class => route('admin.lot-payments.show', $log->auditable_id),
                         default => null,
                     })
+                @php($isLoginEvent = in_array($log->event, ['login', 'logout']))
                 @endif
                 <tr>
                     <td class="text-muted">{{ optional($log->created_at)->format('Y-m-d H:i:s') }}</td>
                     <td>
-                        @php($badge = match($log->event) { 'created' => 'success', 'updated' => 'warning', 'deleted' => 'danger', default => 'secondary' })
+                        @php($badge = match($log->event) { 'created' => 'success', 'updated' => 'warning', 'deleted' => 'danger', 'login' => 'primary', 'logout' => 'secondary', default => 'secondary' })
                         <span class="badge bg-{{ $badge }}">{{ strtoupper($log->event) }}</span>
                     </td>
                     <td class="text-muted">{{ \Illuminate\Support\Str::afterLast($log->auditable_type, '\\') }}</td>
@@ -43,7 +47,9 @@
                         @endif
                     </td>
                     <td class="text-muted">
-                        @if ($log->event === 'updated' && is_array($log->new_values))
+                        @if ($isLoginEvent)
+                            {{ ucfirst($log->event) }} - {{ $log->new_values['role'] ?? 'Unknown' }}
+                        @elseif ($log->event === 'updated' && is_array($log->new_values))
                             Changed: {{ implode(', ', array_keys($log->new_values)) }}
                         @elseif ($log->event === 'created' && is_array($log->new_values))
                             Fields: {{ implode(', ', array_slice(array_keys($log->new_values), 0, 8)) }}@if (count($log->new_values) > 8)…@endif

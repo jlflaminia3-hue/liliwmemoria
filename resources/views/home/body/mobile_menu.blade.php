@@ -11,7 +11,7 @@
       <div class="lonyo-mobile-menu">
         <ul>
           <li class="menu-item-has-children">
-            <a href="#">About</a>
+            <a href="{{ route('about.page') }}">About</a>
           </li>
           <li class="menu-item-has-children">
             <a href="#">Services</a>
@@ -28,7 +28,8 @@
         </ul>
       </div>
       <div class="lonyo-mobile-menu-btn">
-        <a class="lonyo-default-btn sm-size liliwmemoria-inquiry-trigger" href="#" data-bs-toggle="modal" data-bs-target="#inquiryModal" data-text="Get in Touch"><span class="btn-wraper">Inquire</span></a>
+        <a class="lonyo-default-btn sm-size liliwmemoria-inquiry-trigger" href="#" data-bs-toggle="modal" data-bs-target="#inquiryModal" data-text="Get in Touch"><span class="btn-wraper">Contact</span></a>
+        <a class="lonyo-default-btn sm-size video-btn liliwmemoria-appointment-trigger" href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal" data-text="Book an Appointment"><span class="btn-wraper">Book an Appointment</span></a>
       </div>
     </div>
   </div>

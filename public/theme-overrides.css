@@ -309,6 +309,46 @@ a.text-primary:focus {
   color: #ffffff;
 }
 
+.liliwmemoria-page-hero {
+  padding: 180px 0 90px;
+  display: flex;
+  align-items: center;
+}
+
+.liliwmemoria-page-hero__title {
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 26px;
+}
+
+.liliwmemoria-page-hero__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+.liliwmemoria-page-hero__actions .lonyo-default-btn {
+  min-width: 220px;
+  justify-content: center;
+}
+
+@media (max-width: 575px) {
+  .liliwmemoria-page-hero {
+    padding: 92px 0 70px;
+  }
+
+  .liliwmemoria-page-hero__actions {
+    width: 100%;
+  }
+
+  .liliwmemoria-page-hero__actions .lonyo-default-btn {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 header.lonyo-header-section.liliwmemoria-header-glass {
   background-color: rgba(255, 255, 255, 0.267);
   border-bottom: 1px solid rgba(20, 44, 20, 0.08);

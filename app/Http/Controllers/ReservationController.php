@@ -145,7 +145,7 @@ class ReservationController extends Controller
             'client_id' => 'required|integer|exists:clients,id',
             'lot_id' => 'required|integer|exists:lots,id',
             'reserved_at' => 'required|date',
-            'contract_duration_months' => ['required', Rule::in([12, 18, 24])],
+            'contract_duration_months' => ['nullable', Rule::in([12, 18, 24])],
             'total_amount' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
             'payment_status' => ['required', Rule::in(Reservation::PAYMENT_STATUSES)],
@@ -194,9 +194,12 @@ class ReservationController extends Controller
             }
 
             $durationMonths = (int) ($validated['contract_duration_months'] ?? 0);
-            $expiresAt = Carbon::parse($validated['reserved_at'])
-                ->addMonthsNoOverflow($durationMonths)
-                ->toDateString();
+            $expiresAt = null;
+            if ($durationMonths > 0) {
+                $expiresAt = Carbon::parse($validated['reserved_at'])
+                    ->addMonthsNoOverflow($durationMonths)
+                    ->toDateString();
+            }
 
             $contract = ClientContract::create([
                 'client_id' => $validated['client_id'],
@@ -325,7 +328,7 @@ class ReservationController extends Controller
             'client_id' => 'required|integer|exists:clients,id',
             'reserved_at' => 'required|date',
             'status' => ['required', Rule::in(self::STATUSES)],
-            'contract_duration_months' => ['required', Rule::in([12, 18, 24])],
+            'contract_duration_months' => ['nullable', Rule::in([12, 18, 24])],
             'total_amount' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
             'payment_status' => ['required', Rule::in(Reservation::PAYMENT_STATUSES)],
@@ -342,10 +345,13 @@ class ReservationController extends Controller
                 $fulfilledAt = null;
             }
 
-            $durationMonths = (int) $validated['contract_duration_months'];
-            $expiresAt = Carbon::parse($validated['reserved_at'])
-                ->addMonthsNoOverflow($durationMonths)
-                ->toDateString();
+            $durationMonths = (int) ($validated['contract_duration_months'] ?? 0);
+            $expiresAt = null;
+            if ($durationMonths > 0) {
+                $expiresAt = Carbon::parse($validated['reserved_at'])
+                    ->addMonthsNoOverflow($durationMonths)
+                    ->toDateString();
+            }
 
             $reservation->update([
                 'client_id' => $validated['client_id'],

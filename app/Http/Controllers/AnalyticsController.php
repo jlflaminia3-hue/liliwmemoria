@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\ClientContract;
 use App\Models\Deceased;
+use App\Models\IntermentPayment;
 use App\Models\Lot;
+use App\Models\LotPayment;
 use App\Models\PaymentPlan;
 use App\Models\PaymentTransaction;
 use App\Models\VisitorLog;
@@ -163,19 +165,39 @@ class AnalyticsController extends Controller
         $transactionsTotal = PaymentTransaction::query()->count();
         $collectionsTotal = (float) PaymentTransaction::query()->sum('amount');
 
+        $intermentPaymentsTotal = IntermentPayment::query()->count();
+        $intermentCollectionsTotal = (float) IntermentPayment::query()->sum('amount');
+
+        $intermentsUnpaid = Deceased::whereNotNull('burial_date')->where('payment_status', 'unpaid')->count();
+        $intermentsPartial = Deceased::whereNotNull('burial_date')->where('payment_status', 'partial')->count();
+        $intermentsFullyPaid = Deceased::whereNotNull('burial_date')->where('payment_status', 'fully_paid')->count();
+
+        $defaultFee = Deceased::INTERMENT_FEE_TOTAL;
+        $totalIntermentCollectible = (float) Deceased::whereNotNull('burial_date')
+            ->selectRaw("SUM(COALESCE(interment_fee, {$defaultFee})) as total")
+            ->value('total');
+
         $monthStart = CarbonImmutable::today()->startOfMonth();
         $collectionsThisMonth = (float) PaymentTransaction::query()
             ->whereBetween('transaction_date', [$monthStart->toDateString(), $monthStart->endOfMonth()->toDateString()])
             ->sum('amount');
 
+        $intermentCollectionsThisMonth = (float) IntermentPayment::query()
+            ->whereBetween('payment_date', [$monthStart->toDateString(), $monthStart->endOfMonth()->toDateString()])
+            ->sum('amount');
+
         $months = [];
         $collectionsByMonth = array_fill(0, 12, 0.0);
+        $intermentCollectionsByMonth = array_fill(0, 12, 0.0);
         for ($i = 11; $i >= 0; $i--) {
             $mStart = CarbonImmutable::today()->startOfMonth()->subMonths($i);
             $mEnd = $mStart->endOfMonth();
             $months[] = $mStart->format('M Y');
             $collectionsByMonth[11 - $i] = (float) PaymentTransaction::query()
                 ->whereBetween('transaction_date', [$mStart->toDateString(), $mEnd->toDateString()])
+                ->sum('amount');
+            $intermentCollectionsByMonth[11 - $i] = (float) IntermentPayment::query()
+                ->whereBetween('payment_date', [$mStart->toDateString(), $mEnd->toDateString()])
                 ->sum('amount');
         }
 
@@ -189,6 +211,21 @@ class AnalyticsController extends Controller
         $methodLabels = $methodData->pluck('method')->values();
         $methodSeries = $methodData->pluck('total')->map(fn ($v) => (int) $v)->values();
 
+        $intermentMethodData = IntermentPayment::query()
+            ->select('method', DB::raw('COUNT(*) as total'))
+            ->groupBy('method')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get();
+
+        $intermentMethodLabels = $intermentMethodData->pluck('method')->map(fn ($m) => ucfirst($m))->values();
+        $intermentMethodSeries = $intermentMethodData->pluck('total')->map(fn ($v) => (int) $v)->values();
+
+        $recentIntermentPayments = IntermentPayment::with(['deceased:id,first_name,last_name,interment_number'])
+            ->orderByDesc('payment_date')
+            ->limit(5)
+            ->get();
+
         return view('admin.analytics.payments', compact(
             'plansTotal',
             'plansActive',
@@ -196,10 +233,21 @@ class AnalyticsController extends Controller
             'transactionsTotal',
             'collectionsTotal',
             'collectionsThisMonth',
+            'intermentPaymentsTotal',
+            'intermentCollectionsTotal',
+            'intermentsUnpaid',
+            'intermentsPartial',
+            'intermentsFullyPaid',
+            'totalIntermentCollectible',
+            'intermentCollectionsThisMonth',
             'months',
             'collectionsByMonth',
+            'intermentCollectionsByMonth',
             'methodLabels',
             'methodSeries',
+            'intermentMethodLabels',
+            'intermentMethodSeries',
+            'recentIntermentPayments',
         ));
     }
 

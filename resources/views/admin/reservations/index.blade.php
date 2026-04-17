@@ -321,21 +321,20 @@
                     <div class="col-md-6 order-3 order-md-3">
                         <label class="form-label fw-semibold">Reservation date</label>
                         <input type="date" class="form-control" name="reserved_at" value="{{ old('reserved_at', now()->format('Y-m-d')) }}" required>
-                        <div class="form-text">Expiry data is auto-calculated from reservation date + duration.</div>
-
                     </div>
-                    <div class="col-md-6 order-2 order-md-2">
+                    <div class="col-md-6 order-2 order-md-2" id="create_contract_duration_wrap">
                         <label class="form-label fw-semibold">Contract duration</label>
-                        <select class="form-select js-contract-duration" name="contract_duration_months" required>
+                        <select class="form-select js-contract-duration" name="contract_duration_months" id="create_contract_duration_months">
                             <option value="">Select duration…</option>
                             <option value="12" @selected((string) old('contract_duration_months') === '12')>12 months</option>
                             <option value="18" @selected((string) old('contract_duration_months') === '18')>18 months</option>
                             <option value="24" @selected((string) old('contract_duration_months') === '24')>24 months</option>
                         </select>
+                        <div class="form-text text-muted">Required for installment payments only</div>
                     </div>
                     <div class="col-md-6 order-1 order-md-1">
                         <label class="form-label fw-semibold">Payment status</label>
-                        <select class="form-select" name="payment_status" required>
+                        <select class="form-select" name="payment_status" id="create_payment_status" required>
                                 <option value="">Select payment status…</option>
                                 <option value="downpayment" @selected(old('payment_status') === 'downpayment')>Downpayment</option>
                                 <option value="installment" @selected(old('payment_status') === 'installment')>Installment</option>
@@ -705,6 +704,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (computed) {
                 expiresAt.value = computed;
             }
+        }
+
+        function syncContractDurationRequirement() {
+            var paymentStatus = createModal.querySelector('select[name="payment_status"]');
+            var durationWrap = document.getElementById('create_contract_duration_wrap');
+            var durationSelect = document.getElementById('create_contract_duration_months');
+
+            if (!paymentStatus || !durationWrap || !durationSelect) return;
+
+            var isInstallment = paymentStatus.value === 'installment';
+            durationSelect.required = isInstallment;
+            durationWrap.style.opacity = isInstallment ? '1' : '0.5';
+        }
+
+        var paymentStatusSelect = createModal.querySelector('select[name="payment_status"]');
+        if (paymentStatusSelect) {
+            paymentStatusSelect.addEventListener('change', syncContractDurationRequirement);
+            syncContractDurationRequirement();
         }
 
         if (reservedAt) reservedAt.addEventListener('change', function () {

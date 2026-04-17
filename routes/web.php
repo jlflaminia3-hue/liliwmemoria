@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\IntermentPaymentController;
+use App\Http\Controllers\Admin\LotPaymentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnalyticsController;
@@ -34,6 +36,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('home.index');
 });
+
+Route::view('/about-us', 'home.about')->name('about.page');
 
 Route::get('/contact-us', function () {
     return redirect('/');
@@ -146,13 +150,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/api/clients/{client}/lots', [IntermentController::class, 'clientLots'])->name('api.clientLots');
             Route::get('/api/lot-info', [IntermentController::class, 'lotInfo'])->name('lotInfo');
             Route::get('/api/check-lot-eligibility', [IntermentController::class, 'checkLotEligibility'])->name('checkLotEligibility');
+            Route::get('/{deceased}', [IntermentController::class, 'show'])->name('show');
+            Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
+            Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
             Route::get('/{deceased}/documents/{document}', [IntermentController::class, 'downloadDocument'])->name('documents.download');
             Route::get('/{deceased}/contract', [IntermentController::class, 'pdf'])->name('contract.pdf');
             Route::get('/{deceased}/contract/download', [IntermentController::class, 'downloadContract'])->name('contract.download');
             Route::post('/{deceased}/contract/send', [IntermentController::class, 'sendContract'])->name('contract.send');
             Route::post('/{deceased}/payment', [IntermentController::class, 'storePayment'])->name('storePayment');
-            Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
-            Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
+            Route::get('/{deceased}/payments/{payment}/invoice', [IntermentController::class, 'paymentInvoice'])->name('payments.invoice');
+            Route::get('/{deceased}/payments/{payment}/receipt', [IntermentController::class, 'paymentReceipt'])->name('payments.receipt');
         });
 
         Route::prefix('admin/exhumations')->name('admin.exhumations.')->group(function () {
@@ -179,6 +186,27 @@ Route::middleware('auth')->group(function () {
         Route::prefix('admin/payment-transactions')->name('admin.paymentTransactions.')->group(function () {
             Route::get('/{paymentTransaction}/receipt', [PaymentTransactionController::class, 'downloadReceipt'])->name('receipt');
             Route::get('/{paymentTransaction}/invoice', [PaymentTransactionController::class, 'invoice'])->name('invoice');
+        });
+
+        Route::prefix('admin/lot-payments')->name('admin.lot-payments.')->group(function () {
+            Route::get('/', [LotPaymentController::class, 'index'])->name('index');
+            Route::get('/create', [LotPaymentController::class, 'create'])->name('create');
+            Route::post('/', [LotPaymentController::class, 'store'])->name('store');
+            Route::get('/{lotPayment}', [LotPaymentController::class, 'show'])->name('show');
+            Route::put('/{lotPayment}', [LotPaymentController::class, 'update'])->name('update');
+            Route::delete('/{lotPayment}', [LotPaymentController::class, 'destroy'])->name('destroy');
+            Route::post('/{lotPayment}/mark-paid', [LotPaymentController::class, 'markPaid'])->name('markPaid');
+            Route::post('/{lotPayment}/verify', [LotPaymentController::class, 'verify'])->name('verify');
+            Route::post('/{lotPayment}/complete', [LotPaymentController::class, 'complete'])->name('complete');
+            Route::get('/{lotPayment}/receipt', [LotPaymentController::class, 'downloadReceipt'])->name('downloadReceipt');
+        });
+
+        Route::prefix('admin/interment-payments')->name('admin.interment-payments.')->group(function () {
+            Route::get('/', [IntermentPaymentController::class, 'index'])->name('index');
+            Route::get('/{deceased}', [IntermentPaymentController::class, 'show'])->name('show');
+            Route::post('/{deceased}', [IntermentPaymentController::class, 'storePayment'])->name('store');
+            Route::get('/{deceased}/payments/{payment}/invoice', [IntermentPaymentController::class, 'paymentInvoice'])->name('invoice');
+            Route::get('/{deceased}/payments/{payment}/receipt', [IntermentPaymentController::class, 'paymentReceipt'])->name('receipt');
         });
 
         Route::prefix('admin/reports')->name('admin.reports.')->group(function () {

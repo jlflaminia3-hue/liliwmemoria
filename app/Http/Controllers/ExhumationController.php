@@ -92,6 +92,10 @@ class ExhumationController extends Controller
     {
         $validated = $this->validateExhumation($request);
 
+        if (empty($validated['workflow_status'])) {
+            $validated['workflow_status'] = Exhumation::STATUS_DRAFT;
+        }
+
         $exhumation = DB::transaction(function () use ($request, $validated, $deceased) {
             $exhumation = $deceased->exhumations()->create($this->buildPayload($request, $validated, null, $deceased));
             $this->applyWorkflowEffects($exhumation);
@@ -219,7 +223,7 @@ class ExhumationController extends Controller
     private function validateExhumation(Request $request, ?Exhumation $exhumation = null): array
     {
         $validated = $request->validate([
-            'workflow_status' => ['required', Rule::in(Exhumation::STATUSES)],
+            'workflow_status' => ['nullable', Rule::in(Exhumation::STATUSES)],
             'requested_by_name' => 'nullable|string|max:255',
             'requested_by_relationship' => 'nullable|string|max:255',
             'requested_at' => 'nullable|date',
@@ -252,7 +256,6 @@ class ExhumationController extends Controller
             $fromIdx = array_search($from, $order, true);
             $toIdx = array_search($to, $order, true);
 
-            // Keep it professional: do not allow going backwards in the workflow.
             if ($fromIdx !== false && $toIdx !== false && $toIdx < $fromIdx) {
                 return $request->validate([
                     'workflow_status' => 'prohibited',
@@ -262,7 +265,6 @@ class ExhumationController extends Controller
             }
         }
 
-        // Basic workflow requirements: don't allow leaving Submitted without the exhumation permit.
         $hasExhumationPermit = $request->hasFile('exhumation_permit') || (bool) ($exhumation?->exhumation_permit_path);
         if (($validated['workflow_status'] ?? null) !== Exhumation::STATUS_DRAFT && ($validated['workflow_status'] ?? null) !== Exhumation::STATUS_SUBMITTED && ! $hasExhumationPermit) {
             $request->validate([

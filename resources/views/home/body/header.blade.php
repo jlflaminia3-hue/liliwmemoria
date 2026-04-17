@@ -12,7 +12,7 @@
               <nav class="main-menu menu-style1 d-none d-lg-block menu-left liliwmemoria-header-nav">
                 <ul>
                   <li class="about liliwmemoria-header-link">
-                    <a href="#">About</a>           
+                    <a href="{{ route('about.page') }}">About</a>
                   </li>
                   <li class="services liliwmemoria-header-link">
                     <a href="#">Services</a>

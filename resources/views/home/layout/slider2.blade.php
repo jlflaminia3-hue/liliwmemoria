@@ -6,11 +6,9 @@
             <p>Welcome to LiliwMemoria</p>
             <h2 class="lonyo-slide-title">What can we do for you?</h2>
           </div>
-          <div class="col-xl-4 col-lg-4 d-flex align-items-center justify-content-end">
             <div class="lonyo-title-btn" data-aos="fade-up" data-aos-duration="900">
               <a class="lonyo-default-btn hero-btn" href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book an Appointment</a>
             </div>
-
           </div>
         </div>
       </div>

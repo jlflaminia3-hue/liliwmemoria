@@ -213,14 +213,15 @@
                             <option value="fully_paid">Fully paid</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="contract_duration_wrap">
                         <label class="form-label fw-semibold">Contract duration</label>
-                        <select class="form-select js-contract-duration" name="contract_duration_months" id="reserve_contract_duration" required>
+                        <select class="form-select js-contract-duration" name="contract_duration_months" id="reserve_contract_duration">
                             <option value="">Select duration…</option>
                             <option value="12">12 months</option>
                             <option value="18">18 months</option>
                             <option value="24">24 months</option>
                         </select>
+                        <div class="form-text text-muted">Required for installment payments only</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Reservation date</label>
@@ -1419,6 +1420,25 @@ document.addEventListener('DOMContentLoaded', function() {
         var opt = reserveLotSelect.selectedOptions && reserveLotSelect.selectedOptions[0];
         var category = opt ? String(opt.getAttribute('data-lot-category') || '').trim() : '';
         reserveLotCategoryDisplay.value = category !== '' ? category : '—';
+    }
+
+    function syncContractDurationRequirement() {
+        var paymentStatus = document.getElementById('reserve_payment_status');
+        var durationWrap = document.getElementById('contract_duration_wrap');
+        var durationSelect = document.getElementById('reserve_contract_duration');
+
+        if (!paymentStatus || !durationWrap || !durationSelect) return;
+
+        var isInstallment = paymentStatus.value === 'installment';
+
+        durationSelect.required = isInstallment;
+        durationWrap.style.opacity = isInstallment ? '1' : '0.5';
+    }
+
+    var paymentStatusSelect = document.getElementById('reserve_payment_status');
+    if (paymentStatusSelect) {
+        paymentStatusSelect.addEventListener('change', syncContractDurationRequirement);
+        syncContractDurationRequirement();
     }
 
     if (reserveClientSelect) reserveClientSelect.addEventListener('change', syncReserveEmailUi);
