@@ -365,6 +365,60 @@
     </div>
 </div>
 
+<!-- Exhumation Modal -->
+<div class="modal fade" id="exhumationLotModal" tabindex="-1" aria-labelledby="exhumationLotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form method="POST" action="" id="exhumationLotForm" enctype="multipart/form-data" class="modal-content">
+            @csrf
+            <input type="hidden" name="_modal" value="map">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exhumationLotModalLabel">Request Exhumation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border small mb-3">
+                    <span class="fw-semibold">Lot:</span> <span id="exhumation_lot_label">—</span>
+                    <span class="text-muted mx-2">|</span>
+                    <span class="fw-semibold">Deceased:</span> <span id="exhumation_deceased_name">—</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="exhumation_requested_by_name" class="form-label fw-semibold">Requested By</label>
+                        <input type="text" id="exhumation_requested_by_name" name="requested_by_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="exhumation_requested_by_relationship" class="form-label fw-semibold">Relationship</label>
+                        <input type="text" id="exhumation_requested_by_relationship" name="requested_by_relationship" class="form-control" placeholder="e.g., Son, Daughter, Spouse">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="exhumation_workflow_status" class="form-label fw-semibold">Status</label>
+                        <select id="exhumation_workflow_status" name="workflow_status" class="form-select" required>
+                            <option value="draft">Draft</option>
+                            <option value="submitted">Submitted</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="exhumation_notes" class="form-label fw-semibold">Notes / Reason</label>
+                        <textarea id="exhumation_notes" name="notes" class="form-control" rows="3" placeholder="Enter reason for exhumation request"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="exhumation_confirm" value="1" required>
+                            <label class="form-check-label" for="exhumation_confirm">
+                                I confirm that this is a legitimate exhumation request and all information provided is accurate.
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger">Submit Exhumation Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
     /* Map Toolbar */
     .map-toolbar {
@@ -1026,6 +1080,11 @@ document.addEventListener('DOMContentLoaded', function() {
             popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
         }
 
+        if (status === 'occupied' && lot.deceased && lot.deceased.length > 0) {
+            var deceasedId = lot.deceased[0].id;
+            popupContent += '<br><button class="btn btn-sm btn-lot-exhumation mt-2" type="button" onclick="openExhumationModal(' + lot.id + ', ' + deceasedId + ', \'' + escapeHtml(lotIdLabel) + '\', \'' + escapeHtml(lot.deceased[0].first_name + ' ' + lot.deceased[0].last_name) + '\')">Request Exhumation</button>';
+        }
+
         return popupContent;
     }
 
@@ -1154,6 +1213,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (status === 'reserved') {
                 popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
+            }
+
+            if (status === 'occupied' && lot.deceased && lot.deceased.length > 0) {
+                var deceasedId = lot.deceased[0].id;
+                popupContent += '<br><button class="btn btn-sm btn-lot-exhumation mt-2" type="button" onclick="openExhumationModal(' + lot.id + ', ' + deceasedId + ', \'' + escapeHtml(lotIdLabel) + '\', \'' + escapeHtml(lot.deceased[0].first_name + ' ' + lot.deceased[0].last_name) + '\')">Request Exhumation</button>';
             }
 
             var hoverContent = '<div class="lot-hover-title">' + lotIdLabel + '</div>' +
@@ -1569,6 +1633,84 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(response) {
                 if (response.ok) {
                     var modalEl = document.getElementById('intermentLotModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    window.location.reload();
+                } else if (response.status === 422) {
+                    return response.json().then(function(data) {
+                        var errorMessages = Object.values(data.errors || {}).flat().join('\n') || 'Validation failed.';
+                        alert('Validation Error: ' + errorMessages);
+                        throw new Error(errorMessages);
+                    });
+                } else if (response.status === 500) {
+                    return response.text().then(function(text) {
+                        alert('Server error (500). Please check server logs or try again later.');
+                        throw new Error('Server error: ' + text.substring(0, 200));
+                    });
+                } else {
+                    alert('Error: Server returned status ' + response.status + '. Please try again.');
+                    throw new Error('Request failed with status ' + response.status);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                var errorMsg = 'An error occurred. Please try again.';
+                if (error.message && error.message !== 'Request failed') {
+                    errorMsg += '\n\nDetails: ' + error.message;
+                }
+                alert(errorMsg);
+            })
+            .finally(function() {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        });
+    }
+
+    // Exhumation Modal
+    window.openExhumationModal = function(lotId, deceasedId, lotLabel, deceasedName) {
+        var lotLabelEl = document.getElementById('exhumation_lot_label');
+        var deceasedNameEl = document.getElementById('exhumation_deceased_name');
+        var form = document.getElementById('exhumationLotForm');
+        var modalEl = document.getElementById('exhumationLotModal');
+        
+        if (lotLabelEl) lotLabelEl.textContent = lotLabel;
+        if (deceasedNameEl) deceasedNameEl.textContent = deceasedName;
+        
+        if (form) {
+            form.action = '/admin/interments/' + deceasedId + '/exhumations';
+        }
+        
+        if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    };
+
+    var exhumationForm = document.getElementById('exhumationLotForm');
+    if (exhumationForm) {
+        exhumationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(exhumationForm);
+            var submitBtn = exhumationForm.querySelector('button[type="submit"]');
+            var originalText = submitBtn ? submitBtn.textContent : 'Submit';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+
+            fetch(exhumationForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: formData,
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    var modalEl = document.getElementById('exhumationLotModal');
                     var modal = bootstrap.Modal.getInstance(modalEl);
                     if (modal) modal.hide();
                     window.location.reload();
