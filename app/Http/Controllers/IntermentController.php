@@ -6,7 +6,6 @@ use App\Mail\IntermentContractMail;
 use App\Models\Client;
 use App\Models\ClientLotOwnership;
 use App\Models\Deceased;
-use App\Models\IntermentPayment;
 use App\Models\Lot;
 use App\Models\Reservation;
 use App\Services\Contracts\IntermentPdfService;
@@ -49,7 +48,6 @@ class IntermentController extends Controller
                 'lot:id,lot_number,section,name,status,is_occupied',
                 'client:id,first_name,last_name,email',
                 'latestExhumation',
-                'payments',
             ]);
 
         if ($search !== '') {
@@ -355,9 +353,10 @@ class IntermentController extends Controller
         }
     }
 
-    public function storePayment(Request $request, Deceased $deceased, IntermentPdfService $pdfService)
+    public function updatePayment(Request $request, Deceased $deceased, IntermentPdfService $pdfService)
     {
         $validated = $request->validate([
+<<<<<<< HEAD
             'amount' => 'required|numeric|min:0.01',
             'payment_date' => 'required|date',
             'method' => 'required|string',
@@ -397,11 +396,45 @@ class IntermentController extends Controller
                 Storage::disk('local')->put($path, $pdfBinary);
                 $deceased->contract_path = $path;
                 $deceased->save();
+=======
+            'payment_type' => ['required', Rule::in(['before_excavation', 'after_interment'])],
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($validated, $deceased, $pdfService) {
+            $paymentType = $validated['payment_type'];
+            $amount = (float) $validated['amount'];
+
+            if ($paymentType === 'before_excavation') {
+                $deceased->payment_before_excavation = $amount;
+                $deceased->payment_before_excavation_date = now()->toDateString();
+            } else {
+                $deceased->payment_after_interment = $amount;
+                $deceased->payment_after_interment_date = now()->toDateString();
+>>>>>>> parent of f08d954 (lassst)
             }
 
+            $totalPaid = (float) ($deceased->payment_before_excavation ?? 0) + (float) ($deceased->payment_after_interment ?? 0);
+            $totalFee = (float) ($deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+            if ($totalPaid >= $totalFee) {
+                $deceased->payment_status = Deceased::PAYMENT_STATUS_FULLY_PAID;
+
+                if (! $deceased->contract_path) {
+                    $pdfBinary = $pdfService->renderPdfBinary($deceased);
+                    $path = 'interments/contracts/interment-contract-'.$deceased->id.'.pdf';
+                    Storage::disk('local')->put($path, $pdfBinary);
+                    $deceased->contract_path = $path;
+                }
+            } elseif ($totalPaid > 0) {
+                $deceased->payment_status = Deceased::PAYMENT_STATUS_PARTIAL;
+            }
+
+            $deceased->save();
             $this->syncLotState((int) $deceased->lot_id);
         });
 
+<<<<<<< HEAD
         return redirect()
             ->route('admin.interments.show', $deceased)
             ->with('success', 'Payment recorded successfully.');
@@ -433,6 +466,9 @@ class IntermentController extends Controller
         abort_unless($payment->receipt_path, 404);
 
         return Storage::disk('public')->download($payment->receipt_path, "Interment-Receipt-{$payment->id}." . pathinfo($payment->receipt_path, PATHINFO_EXTENSION));
+=======
+        return back()->with('success', 'Payment updated successfully.');
+>>>>>>> parent of f08d954 (lassst)
     }
 
     public function checkLotEligibility(Request $request)

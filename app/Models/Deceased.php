@@ -51,6 +51,11 @@ class Deceased extends Model
         'interment_form_path',
         'notes',
         'interment_fee',
+        'payment_before_excavation',
+        'payment_after_interment',
+        'payment_before_excavation_date',
+        'payment_after_interment_date',
+        'payment_status',
         'excavation_scheduled',
         'excavation_date',
         'contract_path',
@@ -69,42 +74,14 @@ class Deceased extends Model
             'date_of_death' => 'date',
             'burial_date' => 'date',
             'excavation_date' => 'date',
+            'payment_before_excavation_date' => 'date',
+            'payment_after_interment_date' => 'date',
             'contract_sent_at' => 'datetime',
             'excavation_scheduled' => 'boolean',
             'interment_fee' => 'decimal:2',
+            'payment_before_excavation' => 'decimal:2',
+            'payment_after_interment' => 'decimal:2',
         ];
-    }
-
-    public function payments(): HasMany
-    {
-        return $this->hasMany(IntermentPayment::class)->orderBy('payment_date', 'desc');
-    }
-
-    public function getTotalPaidAttribute(): float
-    {
-        return (float) $this->payments->sum('amount');
-    }
-
-    public function getPaymentStatusAttribute(): string
-    {
-        $fee = (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL);
-        $paid = $this->total_paid;
-
-        if ($paid >= $fee) {
-            return self::PAYMENT_STATUS_FULLY_PAID;
-        }
-        if ($paid > 0) {
-            return self::PAYMENT_STATUS_PARTIAL;
-        }
-
-        return self::PAYMENT_STATUS_UNPAID;
-    }
-
-    public function getRemainingBalanceAttribute(): float
-    {
-        $fee = (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL);
-
-        return max(0, $fee - $this->total_paid);
     }
 
     public function lot(): BelongsTo
@@ -231,14 +208,22 @@ class Deceased extends Model
         };
     }
 
+    public function getRemainingBalanceAttribute(): float
+    {
+        $paid = (float) ($this->payment_before_excavation ?? 0) + (float) ($this->payment_after_interment ?? 0);
+
+        return (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL) - $paid;
+    }
+
     public function getPaymentProgressAttribute(): int
     {
         $total = (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL);
         if ($total <= 0) {
             return 100;
         }
+        $paid = (float) ($this->payment_before_excavation ?? 0) + (float) ($this->payment_after_interment ?? 0);
 
-        return (int) min(100, round(($this->total_paid / $total) * 100));
+        return (int) min(100, round(($paid / $total) * 100));
     }
 
     public static function generateIntermentNumber(): string

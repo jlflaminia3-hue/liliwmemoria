@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exhumation extends Model
 {
@@ -31,8 +30,6 @@ class Exhumation extends Model
         self::STATUS_COMPLETED,
         self::STATUS_ARCHIVED,
     ];
-
-    public const EXHUMATION_FEE = 5000.00;
 
     protected $fillable = [
         'deceased_id',
@@ -77,21 +74,6 @@ class Exhumation extends Model
     public function deceased(): BelongsTo
     {
         return $this->belongsTo(Deceased::class);
-    }
-
-    public function payments(): HasMany
-    {
-        return $this->hasMany(ExhumationPayment::class)->orderBy('payment_date', 'desc');
-    }
-
-    public function getTotalPaidAttribute(): float
-    {
-        return (float) $this->payments->sum('amount');
-    }
-
-    public function getRemainingBalanceAttribute(): float
-    {
-        return max(0, self::EXHUMATION_FEE - $this->total_paid);
     }
 
     public function isRemainsRemovedFromLot(): bool
