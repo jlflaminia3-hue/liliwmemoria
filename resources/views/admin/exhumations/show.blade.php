@@ -64,7 +64,7 @@
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('admin.exhumations.index') }}" class="btn btn-outline-secondary btn-sm">All Exhumations</a>
-                <a href="{{ route('admin.interments.index') }}" class="btn btn-outline-secondary btn-sm">Interments</a>
+                <a href="{{ route('admin.interments.index') }}" class="btn btn-outline-secondary btn-sm">Deceased</a>
             </div>
         </div>
 

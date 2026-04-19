@@ -42,7 +42,7 @@
                         </a>
                         <a href="{{ route('admin.interments.index') }}" class="btn btn-sm btn-outline-primary">
                             <i data-feather="map-pin"></i>
-                            <span class="d-none d-md-inline">Interments</span>
+                            <span class="d-none d-md-inline">Deceased</span>
                         </a>
                     </div>
                 </div>
@@ -264,7 +264,7 @@
         <form method="POST" action="{{ route('admin.interments.store') }}" id="intermentLotForm" enctype="multipart/form-data" class="modal-content">
             @csrf
             <div class="modal-header">
-                <h5 class="modal-title" id="intermentLotModalLabel">Add Interment</h5>
+                <h5 class="modal-title" id="intermentLotModalLabel">Add Deceased</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -1077,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (status === 'reserved') {
-            popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
+            popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Deceased</button>';
         }
 
         if (status === 'occupied' && lot.deceased && lot.deceased.length > 0) {
@@ -1212,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (status === 'reserved') {
-                popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Interment</button>';
+                popupContent += '<br><button class="btn btn-sm btn-lot-interment mt-2" type="button" onclick="openIntermentModal(' + lot.id + ', \'' + escapeHtml(lotIdLabel) + '\')">Add Deceased</button>';
             }
 
             if (status === 'occupied' && lot.deceased && lot.deceased.length > 0) {

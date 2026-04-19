@@ -86,7 +86,7 @@
 
                             <li>
                                 <a href="#sidebarError" data-bs-toggle="collapse">
-                                    <i data-feather="layers"></i>
+                                    <i data-feather="map-pin"></i>
                                     <span> Properties </span>
                                     <span class="menu-arrow"></span>
                                 </a>
@@ -104,8 +104,8 @@
 
                             <li>
                                 <a href="{{ route('admin.interments.index') }}" class="tp-link">
-                                    <i data-feather="map-pin"></i>
-                                    <span> Interments </span>
+                                    <i data-feather="layers"></i>
+                                    <span> Deceased </span>
                                 </a>
                             </li>
 

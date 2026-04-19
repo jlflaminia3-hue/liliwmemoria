@@ -6,7 +6,7 @@
     <div class="container-xxl">
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column gap-3">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">Interments Analytics</h4>
+                <h4 class="fs-18 fw-semibold m-0">Deceased Analytics</h4>
                 <div class="text-muted mt-1">Monitor record status, burials over time, and compliance attention.</div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
@@ -16,7 +16,7 @@
                 </a>
                 <a href="{{ route('admin.interments.index') }}" class="btn btn-outline-secondary btn-sm">
                     <i data-feather="map-pin" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Open Interments
+                    Open Deceased
                 </a>
             </div>
         </div>

@@ -12,7 +12,7 @@
     <div class="container-xxl">
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column gap-3">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">Interments</h4>
+                <h4 class="fs-18 fw-semibold m-0">Deceased</h4>
                 <div class="text-muted mt-1">Track burial records, lot occupancy, document compliance, and client links in one place.</div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
@@ -20,10 +20,6 @@
                     <i data-feather="map" class="me-1" style="height: 16px; width: 16px;"></i>
                     Map
                 </a>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createIntermentModal">
-                    <i data-feather="plus" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Add Interment
-                </button>
             </div>
         </div>
 
@@ -204,17 +200,11 @@
                                             };
                                         @endphp
                                         <span class="badge {{ $paymentBgClass }}">{{ $record->payment_status_label }}</span>
-<<<<<<< HEAD
-                                        <div class="text-muted small mt-1">
-                                            ₱{{ number_format((float) $record->total_paid, 2) }} / ₱{{ number_format((float) ($record->interment_fee ?? 15000), 2) }}
-                                        </div>
-=======
                                         @if ($record->interment_fee)
                                             <div class="text-muted small mt-1">
                                                 ₱{{ number_format((float) ($record->payment_before_excavation ?? 0) + (float) ($record->payment_after_interment ?? 0), 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
                                             </div>
                                         @endif
->>>>>>> parent of f08d954 (lassst)
                                     </td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">

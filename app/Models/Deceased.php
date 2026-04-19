@@ -99,6 +99,11 @@ class Deceased extends Model
         return $this->hasMany(Exhumation::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(IntermentPayment::class)->orderBy('payment_date', 'desc');
+    }
+
     public function latestExhumation(): HasOne
     {
         return $this->hasOne(Exhumation::class)->latestOfMany();
@@ -210,9 +215,12 @@ class Deceased extends Model
 
     public function getRemainingBalanceAttribute(): float
     {
-        $paid = (float) ($this->payment_before_excavation ?? 0) + (float) ($this->payment_after_interment ?? 0);
+        return (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL) - $this->total_paid;
+    }
 
-        return (float) ($this->interment_fee ?? self::INTERMENT_FEE_TOTAL) - $paid;
+    public function getTotalPaidAttribute(): float
+    {
+        return (float) ($this->payment_before_excavation ?? 0) + (float) ($this->payment_after_interment ?? 0) + (float) $this->payments->sum('amount');
     }
 
     public function getPaymentProgressAttribute(): int
@@ -229,8 +237,21 @@ class Deceased extends Model
     public static function generateIntermentNumber(): string
     {
         $year = date('Y');
-        $count = static::whereYear('created_at', $year)->count() + 1;
 
-        return 'INT-'.$year.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+        $latest = static::where('interment_number', 'like', "INT-{$year}-%")
+            ->lockForUpdate()
+            ->latest('interment_number')
+            ->first();
+
+        $count = 1;
+        if ($latest) {
+            $lastNumber = $latest->interment_number;
+            $parts = explode('-', $lastNumber);
+            if (count($parts) === 3) {
+                $count = (int) $parts[2] + 1;
+            }
+        }
+
+        return 'INT-'.$year.'-'.str_pad((string) $count, 4, '0', STR_PAD_LEFT);
     }
 }

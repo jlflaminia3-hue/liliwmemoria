@@ -159,15 +159,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{deceased}/contract', [IntermentController::class, 'pdf'])->name('contract.pdf');
             Route::get('/{deceased}/contract/download', [IntermentController::class, 'downloadContract'])->name('contract.download');
             Route::post('/{deceased}/contract/send', [IntermentController::class, 'sendContract'])->name('contract.send');
-<<<<<<< HEAD
-            Route::post('/{deceased}/payment', [IntermentController::class, 'storePayment'])->name('storePayment');
+            Route::post('/{deceased}/payment', [IntermentController::class, 'updatePayment'])->name('storePayment');
             Route::get('/{deceased}/payments/{payment}/invoice', [IntermentController::class, 'paymentInvoice'])->name('payments.invoice');
             Route::get('/{deceased}/payments/{payment}/receipt', [IntermentController::class, 'paymentReceipt'])->name('payments.receipt');
-=======
-            Route::post('/{deceased}/payment', [IntermentController::class, 'updatePayment'])->name('updatePayment');
-            Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
-            Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
->>>>>>> parent of f08d954 (lassst)
         });
 
         Route::prefix('admin/exhumations')->name('admin.exhumations.')->group(function () {

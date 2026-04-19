@@ -17,7 +17,7 @@
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('admin.interments.index') }}" class="btn btn-outline-secondary btn-sm">
                     <i data-feather="map-pin" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Back to Interments
+                    Back to Deceased
                 </a>
             </div>
         </div>
