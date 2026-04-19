@@ -134,7 +134,7 @@ class IntermentController extends Controller
         $lots = Lot::query()
             ->orderBy('section')
             ->orderBy('lot_number')
-            ->get(['id', 'lot_number', 'section', 'name']);
+            ->get();
 
         $clients = Client::query()
             ->orderBy('last_name')
@@ -385,6 +385,11 @@ class IntermentController extends Controller
             $deceased->refresh();
             $totalPaid = $deceased->total_paid;
             $totalFee = (float) ($deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+            if (in_array($deceased->status, ['pending', 'draft'])) {
+                $deceased->status = 'confirmed';
+                $deceased->save();
+            }
 
             if ($totalPaid >= $totalFee && ! $deceased->contract_path) {
                 $pdfBinary = $pdfService->renderPdfBinary($deceased);

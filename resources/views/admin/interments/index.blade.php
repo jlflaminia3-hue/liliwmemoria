@@ -18,8 +18,12 @@
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('admin.lots.map') }}" class="btn btn-outline-secondary btn-sm">
                     <i data-feather="map" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Open Map
+                    Map
                 </a>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createIntermentModal">
+                    <i data-feather="plus" class="me-1" style="height: 16px; width: 16px;"></i>
+                    Add Interment
+                </button>
             </div>
         </div>
 
@@ -322,6 +326,30 @@
     </div>
 </div>
 
+<!-- Create Interment Modal -->
+<div class="modal fade" id="createIntermentModal" tabindex="-1" aria-labelledby="createIntermentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="createIntermentForm" method="POST" action="{{ route('admin.interments.store') }}" enctype="multipart/form-data" class="modal-content">
+            @csrf
+            <input type="hidden" name="_modal" value="create">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createIntermentModalLabel">Add Interment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info py-2 px-3 small mb-3" id="create_lot_eligibility_info" style="display: none;">
+                    <span id="create_lot_eligibility_text"></span>
+                </div>
+                @include('admin.interments.partials.form-fields', ['idPrefix' => 'create_'])
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="create_submit_btn">Save Interment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="modal fade" id="editIntermentModal" tabindex="-1" aria-labelledby="editIntermentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form id="editIntermentForm" method="POST" action="" enctype="multipart/form-data" class="modal-content">
@@ -517,6 +545,11 @@
                     renderLotMenu(menuEl, filtered, function (picked) {
                         setLotPickerValue(selectEl, inputEl, picked.value);
                         hideLotMenu(wrapper, inputEl, menuEl);
+                        var idPrefix = '';
+                        if (selectEl.id && selectEl.id.indexOf('lot_id') !== -1) {
+                            idPrefix = selectEl.id.replace(/lot_id$/, '');
+                        }
+                        checkLotEligibility(idPrefix, picked.value);
                     });
                 }
 
@@ -688,6 +721,55 @@
             burialPermitInput.required = confirmed && !burialPermitInput.dataset.hasExisting;
         }
 
+        function checkLotEligibility(idPrefix, lotId) {
+            var feedbackEl = document.getElementById(idPrefix + 'lot_eligibility_feedback');
+            var infoEl = document.getElementById(idPrefix + 'lot_eligibility_info');
+            var infoTextEl = document.getElementById(idPrefix + 'lot_eligibility_text');
+            var submitBtn = document.querySelector('#' + idPrefix + 'intermentForm button[type="submit"]') || document.querySelector('#' + idPrefix + 'submit_btn');
+
+            if (!lotId) {
+                if (feedbackEl) feedbackEl.textContent = '';
+                if (infoEl) infoEl.style.display = 'none';
+                return;
+            }
+
+            fetch('/admin/interments/api/check-lot-eligibility?lot_id=' + encodeURIComponent(lotId))
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.eligible) {
+                        if (infoEl) {
+                            infoEl.style.display = 'block';
+                            infoEl.className = 'alert alert-success py-2 px-3 small mb-3';
+                            infoTextEl.textContent = 'Lot eligible for interment (' + data.interment_count + '/' + data.max_interments + ' used)';
+                        }
+                        if (feedbackEl) feedbackEl.textContent = '';
+                        if (submitBtn) submitBtn.disabled = false;
+                    } else {
+                        if (infoEl) {
+                            infoEl.style.display = 'block';
+                            infoEl.className = 'alert alert-danger py-2 px-3 small mb-3';
+                            infoTextEl.textContent = data.reason || 'Cannot add interment to this lot.';
+                        }
+                        if (feedbackEl) feedbackEl.textContent = data.reason || 'Lot is not eligible.';
+                        if (submitBtn) submitBtn.disabled = true;
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error checking lot eligibility:', error);
+                });
+        }
+
+        document.querySelectorAll('#createIntermentModal').forEach(function (modal) {
+            initClientPickers(modal);
+            initLotPickers(modal);
+            modal.querySelectorAll('.js-interment-status').forEach(function (statusInput) {
+                statusInput.addEventListener('change', function () {
+                    syncStatusRequirements(modal);
+                });
+                syncStatusRequirements(modal);
+            });
+        });
+
         document.querySelectorAll('#editIntermentModal').forEach(function (modal) {
             initClientPickers(modal);
             initLotPickers(modal);
@@ -731,6 +813,7 @@
                 var lotInitialInput = document.querySelector('#edit_lot_id').parentElement.querySelector('.js-lot-picker-initial-value');
                 if (lotInitialInput) {
                     lotInitialInput.value = record.lot_id || '';
+                    checkLotEligibility('edit_', record.lot_id);
                 }
 
                 var permitInput = document.getElementById('edit_burial_permit');
@@ -810,6 +893,12 @@
 @if ($errors->any() && old('_modal') === 'edit')
     <script>
         bootstrap.Modal.getOrCreateInstance(document.getElementById('editIntermentModal')).show();
+    </script>
+@endif
+
+@if ($errors->any() && old('_modal') === 'create')
+    <script>
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('createIntermentModal')).show();
     </script>
 @endif
 @endsection

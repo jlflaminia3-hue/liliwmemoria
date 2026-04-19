@@ -38,10 +38,9 @@ Route::get('/', function () {
 });
 
 Route::view('/about-us', 'home.about')->name('about.page');
+Route::view('/pricing', 'home.pricing')->name('pricing.page');
 
 Route::view('/location', 'home.location')->name('location.page');
-
-Route::view('/pricing', 'home.pricing')->name('pricing.page');
 
 Route::get('/contact-us', function () {
     return redirect('/');

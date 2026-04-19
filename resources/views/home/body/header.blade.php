@@ -15,7 +15,7 @@
                     <a href="{{ route('about.page') }}">About</a>
                   </li>
                   <li class="pricing liliwmemoria-header-link">
-                    <a href="{{ route('pricing.page') }}">Pricing</a>
+                    <a href="{{ route('pricing.page') }}also ">Pricing</a>
                   </li>
                   {{-- <li class="galleries liliwmemoria-header-link">
                     <a href="#">Galleries</a>
@@ -24,7 +24,7 @@
                     <a href="{{ route('location.page') }}">Location</a>
                   </li>
                   <li class="liliwmemoria-header-link">
-                    <a href="{{ url('/') }}#contact">Contact</a>
+                    <a href="{{ route('contact.page') }}">Contact</a>
                   </li>
                 </ul>
               </nav>

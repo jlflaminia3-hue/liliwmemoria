@@ -65,6 +65,11 @@
             >
             <select id="{{ $idPrefix }}lot_id" name="lot_id" class="form-select js-lot-picker-select d-none" required>
                 <option value="">Select a lot</option>
+                @foreach ($lots as $lot)
+                    <option value="{{ $lot->id }}" @selected((string) old('lot_id', $record?->lot_id) === (string) $lot->id)>
+                        {{ $lot->lot_id }} - {{ $lot->name ?? $lot->lot_category_label }}
+                    </option>
+                @endforeach
             </select>
             <input type="hidden" class="js-lot-picker-initial-value" value="{{ old('lot_id', $record?->lot_id) }}">
             <div class="dropdown-menu w-100 mt-1 js-lot-picker-menu" style="max-height: 260px; overflow:auto;"></div>

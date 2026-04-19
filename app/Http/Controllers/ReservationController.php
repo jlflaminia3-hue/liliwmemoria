@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\ClientContract;
 use App\Models\Deceased;
 use App\Models\Lot;
+use App\Models\LotPayment;
 use App\Models\PaymentPlan;
 use App\Models\Reservation;
 use App\Services\Contracts\ContractPaymentPlanSyncService;
@@ -243,6 +244,25 @@ class ReservationController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
+            $paymentStatus = $validated['payment_status'] ?? null;
+            if (in_array($paymentStatus, ['downpayment', 'fully_paid'])) {
+                $amount = (float) ($validated['amount_paid'] ?? $validated['total_amount'] ?? 0);
+                if ($amount > 0) {
+                    LotPayment::create([
+                        'client_id' => $validated['client_id'],
+                        'lot_id' => $validated['lot_id'],
+                        'reservation_id' => $reservation->id,
+                        'amount' => $amount,
+                        'payment_date' => $validated['reserved_at'],
+                        'due_date' => $validated['reserved_at'],
+                        'method' => 'cash',
+                        'status' => LotPayment::STATUS_COMPLETED,
+                        'completed_at' => now(),
+                        'notes' => 'Payment for reservation - ' . $paymentStatus,
+                    ]);
+                }
+            }
+
             $client = Client::query()->find((int) $reservation->client_id);
             if ($client) {
                 $lotReservations->reserve(
@@ -363,6 +383,26 @@ class ReservationController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'fulfilled_at' => $fulfilledAt,
             ]);
+
+            $paymentStatus = $validated['payment_status'] ?? null;
+            $oldPaymentStatus = $reservation->getOriginal('payment_status') ?? null;
+            if (in_array($paymentStatus, ['downpayment', 'fully_paid']) && ! in_array($oldPaymentStatus, ['downpayment', 'fully_paid'])) {
+                $amount = (float) ($validated['amount_paid'] ?? 0);
+                if ($amount > 0) {
+                    LotPayment::create([
+                        'client_id' => $validated['client_id'],
+                        'lot_id' => $reservation->lot_id,
+                        'reservation_id' => $reservation->id,
+                        'amount' => $amount,
+                        'payment_date' => $validated['reserved_at'],
+                        'due_date' => $validated['reserved_at'],
+                        'method' => 'cash',
+                        'status' => LotPayment::STATUS_COMPLETED,
+                        'completed_at' => now(),
+                        'notes' => 'Payment for reservation update - ' . $paymentStatus,
+                    ]);
+                }
+            }
 
             $contractStatus = match ($status) {
                 Reservation::STATUS_FULFILLED => 'completed',
