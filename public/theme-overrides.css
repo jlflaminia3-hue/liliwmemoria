@@ -631,48 +631,6 @@ body[data-menu-color] .content-page {
 .liliwmemoria-inquiry-submit {
   min-width: 200px;
   justify-content: center;
-  background-color: #142C14 !important;
-  border-color: #142C14 !important;
-  color: #ffffff !important;
-}
-
-.liliwmemoria-btn-solid {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 28px;
-  background-color: #142C14;
-  border: 2px solid #142C14;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.liliwmemoria-btn-solid:hover {
-  background-color: #142C14;
-  border-color: #142C14;
-  color: #ffffff;
-}
-
-.liliwmemoria-btn-solid:focus {
-  background-color: #142C14;
-  border-color: #142C14;
-  color: #ffffff;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(20, 44, 20, 0.2);
-}
-
-.liliwmemoria-btn-solid:active {
-  background-color: #142C14;
-  border-color: #142C14;
-  color: #ffffff;
 }
 
 .liliwmemoria-policy-card h2 {

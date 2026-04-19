@@ -81,8 +81,8 @@
             </label>
           </div>
 
-          <div class="liliwmemoria-inquiry-actions">
-            <button class="liliwmemoria-btn-solid" type="submit">SUBMIT</button>
+          <div class="lonyo-header-info-wraper2">
+            <button class="lonyo-default-btn liliwmemoria-inquiry-submit" type="submit">SUBMIT</button>
           </div>
         </form>
       </div>

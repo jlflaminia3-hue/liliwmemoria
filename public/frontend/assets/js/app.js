@@ -118,12 +118,6 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
         type: 'iframe',
         mainClass: 'mfp-fade'
       });
-      // Auto-trigger autoplay videos
-      popup_youtube.each(function() {
-        if ($(this).data('autoplay') === true || $(this).attr('data-autoplay') === 'true') {
-          $(this).click();
-        }
-      });
     }
 
     /*--------------------------------------------------------------
