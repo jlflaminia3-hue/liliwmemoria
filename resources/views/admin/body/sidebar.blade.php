@@ -127,10 +127,7 @@
                                 <div class="collapse" id="sidebarPayments">
                                     <ul class="nav-second-level">
                                         <li>
-                                            <a href="{{ route('admin.lot-payments.index') }}" class="tp-link">Lot Payments</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.payments.index') }}" class="tp-link">Installment Payments</a>
+                                            <a href="{{ route('admin.payments.index') }}" class="tp-link">Payments</a>
                                         </li>
                                         <li>
                                             <a href="{{ route('admin.interment-payments.index') }}" class="tp-link">Interment Payments</a>

@@ -1429,68 +1429,13 @@ document.addEventListener('DOMContentLoaded', function() {
     var reserveForm = document.getElementById('reserveLotForm');
     if (reserveForm) {
         reserveForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(reserveForm);
             var submitBtn = reserveForm.querySelector('button[type="submit"]');
             var originalText = submitBtn ? submitBtn.textContent : 'Save';
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Saving...';
             }
-
-            fetch(reserveForm.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'Accept': 'application/json',
-                },
-                body: formData,
-            })
-            .then(function(response) {
-                // Store redirect URL before reading body
-                var redirectUrl = response.redirected ? response.url : null;
-                return response.json().then(function(data) {
-                    return { redirectUrl: redirectUrl, data: data, status: response.status, ok: response.ok };
-                });
-            })
-            .then(function(result) {
-                var data = result.data;
-                if (result.redirectUrl) {
-                    window.location.href = result.redirectUrl;
-                    return;
-                }
-                if (data && (data.success || result.status === 200 || result.status === 302)) {
-                    // Success - close modal and refresh
-                    var modalEl = document.getElementById('reserveLotModal');
-                    if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                        var modal = bootstrap.Modal.getInstance(modalEl);
-                        if (modal) modal.hide();
-                    } else if (typeof jQuery !== "undefined") {
-                        jQuery(modalEl).modal('hide');
-                    }
-                    // Show success message then refresh
-                    if (data.message) {
-                        alert(data.message);
-                    }
-                    window.location.reload();
-                } else if (data && data.errors) {
-                    var errorMessages = Object.values(data.errors).flat().join('\n');
-                    alert('Error: ' + errorMessages);
-                } else {
-                    // Default: consider it success if no errors
-                    window.location.reload();
-                }
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            })
-            .finally(function() {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            });
+            // Allow normal form submission to see server errors
         });
     }
 

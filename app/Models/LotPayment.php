@@ -35,6 +35,7 @@ class LotPayment extends Model
         'client_id',
         'lot_id',
         'reservation_id',
+        'payment_number',
         'amount',
         'payment_date',
         'due_date',

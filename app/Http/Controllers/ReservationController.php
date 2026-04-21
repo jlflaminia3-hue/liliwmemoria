@@ -245,13 +245,19 @@ class ReservationController extends Controller
             ]);
 
             $paymentStatus = $validated['payment_status'] ?? null;
-            if ($paymentStatus === 'cash') {
+            $isCashPayment = $paymentStatus === 'cash';
+
+            if ($isCashPayment) {
                 $amount = (float) ($validated['amount_paid'] ?? $validated['total_amount'] ?? 0);
+                if ($amount <= 0) {
+                    $amount = (float) ($contract->total_amount ?? 0);
+                }
                 if ($amount > 0) {
                     LotPayment::create([
                         'client_id' => $validated['client_id'],
                         'lot_id' => $validated['lot_id'],
                         'reservation_id' => $reservation->id,
+                        'payment_number' => LotPayment::generatePaymentNumber(),
                         'amount' => $amount,
                         'payment_date' => $validated['reserved_at'],
                         'due_date' => $validated['reserved_at'],
@@ -260,22 +266,55 @@ class ReservationController extends Controller
                         'completed_at' => now(),
                         'notes' => 'Payment for reservation - Cash',
                     ]);
+
+                    PaymentPlan::create([
+                        'client_id' => $validated['client_id'],
+                        'client_contract_id' => $contract->id,
+                        'lot_id' => $validated['lot_id'],
+                        'plan_number' => PaymentPlan::generatePlanNumber(),
+                        'status' => 'completed',
+                        'principal_amount' => $amount,
+                        'downpayment_amount' => $amount,
+                        'term_months' => 0,
+                        'interest_rate_percent' => 0,
+                        'financed_principal' => 0,
+                        'interest_amount' => 0,
+                        'start_date' => $validated['reserved_at'],
+                        'penalty_grace_days' => 0,
+                        'penalty_rate_percent' => 0,
+                        'notes' => 'Cash payment - Full settlement',
+                    ]);
+
+                    // Mark lot as sold for cash payments
+                    $lot->status = 'sold';
+                    $lot->is_occupied = true;
+                    $lot->save();
+
+                    // Update contract status to completed
+                    $contract->status = 'completed';
+                    $contract->save();
+
+                    // Update reservation status to fulfilled
+                    $reservation->status = Reservation::STATUS_FULFILLED;
+                    $reservation->fulfilled_at = now();
+                    $reservation->save();
                 }
-            }
+            } else {
+                // For installment payments, reserve the lot normally
+                $client = Client::query()->find((int) $reservation->client_id);
+                if ($client) {
+                    $lotReservations->reserve(
+                        client: $client,
+                        lotId: (int) $reservation->lot_id,
+                        startedAt: $validated['reserved_at'],
+                        endedAt: $expiresAt,
+                        lotKind: null,
+                        lotFieldForErrors: 'lot_id',
+                    );
+                }
 
-            $client = Client::query()->find((int) $reservation->client_id);
-            if ($client) {
-                $lotReservations->reserve(
-                    client: $client,
-                    lotId: (int) $reservation->lot_id,
-                    startedAt: $validated['reserved_at'],
-                    endedAt: $expiresAt,
-                    lotKind: null,
-                    lotFieldForErrors: 'lot_id',
-                );
+                $lotState->sync((int) $lot->id);
             }
-
-            $lotState->sync((int) $lot->id);
         }, 3);
 
         $emailWarning = null;

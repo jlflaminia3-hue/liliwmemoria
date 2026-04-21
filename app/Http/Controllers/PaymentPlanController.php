@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\PaymentScheduleMail;
 use App\Models\Client;
 use App\Models\ClientContract;
+use App\Models\LotPayment;
 use App\Models\PaymentInstallment;
 use App\Models\PaymentPlan;
 use App\Services\Payments\PaymentPenaltyService;
@@ -22,14 +23,17 @@ class PaymentPlanController extends Controller
             'client_id' => 'nullable|exists:clients,id',
             'status' => ['nullable', 'string', Rule::in(['all', 'active', 'completed', 'canceled'])],
             'search' => 'nullable|string|max:255',
+            'per_page' => ['nullable', Rule::in([10, 20, 50, 100])],
         ]);
 
         $clientId = $validated['client_id'] ?? null;
         $status = $validated['status'] ?? 'all';
         $search = trim((string) ($validated['search'] ?? ''));
+        $perPage = (int) ($validated['per_page'] ?? 20);
 
         $query = PaymentPlan::query()
-            ->with(['client', 'contract', 'lot', 'installments']);
+            ->with(['client', 'contract', 'lot', 'installments'])
+            ->where('term_months', '>', 0);
 
         if ($clientId) {
             $query->where('client_id', $clientId);
@@ -55,17 +59,52 @@ class PaymentPlanController extends Controller
             });
         }
 
-        $plans = $query->orderByDesc('id')->get();
+        $plans = $query->orderByDesc('id')->paginate($perPage)->withQueryString();
 
         $plans->each(function (PaymentPlan $plan) {
             $plan->outstanding_total = $plan->installments->sum(fn (PaymentInstallment $i) => $i->installmentBalance() + $i->penaltyBalance());
             $plan->paid_total = $plan->installments->sum(fn (PaymentInstallment $i) => (float) $i->amount_paid + (float) $i->penalty_paid);
         });
 
+        $lotPaymentQuery = LotPayment::query()
+            ->with(['client', 'lot']);
+
+        if ($clientId) {
+            $lotPaymentQuery->where('client_id', $clientId);
+        }
+
+        if ($status !== 'all') {
+            $statusMap = [
+                'active' => LotPayment::STATUS_PAID,
+                'completed' => LotPayment::STATUS_COMPLETED,
+                'canceled' => LotPayment::STATUS_CANCELLED,
+            ];
+            if (isset($statusMap[$status])) {
+                $lotPaymentQuery->where('status', $statusMap[$status]);
+            }
+        }
+
+        if ($search !== '') {
+            $lotPaymentQuery->where(function ($q) use ($search) {
+                $q->where('payment_number', 'like', '%'.$search.'%')
+                    ->orWhere('reference_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('client', function ($cq) use ($search) {
+                        $cq->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('lot', function ($lq) use ($search) {
+                        $lq->where('lot_number', 'like', '%'.$search.'%')
+                            ->orWhere('section', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        $lotPayments = $lotPaymentQuery->orderByDesc('created_at')->paginate($perPage)->withQueryString();
+
         $client = $clientId ? Client::find($clientId) : null;
         $clients = Client::query()->orderBy('last_name')->orderBy('first_name')->get(['id', 'first_name', 'last_name']);
 
-        return view('admin.payments.index', compact('plans', 'client', 'clients', 'clientId', 'status', 'search'));
+        return view('admin.payments.index', compact('plans', 'lotPayments', 'client', 'clients', 'clientId', 'status', 'search', 'perPage'));
     }
 
     public function create(Request $request)
