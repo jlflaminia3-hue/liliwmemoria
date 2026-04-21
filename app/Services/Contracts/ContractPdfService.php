@@ -5,6 +5,7 @@ namespace App\Services\Contracts;
 use App\Models\ClientContract;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Facades\Storage;
 
 class ContractPdfService
 {
@@ -18,7 +19,7 @@ class ContractPdfService
             'lot' => $contract->lot,
         ])->render();
 
-        $options = new Options();
+        $options = new Options;
         $options->set('isRemoteEnabled', false);
         $options->set('isHtml5ParserEnabled', true);
 
@@ -33,8 +34,9 @@ class ContractPdfService
     public function storePdf(ClientContract $contract): string
     {
         $binary = $this->renderPdfBinary($contract);
-        $path = 'contracts/contract-' . $contract->id . '.pdf';
-        \Illuminate\Support\Facades\Storage::disk('local')->put($path, $binary);
+        $path = 'contracts/contract-'.$contract->id.'.pdf';
+        Storage::disk('local')->put($path, $binary);
+
         return $path;
     }
 }

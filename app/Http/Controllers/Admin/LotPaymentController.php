@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Lot;
 use App\Models\LotPayment;
-use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -39,15 +38,15 @@ class LotPaymentController extends Controller
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('payment_number', 'like', '%' . $search . '%')
-                    ->orWhere('reference_number', 'like', '%' . $search . '%')
+                $q->where('payment_number', 'like', '%'.$search.'%')
+                    ->orWhere('reference_number', 'like', '%'.$search.'%')
                     ->orWhereHas('client', function ($cq) use ($search) {
-                        $cq->where('first_name', 'like', '%' . $search . '%')
-                            ->orWhere('last_name', 'like', '%' . $search . '%');
+                        $cq->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('lot', function ($lq) use ($search) {
-                        $lq->where('lot_number', 'like', '%' . $search . '%')
-                            ->orWhere('section', 'like', '%' . $search . '%');
+                        $lq->where('lot_number', 'like', '%'.$search.'%')
+                            ->orWhere('section', 'like', '%'.$search.'%');
                     });
             });
         }

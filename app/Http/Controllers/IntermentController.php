@@ -48,6 +48,7 @@ class IntermentController extends Controller
             ->with([
                 'lot:id,lot_number,section,name,status,is_occupied',
                 'client:id,first_name,last_name,email',
+                'payments',
                 'latestExhumation',
             ]);
 
@@ -286,6 +287,51 @@ class IntermentController extends Controller
             'totalFee' => $totalFee,
             'totalPaid' => $deceased->total_paid,
             'remainingBalance' => $deceased->remaining_balance,
+        ]);
+    }
+
+    public function apiPayments(Deceased $deceased)
+    {
+        $deceased->load(['lot', 'client', 'payments', 'latestExhumation']);
+
+        $totalFee = (float) ($deceased->interment_fee ?? Deceased::INTERMENT_FEE_TOTAL);
+
+        return response()->json([
+            'deceased' => [
+                'id' => $deceased->id,
+                'full_name' => $deceased->full_name,
+                'interment_number' => $deceased->interment_number,
+                'status' => $deceased->status,
+                'payment_status' => $deceased->payment_status,
+                'payment_status_label' => $deceased->payment_status_label,
+                'payment_progress' => $deceased->payment_progress,
+                'date_of_birth' => $deceased->date_of_birth?->format('Y-m-d'),
+                'date_of_death' => $deceased->date_of_death?->format('Y-m-d'),
+                'burial_date' => $deceased->burial_date?->format('Y-m-d'),
+                'notes' => $deceased->notes,
+            ],
+            'totalFee' => $totalFee,
+            'totalPaid' => $deceased->total_paid,
+            'remainingBalance' => $deceased->remaining_balance,
+            'client' => $deceased->client ? [
+                'id' => $deceased->client->id,
+                'full_name' => $deceased->client->full_name,
+            ] : null,
+            'lot' => $deceased->lot ? [
+                'id' => $deceased->lot->id,
+                'lot_id' => $deceased->lot->lot_id,
+                'section' => $deceased->lot->section,
+            ] : null,
+            'payments' => $deceased->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'payment_date' => $p->payment_date?->format('Y-m-d'),
+                'method' => $p->method,
+                'reference_number' => $p->reference_number,
+                'amount' => (float) $p->amount,
+                'notes' => $p->notes,
+            ]),
+            'contract_path' => $deceased->contract_path,
+            'latest_exhumation' => $deceased->latestExhumation,
         ]);
     }
 

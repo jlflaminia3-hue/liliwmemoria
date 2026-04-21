@@ -22,4 +22,3 @@ trait Auditable
         });
     }
 }
-

@@ -51,4 +51,3 @@ class AuditLogController extends Controller
         return view('master.audit-logs.index', compact('auditLogs', 'availableModels'));
     }
 }
-

@@ -11,10 +11,15 @@ class LotPayment extends Model
     use Auditable;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_VERIFIED = 'verified';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_OVERDUE = 'overdue';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const STATUSES = [
@@ -58,7 +63,7 @@ class LotPayment extends Model
     {
         $count = static::whereYear('created_at', now()->year)->count() + 1;
 
-        return 'LP-' . now()->format('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+        return 'LP-'.now()->format('Y').'-'.str_pad($count, 5, '0', STR_PAD_LEFT);
     }
 
     public function client(): BelongsTo

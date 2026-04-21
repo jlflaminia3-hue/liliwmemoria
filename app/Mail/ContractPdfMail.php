@@ -19,7 +19,7 @@ class ContractPdfMail extends Mailable
 
     public function build(): self
     {
-        $subject = 'Contract PDF - ' . ($this->contract->contract_number ?? ('#' . $this->contract->id));
+        $subject = 'Contract PDF - '.($this->contract->contract_number ?? ('#'.$this->contract->id));
 
         return $this->subject($subject)
             ->view('emails.contract_pdf')
@@ -27,4 +27,3 @@ class ContractPdfMail extends Mailable
             ->attachData($this->pdfBinary, $this->filename, ['mime' => 'application/pdf']);
     }
 }
-

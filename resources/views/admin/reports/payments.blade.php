@@ -15,10 +15,6 @@
                     <i data-feather="arrow-left" class="me-1" style="height: 16px; width: 16px;"></i>
                     Back to Reports
                 </a>
-                <a href="{{ route('admin.analytics.payments') }}" class="btn btn-outline-secondary btn-sm no-print">
-                    <i data-feather="bar-chart-2" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Payments Analytics
-                </a>
                 <a href="{{ route('admin.payments.index') }}" class="btn btn-outline-secondary btn-sm no-print">
                     <i data-feather="credit-card" class="me-1" style="height: 16px; width: 16px;"></i>
                     Open Payments

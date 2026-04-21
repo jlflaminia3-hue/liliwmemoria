@@ -129,4 +129,3 @@ class AuditLogger
         return Arr::except($values, self::ignoredAttributes());
     }
 }
-

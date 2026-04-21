@@ -11,7 +11,7 @@ return new class extends Migration
     {
         $rows = DB::table('client_contracts')->orderBy('id')->get(['id']);
         foreach ($rows as $row) {
-            $number = 'CN-' . str_pad((string) $row->id, 6, '0', STR_PAD_LEFT);
+            $number = 'CN-'.str_pad((string) $row->id, 6, '0', STR_PAD_LEFT);
             DB::table('client_contracts')->where('id', $row->id)->update(['contract_number' => $number]);
         }
 
@@ -27,4 +27,3 @@ return new class extends Migration
         });
     }
 };
-

@@ -35,4 +35,3 @@ class PaymentScheduleMail extends Mailable
             ]);
     }
 }
-

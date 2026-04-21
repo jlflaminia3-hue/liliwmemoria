@@ -662,6 +662,105 @@ body[data-menu-color] .content-page {
   }
 }
 
+/* Grayscale wireframe dashboard styles */
+.dashboard-kpi-bar .kpi-card {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.dashboard-kpi-bar .kpi-card .text-muted {
+  color: #6b7280 !important;
+}
+
+.dashboard-kpi-bar .fs-4,
+.dashboard-kpi-bar .display-6 {
+  color: #1f2937 !important;
+}
+
+.accordion-item {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.accordion-button {
+  background: #f9fafb !important;
+  color: #1f2937 !important;
+  font-weight: 600;
+}
+
+.accordion-button:not(.collapsed) {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+}
+
+.accordion-button::after {
+  filter: grayscale(100%);
+}
+
+.accordion-body {
+  background: #ffffff !important;
+  padding: 1rem;
+}
+
+.card {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+.card .fw-semibold,
+.card .fw-bold {
+  color: #1f2937 !important;
+}
+
+.card .text-muted {
+  color: #9ca3af !important;
+}
+
+.table {
+  color: #374151 !important;
+}
+
+.table thead th {
+  background: #f9fafb !important;
+  color: #4b5563 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.table tbody tr:hover {
+  background: #f9fafb !important;
+}
+
+.btn-outline-secondary {
+  color: #4b5563 !important;
+  border-color: #d1d5db !important;
+}
+
+.btn-outline-secondary:hover {
+  background: #f3f4f6 !important;
+  color: #1f2937 !important;
+  border-color: #9ca3af !important;
+}
+
+.btn-success {
+  background-color: #1f2937 !important;
+  border-color: #1f2937 !important;
+}
+
+.btn-success:hover {
+  background-color: #111827 !important;
+  border-color: #111827 !important;
+}
+
 /* Hide large SVG/icon placeholders in content area */
 .content svg[width]:not([width="16"]),
 .content svg[width]:not([width="24"]),

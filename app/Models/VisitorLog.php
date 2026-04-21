@@ -28,4 +28,3 @@ class VisitorLog extends Model
         return $this->belongsTo(Deceased::class);
     }
 }
-

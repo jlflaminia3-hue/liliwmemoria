@@ -245,7 +245,7 @@ class ReservationController extends Controller
             ]);
 
             $paymentStatus = $validated['payment_status'] ?? null;
-            if (in_array($paymentStatus, ['downpayment', 'fully_paid'])) {
+            if ($paymentStatus === 'cash') {
                 $amount = (float) ($validated['amount_paid'] ?? $validated['total_amount'] ?? 0);
                 if ($amount > 0) {
                     LotPayment::create([
@@ -258,7 +258,7 @@ class ReservationController extends Controller
                         'method' => 'cash',
                         'status' => LotPayment::STATUS_COMPLETED,
                         'completed_at' => now(),
-                        'notes' => 'Payment for reservation - ' . $paymentStatus,
+                        'notes' => 'Payment for reservation - Cash',
                     ]);
                 }
             }
@@ -279,18 +279,24 @@ class ReservationController extends Controller
         }, 3);
 
         $emailWarning = null;
+        $pdfError = null;
         if ($contractId) {
             $contract = ClientContract::query()->with('client')->find($contractId);
             if ($contract) {
-                $pdfBinary = $pdfs->renderPdfBinary($contract);
-                $path = 'contracts/contract-'.$contract->id.'.pdf';
-                Storage::disk('local')->put($path, $pdfBinary);
+                try {
+                    $pdfBinary = $pdfs->renderPdfBinary($contract);
+                    $path = 'contracts/contract-'.$contract->id.'.pdf';
+                    Storage::disk('local')->put($path, $pdfBinary);
 
-                $contract->pdf_path = $path;
-                $contract->pdf_generated_at = now();
+                    $contract->pdf_path = $path;
+                    $contract->pdf_generated_at = now();
+                } catch (\Throwable $e) {
+                    report($e);
+                    $pdfError = 'Contract PDF could not be generated: '.$e->getMessage();
+                }
 
                 $client = $contract->client;
-                if ($emailPdf) {
+                if ($emailPdf && ! $pdfError) {
                     if (! $client?->email) {
                         $emailWarning = 'Client has no email on file, so the contract PDF was not emailed.';
                     } else {
@@ -386,7 +392,7 @@ class ReservationController extends Controller
 
             $paymentStatus = $validated['payment_status'] ?? null;
             $oldPaymentStatus = $reservation->getOriginal('payment_status') ?? null;
-            if (in_array($paymentStatus, ['downpayment', 'fully_paid']) && ! in_array($oldPaymentStatus, ['downpayment', 'fully_paid'])) {
+            if ($paymentStatus === 'cash' && $oldPaymentStatus !== 'cash') {
                 $amount = (float) ($validated['amount_paid'] ?? 0);
                 if ($amount > 0) {
                     LotPayment::create([
@@ -399,7 +405,7 @@ class ReservationController extends Controller
                         'method' => 'cash',
                         'status' => LotPayment::STATUS_COMPLETED,
                         'completed_at' => now(),
-                        'notes' => 'Payment for reservation update - ' . $paymentStatus,
+                        'notes' => 'Payment for reservation update - Cash',
                     ]);
                 }
             }

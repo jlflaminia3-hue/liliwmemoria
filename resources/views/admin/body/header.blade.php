@@ -7,6 +7,7 @@
                                     <i data-feather="menu" class="noti-icon"></i>
                                 </button>
                             </li>
+
                             <li class="d-none d-lg-block">
                                 <div class="position-relative topbar-search">
                                     <input type="text" class="form-control bg-light bg-opacity-75 border-light ps-4" placeholder="Search...">
@@ -189,19 +190,29 @@
                             @php($user = auth()->user())
 
                             @if ($user)
-                                <li class="d-none d-md-flex align-items-center me-2">
-                                    <span class="text-muted">Welcome,</span>
-                                    <span class="fw-semibold ms-1">{{ $user->name }}</span>
-                                </li>
-
-                                <li class="d-flex align-items-center">
-<form method="POST" action="{{ route('admin.logout') }}" class="m-0">
-                                        @csrf
-                                        <button type="submit" class="btn nav-link px-2">
-                                            <i data-feather="log-out" class="noti-icon align-middle"></i>
-                                            <span class="d-none d-lg-inline ms-1">Logout</span>
-                                        </button>
-                                    </form>
+                                <li class="dropdown">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i data-feather="user" class="noti-icon align-middle"></i>
+                                        <span class="d-none d-md-inline ms-2">{{ $user->name }}</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                                <i data-feather="settings" class="me-1" style="height: 16px; width: 16px;"></i>
+                                                Settings
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item">
+                                                    <i data-feather="log-out" class="me-1" style="height: 16px; width: 16px;"></i>
+                                                    Logout
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
                                 </li>
                             @endif
                         </ul>

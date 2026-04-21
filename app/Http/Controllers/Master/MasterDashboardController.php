@@ -23,4 +23,3 @@ class MasterDashboardController extends Controller
         return view('master.dashboard', compact('auditLogs', 'totalUsers', 'totalAdmins'));
     }
 }
-

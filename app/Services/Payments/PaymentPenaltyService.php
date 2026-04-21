@@ -27,28 +27,30 @@ class PaymentPenaltyService
             : $plan->installments()->orderBy('sequence')->get();
 
         $installments->each(function (PaymentInstallment $installment) use ($asOf, $ratePercent, $graceDays) {
-                $unpaid = $installment->installmentBalance();
-                if ($unpaid <= 0) {
-                    if ((float) $installment->penalty_paid <= 0) {
-                        $installment->penalty_accrued = 0;
-                        $installment->save();
-                    }
-                    return;
-                }
-
-                $effectiveDue = $installment->dueDateImmutable()->addDays($graceDays);
-                if ($asOf->lessThanOrEqualTo($effectiveDue)) {
-                    $installment->penalty_accrued = max((float) $installment->penalty_paid, 0);
+            $unpaid = $installment->installmentBalance();
+            if ($unpaid <= 0) {
+                if ((float) $installment->penalty_paid <= 0) {
+                    $installment->penalty_accrued = 0;
                     $installment->save();
-                    return;
                 }
 
-                $daysOverdue = $effectiveDue->diffInDays($asOf);
-                $monthsOverdue = (int) ceil($daysOverdue / 30);
-                $computed = round($unpaid * ($ratePercent / 100.0) * $monthsOverdue, 2);
+                return;
+            }
 
-                $installment->penalty_accrued = max((float) $installment->penalty_paid, $computed);
+            $effectiveDue = $installment->dueDateImmutable()->addDays($graceDays);
+            if ($asOf->lessThanOrEqualTo($effectiveDue)) {
+                $installment->penalty_accrued = max((float) $installment->penalty_paid, 0);
                 $installment->save();
-            });
+
+                return;
+            }
+
+            $daysOverdue = $effectiveDue->diffInDays($asOf);
+            $monthsOverdue = (int) ceil($daysOverdue / 30);
+            $computed = round($unpaid * ($ratePercent / 100.0) * $monthsOverdue, 2);
+
+            $installment->penalty_accrued = max((float) $installment->penalty_paid, $computed);
+            $installment->save();
+        });
     }
 }

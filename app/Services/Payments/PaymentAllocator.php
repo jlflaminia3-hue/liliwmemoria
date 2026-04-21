@@ -118,6 +118,7 @@ class PaymentAllocator
             $installment->status = 'paid';
             $installment->paid_at = $installment->paid_at ?? $asOf->toDateString();
             $installment->save();
+
             return;
         }
 
@@ -125,6 +126,7 @@ class PaymentAllocator
         if ($hasAnyPayment) {
             $installment->status = 'partial';
             $installment->save();
+
             return;
         }
 
@@ -147,4 +149,3 @@ class PaymentAllocator
         }
     }
 }
-

@@ -13,7 +13,7 @@ class ClientContract extends Model
 
     public static function formatContractNumber(int $id): string
     {
-        return 'CN-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);
+        return 'CN-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT);
     }
 
     protected $fillable = [
@@ -33,6 +33,10 @@ class ClientContract extends Model
         'pdf_path',
         'pdf_generated_at',
         'pdf_emailed_at',
+        'maintenance_fee',
+        'maintenance_fee_due_date',
+        'maintenance_fee_status',
+        'last_maintenance_fee_paid_at',
     ];
 
     protected function casts(): array
@@ -45,6 +49,9 @@ class ClientContract extends Model
             'contract_duration_months' => 'integer',
             'pdf_generated_at' => 'datetime',
             'pdf_emailed_at' => 'datetime',
+            'maintenance_fee' => 'decimal:2',
+            'maintenance_fee_due_date' => 'date',
+            'last_maintenance_fee_paid_at' => 'date',
         ];
     }
 

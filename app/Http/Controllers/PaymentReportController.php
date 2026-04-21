@@ -42,6 +42,7 @@ class PaymentReportController extends Controller
                     return false;
                 }
                 $effectiveDue = $i->dueDateImmutable()->addDays((int) $plan->penalty_grace_days);
+
                 return $asOf->greaterThan($effectiveDue);
             });
 
@@ -66,4 +67,3 @@ class PaymentReportController extends Controller
         ]);
     }
 }
-

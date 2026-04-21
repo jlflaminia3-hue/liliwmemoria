@@ -336,9 +336,8 @@
                         <label class="form-label fw-semibold">Payment status</label>
                         <select class="form-select" name="payment_status" id="create_payment_status" required>
                                 <option value="">Select payment status…</option>
-                                <option value="downpayment" @selected(old('payment_status') === 'downpayment')>Downpayment</option>
+                                <option value="cash" @selected(old('payment_status') === 'cash')>Cash</option>
                                 <option value="installment" @selected(old('payment_status') === 'installment')>Installment</option>
-                                <option value="fully_paid" @selected(old('payment_status') === 'fully_paid')>Fully paid</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -349,6 +348,7 @@
                         <label class="form-label fw-semibold">Downpayment</label>
                         <input type="number" step="0.01" min="0" class="form-control" name="amount_paid" value="{{ old('amount_paid') }}" placeholder="0.00">
                     </div>
+                    
 
                     <div class="col-12 order-4 order-md-4">
                         <div class="form-check">
@@ -436,9 +436,8 @@
                             <label class="form-label fw-semibold">Payment status</label>
                             <select class="form-select" name="payment_status" id="edit_payment_status" required>
                                 <option value="">Select payment status…</option>
-                                <option value="downpayment">Downpayment</option>
+                                <option value="cash">Cash</option>
                                 <option value="installment">Installment</option>
-                                <option value="fully_paid">Fully paid</option>
                             </select>
                         </div>
                         <div class="col-md-6">

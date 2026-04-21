@@ -12,12 +12,13 @@ class Reservation extends Model
     use Auditable;
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_FULFILLED = 'fulfilled';
 
     public const PAYMENT_STATUSES = [
-        'downpayment',
-        'fully_paid',
+        'cash',
         'installment',
     ];
 

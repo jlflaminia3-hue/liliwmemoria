@@ -44,4 +44,3 @@ it('allows master admin to create maintenance records', function () {
     expect((string) $record->amount)->toBe('250.00');
     expect($record->created_by)->toBe($master->id);
 });
-

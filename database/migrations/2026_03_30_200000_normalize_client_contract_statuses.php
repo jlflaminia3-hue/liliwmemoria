@@ -17,4 +17,3 @@ return new class extends Migration
         // Intentionally left blank: prior values (draft vs past_due) can't be reconstructed safely.
     }
 };
-

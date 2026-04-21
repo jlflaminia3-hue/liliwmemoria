@@ -58,7 +58,7 @@ class PaymentPlan extends Model
 
     public static function generatePlanNumber(): string
     {
-        return 'PAY-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
+        return 'PAY-'.now()->format('Ymd').'-'.Str::upper(Str::random(6));
     }
 
     public function client(): BelongsTo

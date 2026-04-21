@@ -41,16 +41,16 @@ class PaymentPlanController extends Controller
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('plan_number', 'like', '%' . $search . '%')
+                $q->where('plan_number', 'like', '%'.$search.'%')
                     ->orWhereHas('client', function ($cq) use ($search) {
-                        $cq->where('first_name', 'like', '%' . $search . '%')
-                            ->orWhere('last_name', 'like', '%' . $search . '%');
+                        $cq->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('lot', function ($lq) use ($search) {
-                        $lq->where('lot_number', 'like', '%' . $search . '%');
+                        $lq->where('lot_number', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('contract', function ($coq) use ($search) {
-                        $coq->where('contract_number', 'like', '%' . $search . '%');
+                        $coq->where('contract_number', 'like', '%'.$search.'%');
                     });
             });
         }
@@ -168,7 +168,7 @@ class PaymentPlanController extends Controller
         ]);
 
         $client = $paymentPlan->client;
-        if (!$client?->email) {
+        if (! $client?->email) {
             return redirect()
                 ->route('admin.payments.show', $paymentPlan)
                 ->with('error', 'Client has no email address.');

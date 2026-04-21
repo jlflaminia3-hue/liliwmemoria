@@ -29,6 +29,9 @@ class Exhumation extends Model
         self::STATUS_SCHEDULED,
         self::STATUS_COMPLETED,
         self::STATUS_ARCHIVED,
+        'pending',
+        'approved',
+        'completed',
     ];
 
     protected $fillable = [

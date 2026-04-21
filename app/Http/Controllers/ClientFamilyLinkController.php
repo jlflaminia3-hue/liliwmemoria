@@ -46,4 +46,3 @@ class ClientFamilyLinkController extends Controller
         return back()->with('success', 'Family link deleted.');
     }
 }
-

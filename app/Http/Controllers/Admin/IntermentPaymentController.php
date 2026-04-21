@@ -32,16 +32,16 @@ class IntermentPaymentController extends Controller
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', '%' . $search . '%')
-                    ->orWhere('last_name', 'like', '%' . $search . '%')
-                    ->orWhere('interment_number', 'like', '%' . $search . '%')
+                $q->where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('interment_number', 'like', '%'.$search.'%')
                     ->orWhereHas('client', function ($cq) use ($search) {
-                        $cq->where('first_name', 'like', '%' . $search . '%')
-                            ->orWhere('last_name', 'like', '%' . $search . '%');
+                        $cq->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('lot', function ($lq) use ($search) {
-                        $lq->where('lot_number', 'like', '%' . $search . '%')
-                            ->orWhere('section', 'like', '%' . $search . '%');
+                        $lq->where('lot_number', 'like', '%'.$search.'%')
+                            ->orWhere('section', 'like', '%'.$search.'%');
                     });
             });
         }

@@ -107,4 +107,3 @@ class ContractPaymentPlanSyncService
         $generator->generate($plan);
     }
 }
-

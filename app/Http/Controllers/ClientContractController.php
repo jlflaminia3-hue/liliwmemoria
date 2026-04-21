@@ -6,8 +6,8 @@ use App\Mail\ContractPdfMail;
 use App\Models\Client;
 use App\Models\ClientContract;
 use App\Models\Lot;
-use App\Services\Contracts\ContractPdfService;
 use App\Services\Contracts\ContractPaymentPlanSyncService;
+use App\Services\Contracts\ContractPdfService;
 use App\Services\LotStateService;
 use App\Services\Payments\PaymentPlanGenerator;
 use App\Services\Reservations\LotReservationService;
@@ -30,8 +30,7 @@ class ClientContractController extends Controller
         ContractPaymentPlanSyncService $contractPlans,
         LotReservationService $lotReservations,
         LotStateService $lotState,
-    )
-    {
+    ) {
         $validated = $request->validate([
             'lot_id' => 'nullable|exists:lots,id',
             'contract_lot_id' => 'nullable|string|max:32',
@@ -100,6 +99,7 @@ class ClientContractController extends Controller
 
             if (empty($contractData['lot_id'])) {
                 $contractPlans->sync($contract, $generator);
+
                 return;
             }
 
@@ -122,14 +122,14 @@ class ClientContractController extends Controller
             if ($contract) {
                 $emailError = null;
                 $pdfBinary = $pdfs->renderPdfBinary($contract);
-                $path = 'contracts/contract-' . $contract->id . '.pdf';
+                $path = 'contracts/contract-'.$contract->id.'.pdf';
                 Storage::disk('local')->put($path, $pdfBinary);
 
                 $contract->pdf_path = $path;
                 $contract->pdf_generated_at = now();
 
                 if ($emailPdf && $contract->client?->email) {
-                    $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+                    $filename = 'Contract-'.($contract->contract_number ?? $contract->id).'.pdf';
                     try {
                         Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
                         $contract->pdf_emailed_at = now();
@@ -159,8 +159,7 @@ class ClientContractController extends Controller
         ContractPaymentPlanSyncService $contractPlans,
         LotReservationService $lotReservations,
         LotStateService $lotState,
-    )
-    {
+    ) {
         if ($contract->client_id !== $client->id) {
             abort(404);
         }
@@ -256,20 +255,21 @@ class ClientContractController extends Controller
         $contract->loadMissing('client');
 
         $pdfBinary = $pdfs->renderPdfBinary($contract);
-        $path = 'contracts/contract-' . $contract->id . '.pdf';
+        $path = 'contracts/contract-'.$contract->id.'.pdf';
         Storage::disk('local')->put($path, $pdfBinary);
 
         $contract->pdf_path = $path;
         $contract->pdf_generated_at = now();
 
         if ($emailPdf && $contract->client?->email) {
-            $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+            $filename = 'Contract-'.($contract->contract_number ?? $contract->id).'.pdf';
             try {
                 Mail::to($contract->client->email)->send(new ContractPdfMail($contract, $pdfBinary, $filename));
                 $contract->pdf_emailed_at = now();
             } catch (TransportExceptionInterface $e) {
                 report($e);
                 $contract->save();
+
                 return back()->with('warning', 'Email could not be sent. Please check your mail server/DNS settings.')->with('success', 'Contract updated.');
             }
         }
@@ -287,14 +287,14 @@ class ClientContractController extends Controller
 
         $contract->loadMissing(['client', 'lot']);
 
-        $filename = 'Contract-' . ($contract->contract_number ?? $contract->id) . '.pdf';
+        $filename = 'Contract-'.($contract->contract_number ?? $contract->id).'.pdf';
 
         if ($contract->pdf_path && Storage::disk('local')->exists($contract->pdf_path)) {
             return response()->download(Storage::disk('local')->path($contract->pdf_path), $filename);
         }
 
         $pdfBinary = $pdfs->renderPdfBinary($contract);
-        $path = 'contracts/contract-' . $contract->id . '.pdf';
+        $path = 'contracts/contract-'.$contract->id.'.pdf';
         Storage::disk('local')->put($path, $pdfBinary);
 
         $contract->pdf_path = $path;

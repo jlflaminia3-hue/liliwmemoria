@@ -43,6 +43,20 @@
                             <i data-feather="arrow-left" class="me-1" style="height: 14px; width: 14px;"></i>
                             Back
                         </a>
+                        @if ($deceased->status !== 'exhumed')
+                            <form action="{{ route('admin.interments.exhumations.store', $deceased) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i data-feather="repeat" class="me-1" style="height: 14px; width: 14px;"></i>
+                                    Request Exhumation
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('admin.exhumations.show', $deceased->exhumation) }}" class="btn btn-outline-secondary">
+                                <i data-feather="eye" class="me-1" style="height: 14px; width: 14px;"></i>
+                                View Exhumation
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -84,7 +98,7 @@
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-lg-8">
+                    <div class="col-12">
                         <h5 class="mb-3">Payment History</h5>
                         @if ($deceased->payments->isEmpty())
                             <div class="alert alert-info mb-0">No payments recorded yet.</div>
@@ -188,71 +202,6 @@
                                     @endif
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <div class="card border">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">Record Payment</h5>
-                                <form method="POST" action="{{ route('admin.interments.storePayment', $deceased) }}" enctype="multipart/form-data">
-                                    @csrf
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Payment Date</label>
-                                        <input type="date" name="payment_date" class="form-control" value="{{ old('payment_date', now()->toDateString()) }}" required>
-                                        @error('payment_date')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Amount</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">₱</span>
-                                            <input type="number" step="0.01" min="0" name="amount" class="form-control" value="{{ old('amount') }}" placeholder="0.00" required>
-                                        </div>
-                                        @error('amount')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Payment Method</label>
-                                        <select name="method" class="form-select" required>
-                                            <option value="">Select method</option>
-                                            @foreach (['cash' => 'Cash', 'bank' => 'Bank Transfer', 'gcash' => 'GCash', 'card' => 'Card', 'check' => 'Check', 'other' => 'Other'] as $value => $label)
-                                                <option value="{{ $value }}" @selected(old('method') === $value)>{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('method')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Reference Number</label>
-                                        <input type="text" name="reference_number" class="form-control" value="{{ old('reference_number') }}" placeholder="Optional">
-                                        @error('reference_number')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Receipt</label>
-                                        <input type="file" name="receipt" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                        <div class="form-text">PDF/Image up to 10MB</div>
-                                        @error('receipt')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-1">Notes</label>
-                                        <textarea name="notes" class="form-control" rows="2" placeholder="Optional">{{ old('notes') }}</textarea>
-                                        @error('notes')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">Record Payment</button>
-                                    </div>
-                                </form>
-                            </div>
                         </div>
                     </div>
                 </div>

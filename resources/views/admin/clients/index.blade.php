@@ -16,10 +16,6 @@
                 <div class="text-muted mt-1">Manage client profiles, contact details, and activity.</div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ route('admin.analytics.clients') }}" class="btn btn-outline-secondary btn-sm">
-                    <i data-feather="bar-chart-2" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Analytics
-                </a>
                 <a href="{{ route('admin.clients.export.csv', request()->query()) }}" class="btn btn-outline-secondary btn-sm">
                     <i data-feather="download" class="me-1" style="height: 16px; width: 16px;"></i>
                     Export CSV

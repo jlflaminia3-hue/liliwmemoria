@@ -1,4 +1,4 @@
-            <div class="app-sidebar-menu">
+<div class="app-sidebar-menu">
                 <div class="h-100" data-simplebar>
 
                     <!--- Sidemenu -->
@@ -27,8 +27,6 @@
 
                         <ul id="side-menu">
 
-                            <li class="menu-title">Menu</li>
-
                             <li>
                                 <a href="{{ route('dashboard') }}" class="tp-link">
                                     <i data-feather="home"></i>
@@ -50,7 +48,7 @@
                             @if (auth()->check() && auth()->user()->role === 'master_admin')
                                 <li>
                                     <a href="{{ route('master.auditLogs.index') }}" class="tp-link">
-                                        <i data-feather="activity"></i>
+                                        <i data-feather="search"></i>
                                         <span> Audit Logs </span>
                                     </a>
                                 </li>
@@ -71,13 +69,6 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.reservations.index') }}" class="tp-link">
-                                    <i data-feather="calendar"></i>
-                                    <span> Reservations </span>
-                                </a>
-                            </li>
-
-                            <li>
                                 <a href="{{ route('admin.analytics.visitors') }}" class="tp-link">
                                     <i data-feather="clipboard"></i>
                                     <span> Visitor Logs </span>
@@ -85,12 +76,19 @@
                             </li>
 
                             <li>
-                                <a href="#sidebarError" data-bs-toggle="collapse">
-                                    <i data-feather="map-pin"></i>
-                                    <span> Properties </span>
+                                <a href="{{ route('admin.reservations.index') }}" class="tp-link">
+                                    <i data-feather="calendar"></i>
+                                    <span> Lot Purchases </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarProperties" data-bs-toggle="collapse">
+                                    <i data-feather="box"></i>
+                                    <span> Lot Management </span>
                                     <span class="menu-arrow"></span>
                                 </a>
-                                <div class="collapse" id="sidebarError">
+                                <div class="collapse" id="sidebarProperties">
                                     <ul class="nav-second-level">
                                         <li>
                                             <a href="{{ route('admin.lots.index') }}" class="tp-link">Lots</a>
@@ -103,17 +101,21 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.interments.index') }}" class="tp-link">
+                                <a href="#sidebarBurial" data-bs-toggle="collapse">
                                     <i data-feather="layers"></i>
-                                    <span> Deceased </span>
+                                    <span> Burial Records </span>
+                                    <span class="menu-arrow"></span>
                                 </a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('admin.exhumations.index') }}" class="tp-link">
-                                    <i data-feather="repeat"></i>
-                                    <span> Exhumations </span>
-                                </a>
+                                <div class="collapse" id="sidebarBurial">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="{{ route('admin.interments.index') }}" class="tp-link">Deceased</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('admin.exhumations.index') }}" class="tp-link">Exhumations</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
 
                             <li>
@@ -130,44 +132,9 @@
                                         <li>
                                             <a href="{{ route('admin.payments.index') }}" class="tp-link">Installment Payments</a>
                                         </li>
-
                                         <li>
                                             <a href="{{ route('admin.interment-payments.index') }}" class="tp-link">Interment Payments</a>
                                         </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-
-                            <li>
-                                <a href="#sidebarAnalytics" data-bs-toggle="collapse">
-                                    <i data-feather="bar-chart-2"></i>
-                                    <span> Analytics </span>
-                                    <span class="menu-arrow"></span>
-                                </a>
-                                <div class="collapse" id="sidebarAnalytics">
-                                    <ul class="nav-second-level">
-                                        <li>
-                                            <a href="{{ route('admin.analytics.index') }}" class="tp-link">Overview</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.analytics.clients') }}" class="tp-link">Clients Analytics</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.analytics.plots') }}" class="tp-link">Plots Analytics</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.analytics.payments') }}" class="tp-link">Payments Analytics</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.analytics.documents') }}" class="tp-link">Documents Analytics</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('admin.analytics.interments') }}" class="tp-link">Interments Analytics</a>
-                                        </li>
-                                        {{-- <li>
-                                            <a href="{{ route('admin.analytics.visitors') }}" class="tp-link">Visitors Analytics</a>
-                                        </li> --}}
                                     </ul>
                                 </div>
                             </li>
@@ -195,7 +162,6 @@
                                     </ul>
                                 </div>
                             </li>
-
 
                             <li>
                                 <a href="#" class="tp-link">

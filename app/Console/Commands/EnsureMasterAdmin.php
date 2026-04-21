@@ -20,6 +20,7 @@ class EnsureMasterAdmin extends Command
 
         if ($email === '' || $password === '') {
             $this->error('Missing MASTER_ADMIN_EMAIL or MASTER_ADMIN_PASSWORD in .env');
+
             return self::FAILURE;
         }
 
@@ -40,4 +41,3 @@ class EnsureMasterAdmin extends Command
         return self::SUCCESS;
     }
 }
-

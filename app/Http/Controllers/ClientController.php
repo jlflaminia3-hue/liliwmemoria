@@ -6,11 +6,10 @@ use App\Models\Client;
 use App\Models\ClientFamilyLink;
 use App\Models\Lot;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
@@ -91,6 +90,7 @@ class ClientController extends Controller
 
         $growthMonths = [];
         $growthCounts = [];
+
         return view('admin.clients.index', compact('clients', 'stats'));
     }
 
@@ -311,7 +311,7 @@ class ClientController extends Controller
             'generatedAt' => now(),
         ])->render();
 
-        $options = new Options();
+        $options = new Options;
         $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);

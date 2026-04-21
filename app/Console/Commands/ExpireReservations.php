@@ -27,4 +27,3 @@ class ExpireReservations extends Command
         return Command::SUCCESS;
     }
 }
-

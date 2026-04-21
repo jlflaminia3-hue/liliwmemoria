@@ -17,10 +17,6 @@
                     <i data-feather="grid" class="me-1" style="height: 16px; width: 16px;"></i>
                     Open Lots
                 </a>
-                <a href="{{ route('admin.analytics.plots') }}" class="btn btn-outline-secondary btn-sm no-print">
-                    <i data-feather="bar-chart-2" class="me-1" style="height: 16px; width: 16px;"></i>
-                    Plots Analytics
-                </a>
                 <button onclick="window.print()" class="btn btn-primary btn-sm no-print">
                     <i data-feather="printer" class="me-1" style="height: 16px; width: 16px;"></i>
                     Print Report

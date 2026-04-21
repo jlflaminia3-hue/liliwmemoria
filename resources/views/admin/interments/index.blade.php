@@ -202,7 +202,7 @@
                                         <span class="badge {{ $paymentBgClass }}">{{ $record->payment_status_label }}</span>
                                         @if ($record->interment_fee)
                                             <div class="text-muted small mt-1">
-                                                ₱{{ number_format((float) ($record->payment_before_excavation ?? 0) + (float) ($record->payment_after_interment ?? 0), 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
+                                                ₱{{ number_format((float) $record->total_paid, 2) }} / ₱{{ number_format((float) $record->interment_fee, 2) }}
                                             </div>
                                         @endif
                                     </td>
@@ -239,7 +239,7 @@
                                                 @if ($record->latestExhumation)
                                                     <a class="dropdown-item" href="{{ route('admin.exhumations.show', $record->latestExhumation) }}">Exhumation Case</a>
                                                 @else
-                                                    <form method="POST" action="{{ route('admin.exhumations.store', $record) }}" class="dropdown-item p-0">
+                                                    <form method="POST" action="{{ route('admin.interments.exhumations.store', $record) }}" class="dropdown-item p-0">
                                                         @csrf
                                                         <button type="submit" class="btn btn-link dropdown-item m-0">Start Exhumation</button>
                                                     </form>
@@ -256,22 +256,13 @@
                                                         Download Permit
                                                     </a>
                                                 @endif
-                                                <a class="dropdown-item" href="{{ route('admin.interments.show', $record) }}">
-                                                    <i data-feather="file-text" class="me-1" style="height: 14px; width: 14px;"></i>
-                                                    View / Payments
-                                                </a>
                                                 <button
                                                     type="button"
-                                                    class="dropdown-item js-record-payment"
+                                                    class="dropdown-item js-view-payments"
                                                     data-record-id="{{ $record->id }}"
-                                                    data-record-name="{{ $record->full_name }}"
-                                                    data-payment-status="{{ $record->payment_status }}"
-                                                    data-payment-before="{{ $record->payment_before_excavation ?? 0 }}"
-                                                    data-payment-after="{{ $record->payment_after_interment ?? 0 }}"
-                                                    data-interment-fee="{{ $record->interment_fee ?? 15000 }}"
                                                 >
-                                                    <i data-feather="credit-card" class="me-1" style="height: 14px; width: 14px;"></i>
-                                                    Record Payment
+                                                    <i data-feather="file-text" class="me-1" style="height: 14px; width: 14px;"></i>
+                                                    View / Payments
                                                 </button>
                                                 <button
                                                     type="button"
@@ -423,6 +414,36 @@
         </form>
     </div>
 </div>
+
+<div class="modal fade" id="viewPaymentsModal" tabindex="-1" aria-labelledby="viewPaymentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewPaymentsModalLabel">View / Payments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewPaymentsContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@php
+    $intermentFeeTotal = App\Models\Deceased::INTERMENT_FEE_TOTAL;
+    $adminIntermentsUrl = url('admin/interments');
+    $adminIntermentsApiUrl = url('admin/interments/api');
+    $adminClientsUrl = url('admin/clients');
+    $adminExhumationsUrl = url('admin/exhumations');
+    $csrfToken = csrf_token();
+    $currentDate = now()->toDateString();
+@endphp
 
 <script>
     (function () {
@@ -873,6 +894,164 @@
                 document.getElementById('payment_remaining').classList.add('text-danger');
             });
         }
+
+        // View Payments Modal
+        var viewPaymentsModal = document.getElementById('viewPaymentsModal');
+        var viewPaymentsContent = document.getElementById('viewPaymentsContent');
+        var viewPaymentsButtons = document.querySelectorAll('.js-view-payments');
+
+        viewPaymentsButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var recordId = button.getAttribute('data-record-id');
+                var url = "{{ url('admin/interments/api') }}/" + recordId + "/payments";
+
+                viewPaymentsContent.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+                fetch(url)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        var statusClass = data.deceased.status === 'confirmed' ? 'success' : (data.deceased.status === 'exhumed' ? 'secondary' : 'warning');
+                        var paymentStatusClass = data.deceased.payment_status === 'fully_paid' ? 'success' : (data.deceased.payment_status === 'partial' ? 'warning' : 'danger');
+
+                        var html = '';
+                        html += '<div class="mb-4">';
+                        html += '<h5 class="mb-1">' + data.deceased.full_name + '</h5>';
+                        html += '<div class="text-muted small">';
+                        if (data.client) {
+                            html += 'Client: <a href="{{ url('admin/clients') }}/' + data.client.id + '">' + data.client.full_name + '</a> · ';
+                        }
+                        if (data.lot) {
+                            html += 'Lot ' + data.lot.lot_id + ' (' + data.lot.section + ')';
+                        }
+                        html += '</div>';
+                        html += '<div class="mt-2">';
+                        html += '<span class="badge bg-' + statusClass + '-subtle text-' + statusClass + ' border border-' + statusClass + '-subtle">' + data.deceased.status.charAt(0).toUpperCase() + data.deceased.status.slice(1) + '</span> ';
+                        html += '<span class="badge bg-' + paymentStatusClass + '-subtle text-' + paymentStatusClass + ' border border-' + paymentStatusClass + '-subtle">' + data.deceased.payment_status_label + '</span>';
+                        html += '</div>';
+                        html += '</div>';
+
+                        html += '<div class="row g-3 mb-4">';
+                        html += '<div class="col-md-4">';
+                        html += '<div class="p-3 border rounded">';
+                        html += '<div class="text-muted small">Total Fee</div>';
+                        html += '<div class="h5 mb-0">₱' + Number(data.totalFee).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div class="col-md-4">';
+                        html += '<div class="p-3 border rounded">';
+                        html += '<div class="text-muted small">Total Paid</div>';
+                        html += '<div class="h5 mb-0 text-success">₱' + Number(data.totalPaid).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div class="col-md-4">';
+                        html += '<div class="p-3 border rounded">';
+                        html += '<div class="text-muted small">Remaining Balance</div>';
+                        html += '<div class="h5 mb-0 ' + (data.remainingBalance > 0 ? 'text-danger' : '') + '">₱' + Number(data.remainingBalance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
+
+                        html += '<h5 class="mb-3">Payment History</h5>';
+                        if (data.payments.length === 0) {
+                            html += '<div class="alert alert-info mb-0">No payments recorded yet.</div>';
+                        } else {
+                            html += '<div class="table-responsive">';
+                            html += '<table class="table table-sm table-hover align-middle">';
+                            html += '<thead><tr><th>Date</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th><th class="text-end" style="width: 150px;">Actions</th></tr></thead>';
+                            html += '<tbody>';
+                            data.payments.forEach(function(payment) {
+                                html += '<tr>';
+                                html += '<td>' + (payment.payment_date || '-') + '</td>';
+                                html += '<td>' + (payment.method.charAt(0).toUpperCase() + payment.method.slice(1)) + '</td>';
+                                html += '<td>' + (payment.reference_number || '-') + '</td>';
+                                html += '<td class="text-end">₱' + Number(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>';
+                                html += '<td class="text-end">';
+                                html += '<a class="btn btn-sm btn-light" href="{{ url('admin/interments') }}/' + data.deceased.id + '/payments/' + payment.id + '/invoice">Invoice</a>';
+                                html += '</td>';
+                                html += '</tr>';
+                            });
+                            html += '</tbody>';
+                            html += '<tfoot><tr class="table-light"><th colspan="3" class="text-end">Total Paid</th><th class="text-end">₱' + Number(data.totalPaid).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</th><th></th></tr></tfoot>';
+                            html += '</table>';
+                            html += '</div>';
+                        }
+
+                        html += '<h5 class="mt-4 mb-3">Interment Details</h5>';
+                        html += '<div class="table-responsive">';
+                        html += '<table class="table table-sm table-borderless">';
+                        html += '<tbody>';
+                        html += '<tr><td class="text-muted" style="width: 180px;">Date of Birth</td><td>' + (data.deceased.date_of_birth || '-') + '</td></tr>';
+                        html += '<tr><td class="text-muted">Date of Death</td><td>' + (data.deceased.date_of_death || '-') + '</td></tr>';
+                        html += '<tr><td class="text-muted">Burial Date</td><td>' + (data.deceased.burial_date || '-') + '</td></tr>';
+                        if (data.contract_path) {
+                            html += '<tr><td class="text-muted">Contract</td><td><a href="{{ url('admin/interments') }}/' + data.deceased.id + '/contract/download" class="btn btn-sm btn-light"><i data-feather="download" class="me-1" style="height: 12px; width: 12px;"></i>Download</a></td></tr>';
+                        }
+                        if (data.latest_exhumation) {
+                            html += '<tr><td class="text-muted">Exhumation</td><td><a href="{{ url('admin/exhumations') }}/' + data.latest_exhumation.id + '">Case #' + data.latest_exhumation.id + '</a></td></tr>';
+                        }
+                        if (data.deceased.notes) {
+                            html += '<tr><td class="text-muted">Notes</td><td>' + data.deceased.notes + '</td></tr>';
+                        }
+                        html += '</tbody>';
+                        html += '</table>';
+                        html += '</div>';
+
+                        html += '<hr class="my-4">';
+                        html += '<h5 class="mb-3">Record Payment</h5>';
+                        html += '<form method="POST" action="{{ url('admin/interments') }}/' + data.deceased.id + '/payment" enctype="multipart/form-data">';
+                        html += '@csrf';
+                        html += '<input type="hidden" name="_modal" value="payment">';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Payment Date</label>';
+                        html += '<input type="date" name="payment_date" class="form-control" value="{{ now()->toDateString() }}" required>';
+                        html += '</div>';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Amount</label>';
+                        html += '<div class="input-group">';
+                        html += '<span class="input-group-text">₱</span>';
+                        html += '<input type="number" step="0.01" min="0" name="amount" class="form-control" placeholder="0.00" required>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Payment Method</label>';
+                        html += '<select name="method" class="form-select" required>';
+                        html += '<option value="">Select method</option>';
+                        html += '<option value="cash">Cash</option>';
+                        html += '<option value="bank">Bank Transfer</option>';
+                        html += '<option value="gcash">GCash</option>';
+                        html += '<option value="card">Card</option>';
+                        html += '<option value="check">Check</option>';
+                        html += '<option value="other">Other</option>';
+                        html += '</select>';
+                        html += '</div>';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Reference Number</label>';
+                        html += '<input type="text" name="reference_number" class="form-control" placeholder="Optional">';
+                        html += '</div>';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Receipt</label>';
+                        html += '<input type="file" name="receipt" class="form-control" accept=".pdf,.jpg,.jpeg,.png">';
+                        html += '<div class="form-text">PDF/Image up to 10MB</div>';
+                        html += '</div>';
+                        html += '<div class="mb-3">';
+                        html += '<label class="form-label mb-1">Notes</label>';
+                        html += '<textarea name="notes" class="form-control" rows="2" placeholder="Optional"></textarea>';
+                        html += '</div>';
+                        html += '<div class="d-grid">';
+                        html += '<button type="submit" class="btn btn-primary">Record Payment</button>';
+                        html += '</div>';
+                        html += '</form>';
+
+                        viewPaymentsContent.innerHTML = html;
+                    })
+                    .catch(function(error) {
+                        viewPaymentsContent.innerHTML = '<div class="alert alert-danger">Error loading payment data.</div>';
+                        console.error('Error:', error);
+                    });
+
+                bootstrap.Modal.getOrCreateInstance(viewPaymentsModal).show();
+            });
+        });
     })();
 </script>
 

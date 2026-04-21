@@ -72,4 +72,3 @@ class PaymentTransactionController extends Controller
         return $view;
     }
 }
-

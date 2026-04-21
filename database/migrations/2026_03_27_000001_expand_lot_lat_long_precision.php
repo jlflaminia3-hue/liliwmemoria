@@ -18,4 +18,3 @@ return new class extends Migration
         DB::statement('ALTER TABLE `lots` MODIFY `longitude` DECIMAL(11,8) NOT NULL');
     }
 };
-

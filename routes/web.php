@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AllPaymentsController;
 use App\Http\Controllers\Admin\IntermentPaymentController;
 use App\Http\Controllers\Admin\LotPaymentController;
 use App\Http\Controllers\AdminController;
@@ -152,6 +153,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/api/clients/{client}/lots', [IntermentController::class, 'clientLots'])->name('api.clientLots');
             Route::get('/api/lot-info', [IntermentController::class, 'lotInfo'])->name('lotInfo');
             Route::get('/api/check-lot-eligibility', [IntermentController::class, 'checkLotEligibility'])->name('checkLotEligibility');
+            Route::get('/api/{deceased}/payments', [IntermentController::class, 'apiPayments'])->name('api.payments');
             Route::get('/{deceased}', [IntermentController::class, 'show'])->name('show');
             Route::put('/{deceased}', [IntermentController::class, 'update'])->name('update');
             Route::delete('/{deceased}', [IntermentController::class, 'destroy'])->name('destroy');
@@ -162,6 +164,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{deceased}/payment', [IntermentController::class, 'updatePayment'])->name('storePayment');
             Route::get('/{deceased}/payments/{payment}/invoice', [IntermentController::class, 'paymentInvoice'])->name('payments.invoice');
             Route::get('/{deceased}/payments/{payment}/receipt', [IntermentController::class, 'paymentReceipt'])->name('payments.receipt');
+            Route::post('/{deceased}/exhumations', [ExhumationController::class, 'store'])->name('exhumations.store');
         });
 
         Route::prefix('admin/exhumations')->name('admin.exhumations.')->group(function () {
@@ -173,8 +176,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/{exhumation}/transfer-certificate', [ExhumationController::class, 'generateTransferCertificate'])->name('transferCertificate.generate');
             Route::get('/{exhumation}/transfer-certificate/download', [ExhumationController::class, 'downloadTransferCertificate'])->name('transferCertificate.download');
         });
-
-        Route::post('/admin/interments/{deceased}/exhumations', [ExhumationController::class, 'store'])->name('admin.exhumations.store');
 
         Route::prefix('admin/reservations')->name('admin.reservations.')->group(function () {
             Route::get('/', [ReservationController::class, 'index'])->name('index');
@@ -201,6 +202,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/{lotPayment}/complete', [LotPaymentController::class, 'complete'])->name('complete');
             Route::get('/{lotPayment}/receipt', [LotPaymentController::class, 'downloadReceipt'])->name('downloadReceipt');
         });
+
+        Route::get('admin/all-payments', [AllPaymentsController::class, 'index'])->name('admin.all-payments.index');
 
         Route::prefix('admin/interment-payments')->name('admin.interment-payments.')->group(function () {
             Route::get('/', [IntermentPaymentController::class, 'index'])->name('index');

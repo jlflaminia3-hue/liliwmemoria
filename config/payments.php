@@ -12,4 +12,3 @@ return [
     */
     'instructions' => env('PAYMENT_INSTRUCTIONS', "Please pay your monthly installment on or before the due date.\n\nPayment options:\n- Cash (office)\n- Bank transfer\n- GCash\n\nUse your Payment Plan Number as reference."),
 ];
-

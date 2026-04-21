@@ -7,23 +7,24 @@ use App\Models\ClientContract;
 use App\Models\Deceased;
 use App\Models\IntermentPayment;
 use App\Models\Lot;
-use App\Models\LotPayment;
 use App\Models\PaymentPlan;
 use App\Models\PaymentTransaction;
 use App\Models\VisitorLog;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AnalyticsController extends Controller
 {
     public function index()
     {
-        return view('admin.analytics.index');
+        return redirect()->route('dashboard')->with('info', 'Analytics is now available in the dashboard.');
     }
 
     public function clients()
     {
+        return redirect()->to(route('dashboard', absolute: false).'#clientsSection');
+
         $activeCutoff = now()->subDays(30);
         $inactiveCutoff = now()->subMonths(6);
         $monthStart = CarbonImmutable::today()->startOfMonth();
@@ -119,6 +120,8 @@ class AnalyticsController extends Controller
 
     public function plots()
     {
+        return redirect()->to(route('dashboard', absolute: false).'#plotsSection');
+
         $lotsTotal = Lot::query()->count();
         $lotsAvailable = Lot::query()->where('status', 'available')->count();
         $lotsReserved = Lot::query()->where('status', 'reserved')->count();
@@ -158,6 +161,8 @@ class AnalyticsController extends Controller
 
     public function payments()
     {
+        return redirect()->to(route('dashboard', absolute: false).'#paymentsSection');
+
         $plansTotal = PaymentPlan::query()->count();
         $plansActive = PaymentPlan::query()->where('status', 'active')->count();
         $plansCanceled = PaymentPlan::query()->where('status', 'canceled')->count();
@@ -253,6 +258,8 @@ class AnalyticsController extends Controller
 
     public function documents()
     {
+        return redirect()->route('dashboard');
+
         $intermentsTotal = Deceased::query()->count();
         $deathCertCount = Deceased::query()->whereNotNull('death_certificate_path')->where('death_certificate_path', '!=', '')->count();
         $burialPermitCount = Deceased::query()->whereNotNull('burial_permit_path')->where('burial_permit_path', '!=', '')->count();
@@ -330,6 +337,8 @@ class AnalyticsController extends Controller
 
     public function interments()
     {
+        return redirect()->to(route('dashboard', absolute: false).'#intermentsSection');
+
         $total = Deceased::query()->count();
         $pending = Deceased::query()->where('status', 'pending')->count();
         $confirmed = Deceased::query()->where('status', 'confirmed')->count();
@@ -384,6 +393,8 @@ class AnalyticsController extends Controller
 
     public function visitors(Request $request)
     {
+        return redirect()->route('admin.reports.index');
+
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'from' => 'nullable|date',

@@ -36,4 +36,3 @@ class ClientCommunicationController extends Controller
         return back()->with('success', 'Communication log deleted.');
     }
 }
-

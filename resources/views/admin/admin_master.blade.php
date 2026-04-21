@@ -28,9 +28,6 @@
         <!-- Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-        <!-- ApexCharts -->
-        <link rel="stylesheet" href="{{ asset('backend/assets/libs/apexcharts/apexcharts.css') }}" />
-
         @stack('styles')
 
     </head>
@@ -88,8 +85,8 @@
         <!-- Leaflet JS -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <!-- ApexCharts JS -->
-        <script src="{{ asset('backend/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
         @stack('scripts')
 

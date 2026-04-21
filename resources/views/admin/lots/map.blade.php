@@ -208,9 +208,8 @@
                         <label class="form-label fw-semibold">Payment status</label>
                         <select class="form-select" name="payment_status" id="reserve_payment_status" required>
                             <option value="">Select payment status…</option>
-                            <option value="downpayment">Downpayment</option>
+                            <option value="cash">Cash</option>
                             <option value="installment">Installment</option>
-                            <option value="fully_paid">Fully paid</option>
                         </select>
                     </div>
                     <div class="col-md-6" id="contract_duration_wrap">
@@ -1403,8 +1402,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var modalEl = document.getElementById('reserveLotModal');
         if (modalEl) {
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
+            try {
+                // Try Bootstrap 5 modal first
+                if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                    var modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                    return;
+                }
+                // Fallback to jQuery modal
+                if (typeof jQuery !== 'undefined') {
+                    jQuery(modalEl).modal('show');
+                    return;
+                }
+                // Last resort: show directly
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                document.body.classList.add('modal-open');
+            } catch(e) {
+                console.error('Modal error:', e);
+                // Fallback: show directly
+                modalEl.style.display = 'block';
+            }
         }
     };
 
@@ -1429,22 +1447,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
             })
             .then(function(response) {
-                if (response.redirected) {
-                    window.location.href = response.url || mapViewUrl;
+                // Store redirect URL before reading body
+                var redirectUrl = response.redirected ? response.url : null;
+                return response.json().then(function(data) {
+                    return { redirectUrl: redirectUrl, data: data, status: response.status, ok: response.ok };
+                });
+            })
+            .then(function(result) {
+                var data = result.data;
+                if (result.redirectUrl) {
+                    window.location.href = result.redirectUrl;
                     return;
                 }
-                return response.json();
-            })
-            .then(function(data) {
-                if (data && data.success) {
+                if (data && (data.success || result.status === 200 || result.status === 302)) {
+                    // Success - close modal and refresh
                     var modalEl = document.getElementById('reserveLotModal');
-                    var modal = bootstrap.Modal.getInstance(modalEl);
-                    if (modal) modal.hide();
-                    // Refresh the map to show updated lot status
+                    if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    } else if (typeof jQuery !== "undefined") {
+                        jQuery(modalEl).modal('hide');
+                    }
+                    // Show success message then refresh
+                    if (data.message) {
+                        alert(data.message);
+                    }
                     window.location.reload();
                 } else if (data && data.errors) {
                     var errorMessages = Object.values(data.errors).flat().join('\n');
                     alert('Error: ' + errorMessages);
+                } else {
+                    // Default: consider it success if no errors
+                    window.location.reload();
                 }
             })
             .catch(function(error) {
