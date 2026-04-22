@@ -240,6 +240,39 @@ class LotController extends Controller
             ->with('success', $deletedCount.' lot(s) deleted successfully.');
     }
 
+    public function archive(Request $request, Lot $lot)
+    {
+        if ($lot->isArchived()) {
+            return back()->with('info', 'Lot is already archived.');
+        }
+
+        $lot->archive();
+
+        return back()->with('success', 'Lot has been archived. It will be kept for records but hidden from active views.');
+    }
+
+    public function deactivate(Request $request, Lot $lot)
+    {
+        if (! $lot->isActive()) {
+            return back()->with('info', 'Only active lots can be deactivated.');
+        }
+
+        $lot->deactivate();
+
+        return back()->with('success', 'Lot has been deactivated. It will be marked as inactive but remain searchable.');
+    }
+
+    public function restore(Request $request, Lot $lot)
+    {
+        if ($lot->isActive()) {
+            return back()->with('info', 'Lot is already active.');
+        }
+
+        $lot->activate();
+
+        return back()->with('success', 'Lot has been restored to active status.');
+    }
+
     public function map(LotStateService $lotState)
     {
         $expiredLotIds = Reservation::expireDue(CarbonImmutable::today());

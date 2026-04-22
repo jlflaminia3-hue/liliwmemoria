@@ -272,14 +272,6 @@
                                                     <i data-feather="edit-2" class="me-1" style="height: 14px; width: 14px;"></i>
                                                     Edit
                                                 </button>
-                                                <form method="POST" action="{{ route('admin.interments.destroy', $record) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this interment record?')">
-                                                        <i data-feather="trash-2" class="me-1" style="height: 14px; width: 14px;"></i>
-                                                        Delete
-                                                    </button>
-                                                </form>
                                             </div>
                                         </div>
                                     </td>

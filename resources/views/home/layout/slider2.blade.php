@@ -1,41 +1,68 @@
-  <div class="lonyo-section-padding position-relative overflow-hidden">
-    <div class="container">
-      <div class="lonyo-section-title">
-        <div class="row">
-          <div class="col-xl-8 col-lg-8">
-            <p>Welcome to LiliwMemoria</p>
-            <h2 class="lonyo-slide-title">What can we do for you?</h2>
+<section class="liliwmemoria-slider2-cards position-relative overflow-hidden">
+  <div class="container">
+    <div class="liliwmemoria-services-section__title text-center">
+      <h2 class="liliwmemoria-services-section__heading">Services</h2>
+      <span class="liliwmemoria-services-section__rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="liliwmemoria-services-card shadow-sm">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-6">
+          <div class="liliwmemoria-services-card__media">
+            <img
+              src="{{ asset('frontend/assets/images/service/narra2.jpg') }}"
+              alt="Narra lots"
+              class="liliwmemoria-services-card__img"
+            >
           </div>
-          <div class="col-xl-4 col-lg-4 d-flex align-items-center justify-content-end">
-            <div class="lonyo-title-btn">
-              <a class="lonyo-default-btn hero-btn" href="contact-us.html">Book an Appointment</a>
-            </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="liliwmemoria-services-card__body">
+            <h3 class="liliwmemoria-services-card__title">Narra Lots</h3>
+            <p class="liliwmemoria-services-card__text">
+              Our Narra Lots offer a peaceful, well-kept resting place designed for families who want a clean and serene
+              setting for remembrance. Located in a quiet area of the memorial park, Narra Lots provide easy access
+              paths, consistent maintenance, and a dignified layout that makes visits calm and comfortable.
+            </p>
+            <p class="liliwmemoria-services-card__text">
+              Whether you are planning ahead or arranging for immediate needs, Narra Lots give you a thoughtful option
+              that balances value, beauty, and long-term care — so your loved one’s memory can be honored with respect
+              for years to come.
+            </p>
+            <a href="{{ route('services.page') }}" class="liliwmemoria-services-card__btn">
+              Read More
+              <span aria-hidden="true">&rarr;</span>
+            </a>
           </div>
         </div>
       </div>
     </div>
-
-<div class="lonyo-testimonial-slider-init">
-    @php
-      $cards = [
-        ['title' => 'BACK OFFICE LOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'BURIAL PLOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'GARDEN LOTS', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'MAUSOLEUM', 'img' => 'frontend/assets/images/v1/img1.png'],
-        ['title' => 'PHASES', 'img' => 'frontend/assets/images/v1/img1.png'],
-      ];
-    @endphp
-
-    @foreach ($cards as $card)
-      <div class="lonyo-t-wrap wrap2 light-bg lonyo-review-card">
-        <img class="lonyo-review-card__img" src="{{ asset($card['img']) }}" alt="{{ $card['title'] }}">
-        <div class="lonyo-review-card__overlay">
-          <h3 class="lonyo-review-card__title">{{ $card['title'] }}</h3>
-        </div>
-      </div>
-    @endforeach
   </div>
-  <div class="lonyo-t-overlay2">
+</br>
+  <div class="container position-relative">
+    <div class="lonyo-testimonial-slider-init">
+      @php
+        $cards = [
+          ['title' => 'BACK OFFICE LOTS', 'img' => 'frontend/assets/images/service/backoffice.jpg'],
+          ['title' => 'NARRA LOTS', 'img' => 'frontend/assets/images/service/narra.jpg'],
+          ['title' => 'GARDEN LOTS', 'img' => 'frontend/assets/images/service/garden-lot.jpg'],
+          ['title' => 'MAUSOLEUM', 'img' => 'frontend/assets/images/service/mausoleum.jpg'],
+          ['title' => 'LOT PHASES', 'img' => 'frontend/assets/images/service/phases.jpg'],
+        ];
+      @endphp
+
+      @foreach ($cards as $card)
+        <div class="lonyo-t-wrap wrap2 light-bg lonyo-review-card">
+          <img class="lonyo-review-card__img" src="{{ asset($card['img']) }}" alt="{{ $card['title'] }}">
+          <div class="lonyo-review-card__overlay">
+            <h3 class="lonyo-review-card__title">{{ $card['title'] }}</h3>
+          </div>
+        </div>
+      @endforeach
+    </div>
+  </div>
+
+  <div class="lonyo-t-overlay2" aria-hidden="true">
     <img src="{{ asset('frontend/assets/images/v2/overlay.png') }}" alt="">
   </div>
 
@@ -96,8 +123,4 @@
       }
     }
   </style>
-
-    <div class="lonyo-t-overlay2">
-      <img src="{{ asset('frontend/assets/images/v2/overlay.png') }}" alt="">
-    </div>
-  </div>
+</section>

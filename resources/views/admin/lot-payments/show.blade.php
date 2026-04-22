@@ -40,8 +40,12 @@
                             <i data-feather="arrow-left" class="me-1" style="height: 14px; width: 14px;"></i>
                             Back
                         </a>
+                        <a href="{{ route('admin.lot-payments.downloadContract', $lotPayment) }}" class="btn btn-outline-primary">
+                            <i data-feather="file-text" class="me-1" style="height: 14px; width: 14px;"></i>
+                            Download Contract
+                        </a>
                         @if ($lotPayment->receipt_path)
-                            <a href="{{ route('admin.lot-payments.downloadReceipt', $lotPayment) }}" class="btn btn-outline-primary">
+                            <a href="{{ route('admin.lot-payments.downloadReceipt', $lotPayment) }}" class="btn btn-outline-secondary">
                                 <i data-feather="download" class="me-1" style="height: 14px; width: 14px;"></i>
                                 Receipt
                             </a>
@@ -51,6 +55,9 @@
 
                 @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
 
                 <div class="row g-4">
@@ -111,6 +118,28 @@
                                             <td>{{ $lotPayment->completed_at->format('Y-m-d H:i') }}</td>
                                         </tr>
                                     @endif
+                                    <tr>
+                                        <td class="text-muted">Contract Email</td>
+                                        <td>
+                                            @if ($lotPayment->contract_emailed_at)
+                                                <span class="text-success">
+                                                    <i data-feather="check-circle" style="height: 14px; width: 14px;"></i>
+                                                    Sent {{ $lotPayment->contract_emailed_at->format('Y-m-d H:i') }}
+                                                </span>
+                                            @else
+                                                <form method="POST" action="{{ route('admin.lot-payments.sendContractEmail', $lotPayment) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary" @if(!$lotPayment->client?->email) disabled @endif>
+                                                        <i data-feather="send" class="me-1" style="height: 12px; width: 12px;"></i>
+                                                        Send Contract Email
+                                                    </button>
+                                                </form>
+                                                @if(!$lotPayment->client?->email)
+                                                    <span class="text-muted small">No client email</span>
+                                                @endif
+                                            @endif
+                                        </td>
+                                    </tr>
                                     @if ($lotPayment->notes)
                                         <tr>
                                             <td class="text-muted">Notes</td>
@@ -232,18 +261,8 @@
 
                 <hr class="my-4">
 
-                <div class="d-flex justify-content-between">
-                    <div class="text-muted small">
-                        Created: {{ $lotPayment->created_at->format('Y-m-d H:i') }}
-                    </div>
-                    <form method="POST" action="{{ route('admin.lot-payments.destroy', $lotPayment) }}" onsubmit="return confirm('Delete this payment record?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                            <i data-feather="trash-2" class="me-1" style="height: 14px; width: 14px;"></i>
-                            Delete
-                        </button>
-                    </form>
+                <div class="text-muted small">
+                    Created: {{ $lotPayment->created_at->format('Y-m-d H:i') }}
                 </div>
             </div>
         </div>

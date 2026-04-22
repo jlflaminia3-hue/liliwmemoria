@@ -10,12 +10,11 @@
                 <th style="width: 90px;">ID</th>
                 <th>User</th>
                 <th>Summary</th>
-                <th style="width: 120px;">Details</th>
+                <th style="width: 120px;">Action</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($logs as $log)
-                @php($collapseId = 'audit_' . $log->id)
                 @php($openUrl = null)
                 @if ($log->event !== 'deleted')
                     @php($openUrl = match($log->auditable_type) {
@@ -49,46 +48,31 @@
                     <td class="text-muted">
                         @if ($isLoginEvent)
                             {{ ucfirst($log->event) }} - {{ $log->new_values['role'] ?? 'Unknown' }}
-                        @elseif ($log->event === 'updated' && is_array($log->new_values))
-                            Changed: {{ implode(', ', array_keys($log->new_values)) }}
-                        @elseif ($log->event === 'created' && is_array($log->new_values))
-                            Fields: {{ implode(', ', array_slice(array_keys($log->new_values), 0, 8)) }}@if (count($log->new_values) > 8)…@endif
-                        @elseif ($log->event === 'deleted' && is_array($log->old_values))
-                            Deleted record snapshot captured
+                        @elseif ($log->event === 'updated' && is_array($log->old_values) && is_array($log->new_values))
+                            @php($changes = array_diff_assoc($log->new_values, $log->old_values))
+                            @php($changeLabels = array_map(fn($key) => \Illuminate\Support\Str::title(str_replace('_', ' ', $key)), array_keys($changes)))
+                            @if (!empty($changes))
+                                Updated: {{ implode(', ', $changeLabels) }}
+                            @else
+                                Record updated
+                            @endif
+                        @elseif ($log->event === 'created')
+                            New record created
+                        @elseif ($log->event === 'deleted')
+                            Record deleted
+                        @else
+                            —
                         @endif
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
-                            View
-                        </button>
+                        @if ($openUrl)
+                            <a class="btn btn-sm btn-outline-primary" href="{{ $openUrl }}">Open record</a>
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
                     </td>
                 </tr>
-                <tr class="collapse" id="{{ $collapseId }}">
-                    <td colspan="7" class="bg-light">
-                        <div class="row g-3">
-                            <div class="col-12 d-flex justify-content-between align-items-center">
-                                <div class="text-muted small">Log #{{ $log->id }}</div>
-                                @if ($openUrl)
-                                    <a class="btn btn-sm btn-primary" href="{{ $openUrl }}">Open record</a>
-                                @endif
-                            </div>
-                            <div class="col-md-6">
-                                <div class="fw-semibold mb-2">Old</div>
-                                <pre class="small mb-0">{{ json_encode($log->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="fw-semibold mb-2">New</div>
-                                <pre class="small mb-0">{{ json_encode($log->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                            </div>
-                            <div class="col-12">
-                                <div class="text-muted small">
-                                    URL: {{ $log->url ?? '—' }} |
-                                    IP: {{ $log->ip_address ?? '—' }}
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                
             @empty
                 <tr>
                     <td colspan="7" class="text-center text-muted p-4">No audit logs found.</td>

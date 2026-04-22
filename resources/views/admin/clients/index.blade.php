@@ -35,6 +35,10 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @if (session('info'))
+            <div class="alert alert-info">{{ session('info') }}</div>
+        @endif
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0 ps-3">
@@ -156,13 +160,7 @@
                                     </td>
                                     <td>{{ optional($client->created_at)->format('Y-m-d') }}</td>
                                     <td>{{ $client->last_activity_at ? $client->last_activity_at->format('Y-m-d') : '—' }}</td>
-                                    <td>
-                                        @if (($client->activity_status ?? 'active') === 'inactive')
-                                            <span class="badge bg-danger-subtle text-danger">Inactive</span>
-                                        @else
-                                            <span class="badge bg-success-subtle text-success">Active</span>
-                                        @endif
-                                    </td>
+                                    <td><x-status.badge :status="$client->status ?? 'active'" /></td>
                                     <td class="text-end client-actions">
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Client actions">
@@ -187,11 +185,7 @@
                                                     data-country="{{ $client->country ?? '' }}"
                                                     data-notes="{{ e($client->notes ?? '') }}"
                                                 >Edit</a>
-                                                <form method="POST" action="{{ route('admin.clients.destroy', $client) }}" onsubmit="return confirm('Delete this client?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger">Delete</button>
-                                                </form>
+                                                <x-actions.record-dropdown :record="$client" type="clients" :show-archive="true" :show-deactivate="true" :show-restore="true" />
                                             </div>
                                         </div>
                                     </td>

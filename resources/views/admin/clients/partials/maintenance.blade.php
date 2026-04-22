@@ -140,15 +140,6 @@
                                     </td>
                                     <td class="text-muted">{{ $record->notes ?: '-' }}</td>
                                     <td class="text-nowrap">{{ $record->creator?->name ?? '-' }}</td>
-                                    <td class="text-end">
-                                        @if (auth()->check() && auth()->user()->role === 'master_admin')
-                                            <form method="POST" action="{{ route('admin.clients.maintenance.destroy', [$client, $record]) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this maintenance record?')">Delete</button>
-                                            </form>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                             @if ($client->maintenanceRecords->isEmpty())

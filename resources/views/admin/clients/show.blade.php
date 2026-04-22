@@ -7,8 +7,21 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h4 class="card-title mb-1">{{ $client->full_name }}</h4>
-                        <div class="text-muted">Client Profile</div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h4 class="card-title mb-0">{{ $client->full_name }}</h4>
+                            <x-status.badge :status="$client->status ?? 'active'" size="md" />
+                        </div>
+                        <div class="text-muted">
+                            @if($client->status === 'archived')
+                                <i data-feather="archive" class="me-1" style="height: 12px; width: 12px;"></i>
+                                This record is archived and hidden from active views.
+                            @elseif($client->status === 'inactive')
+                                <i data-feather="x-circle" class="me-1" style="height: 12px; width: 12px;"></i>
+                                This record is inactive but remains searchable.
+                            @else
+                                Client Profile
+                            @endif
+                        </div>
                     </div>
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.payments.index', ['client_id' => $client->id]) }}" class="btn btn-primary">View Payments</a>
@@ -19,19 +32,20 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">
                                 <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editClientModal">Edit</button>
-                                <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="dropdown-item p-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-link dropdown-item text-danger m-0" onclick="return confirm('Delete this client?')">
-                                        Delete
-                                    </button>
-                                </form>
+                                <x-actions.record-dropdown :record="$client" type="clients" :show-archive="true" :show-deactivate="true" :show-restore="true" />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <hr class="my-4">
+
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if (session('info'))
+                    <div class="alert alert-info">{{ session('info') }}</div>
+                @endif
 
                 @include('admin.clients.partials.alerts')
 

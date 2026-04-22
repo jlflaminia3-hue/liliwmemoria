@@ -15,6 +15,7 @@ use App\Http\Controllers\ClientLotOwnershipController;
 use App\Http\Controllers\ClientMaintenanceController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ExhumationController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\IntermentController;
 use App\Http\Controllers\LotController;
 use App\Http\Controllers\Master\AuditLogController as MasterAuditLogController;
@@ -38,7 +39,7 @@ Route::get('/', function () {
 });
 
 Route::view('/about-us', 'home.about')->name('about.page');
-Route::view('/pricing', 'home.pricing')->name('pricing.page');
+Route::view('/services', 'home.services')->name('services.page');
 
 Route::view('/location', 'home.location')->name('location.page');
 
@@ -75,6 +76,8 @@ Route::middleware('auth')->group(function () {
         return view('auth.pending-approval');
     })->name('approval.pending');
 
+    Route::get('/api/search', [GlobalSearchController::class, 'search'])->name('api.search');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -102,6 +105,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{lot}/snapshot', [LotController::class, 'snapshot'])->name('snapshot')->whereNumber('lot');
             Route::get('/next-lot-number', [LotController::class, 'nextLotNumber'])->name('nextLotNumber');
             Route::post('/with-deceased', [LotController::class, 'storeWithDeceased'])->name('storeWithDeceased');
+            Route::patch('/{lot}/archive', [LotController::class, 'archive'])->name('archive');
+            Route::patch('/{lot}/deactivate', [LotController::class, 'deactivate'])->name('deactivate');
+            Route::patch('/{lot}/restore', [LotController::class, 'restore'])->name('restore');
         });
 
         Route::prefix('admin/clients')->name('admin.clients.')->group(function () {
@@ -115,6 +121,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/{client}', [ClientController::class, 'update'])->name('update');
             Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
             Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+            Route::patch('/{client}/archive', [ClientController::class, 'archive'])->name('archive');
+            Route::patch('/{client}/deactivate', [ClientController::class, 'deactivate'])->name('deactivate');
+            Route::patch('/{client}/restore', [ClientController::class, 'restore'])->name('restore');
 
             Route::post('/{client}/ownerships', [ClientLotOwnershipController::class, 'store'])->name('ownerships.store');
             Route::delete('/{client}/ownerships/{ownership}', [ClientLotOwnershipController::class, 'destroy'])->name('ownerships.destroy');
@@ -201,6 +210,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/{lotPayment}/verify', [LotPaymentController::class, 'verify'])->name('verify');
             Route::post('/{lotPayment}/complete', [LotPaymentController::class, 'complete'])->name('complete');
             Route::get('/{lotPayment}/receipt', [LotPaymentController::class, 'downloadReceipt'])->name('downloadReceipt');
+            Route::get('/{lotPayment}/contract/pdf', [LotPaymentController::class, 'downloadContract'])->name('downloadContract');
+            Route::post('/{lotPayment}/contract/send', [LotPaymentController::class, 'sendContractEmail'])->name('sendContractEmail');
         });
 
         Route::get('admin/all-payments', [AllPaymentsController::class, 'index'])->name('admin.all-payments.index');

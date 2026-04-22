@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\Statusable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lot extends Model
 {
     use Auditable;
+    use Statusable;
 
     protected $fillable = [
         'lot_number',
@@ -23,6 +25,13 @@ class Lot extends Model
         'status',
         'notes',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Lot $lot): void {
+            $lot->status ??= self::STATUS_ACTIVE;
+        });
+    }
 
     protected $appends = [
         'lot_id',

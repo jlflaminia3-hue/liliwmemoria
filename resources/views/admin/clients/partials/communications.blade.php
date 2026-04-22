@@ -49,13 +49,6 @@
                                     <td>{{ $comm->subject ?? '-' }}</td>
                                     <td>{{ \Illuminate\Support\Str::limit($comm->message, 180) }}</td>
                                     <td>{{ $comm->creator?->name ?? '-' }}</td>
-                                    <td class="text-end">
-                                        <form method="POST" action="{{ route('admin.clients.communications.destroy', [$client, $comm]) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this log?')">Delete</button>
-                                        </form>
-                                    </td>
                                 </tr>
                             @endforeach
                             @if ($client->communications->isEmpty())

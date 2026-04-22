@@ -5,7 +5,33 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title mb-4">Edit Lot: {{ $lot->name }}</h4>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h4 class="card-title mb-0">Edit Lot: {{ $lot->name }}</h4>
+                            <x-status.badge :status="$lot->status ?? 'active'" size="md" />
+                        </div>
+                        <div class="text-muted">
+                            @if($lot->status === 'archived')
+                                <i data-feather="archive" class="me-1" style="height: 12px; width: 12px;"></i>
+                                This record is archived and hidden from active views.
+                            @elseif($lot->status === 'inactive')
+                                <i data-feather="x-circle" class="me-1" style="height: 12px; width: 12px;"></i>
+                                This record is inactive but remains searchable.
+                            @endif
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('admin.lots.index') }}" class="btn btn-light">Back</a>
+                    </div>
+                </div>
+
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if (session('info'))
+                    <div class="alert alert-info">{{ session('info') }}</div>
+                @endif
 
                 <form method="POST" action="{{ route('admin.lots.update', $lot->id) }}">
                     @csrf

@@ -58,13 +58,6 @@
                                                 >
                                                     Transfer
                                                 </button>
-                                                <form method="POST" action="{{ route('admin.clients.ownerships.destroy', [$client, $ownership]) }}" class="dropdown-item p-0">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-link dropdown-item text-danger m-0" onclick="return confirm('Remove this ownership record?')">
-                                                        Delete
-                                                    </button>
-                                                </form>
                                             </div>
                                         </div>
                                     </td>

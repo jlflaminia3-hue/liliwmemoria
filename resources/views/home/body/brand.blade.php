@@ -1,4 +1,4 @@
-@php($logoPath = 'frontend/assets/images/logo/textlogo.png')
+@php($logoPath = 'frontend/assets/images/logo/textlogo-white.png')
 @php($logoExists = file_exists(public_path($logoPath)))
 
 <a href="{{ url('/') }}" class="liliwmemoria-brand">

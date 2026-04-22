@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Models\Concerns\Statusable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Client extends Model
 {
     use Auditable;
+    use Statusable;
 
     protected $fillable = [
         'first_name',
@@ -26,9 +28,8 @@ class Client extends Model
         'notes',
         'consent_given',
         'consent_given_at',
+        'status',
     ];
-
-    protected $appends = ['full_name'];
 
     protected function casts(): array
     {
@@ -37,6 +38,15 @@ class Client extends Model
             'consent_given_at' => 'datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Client $client): void {
+            $client->status ??= self::STATUS_ACTIVE;
+        });
+    }
+
+    protected $appends = ['full_name'];
 
     public function getFullNameAttribute(): string
     {

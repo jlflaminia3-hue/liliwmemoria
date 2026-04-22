@@ -197,11 +197,6 @@
                                                 data-amount-paid="{{ $reservation->contract?->amount_paid ?? '' }}"
                                                 data-notes="{{ e($reservation->notes ?? '') }}"
                                             >Edit</button>
-                                            <form method="POST" action="{{ route('admin.reservations.destroy', $reservation) }}" onsubmit="return confirm('Delete this reservation?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>

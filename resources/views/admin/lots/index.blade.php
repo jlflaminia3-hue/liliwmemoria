@@ -169,6 +169,9 @@
                                             @else
                                                 <span class="badge bg-success">Available</span>
                                             @endif
+                                            @if($lot->status && !in_array($lot->status, ['available', 'reserved', 'occupied']))
+                                                <x-status.badge :status="$lot->status" size="xs" />
+                                            @endif
                                         </td>
                                         <td><span class="{{ $deceasedNames === '-' ? 'lots-muted' : '' }}">{{ $deceasedNames }}</span></td>
                                         <td class="text-center">
@@ -186,11 +189,7 @@
                                                         data-longitude="{{ $lot->longitude }}"
                                                         data-notes="{{ $lot->notes }}">Edit</button>
                                                     <a href="{{ route('admin.lots.map') }}?lot={{ $lot->id }}" class="dropdown-item">View in Map</a>
-                                                    <form method="POST" action="{{ route('admin.lots.destroy', $lot->id) }}">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                                                    </form>
+                                                    <x-actions.record-dropdown :record="$lot" type="lots" :show-archive="true" :show-deactivate="true" :show-restore="true" />
                                                 </div>
                                             </div>
                                         </td>

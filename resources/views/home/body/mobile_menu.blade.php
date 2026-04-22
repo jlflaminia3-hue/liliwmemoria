@@ -14,7 +14,7 @@
             <a href="{{ route('about.page') }}">About</a>
           </li>
           <li class="menu-item-has-children">
-            <a href="{{ route('pricing.page') }}">Pricing</a>
+            <a href="{{ route('services.page') }}">Services</a>
           </li>
           <li class="menu-item-has-children">
             <a href="#">Galleries</a>

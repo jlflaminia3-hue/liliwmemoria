@@ -1,76 +1,66 @@
-<footer class="lonyo-footer-section light-bg">
+<footer class="lonyo-footer-section liliw-footer liliw-footer--dark">
   <div class="container">
-    <div class="lonyo-footer-one">
+    <div class="liliw-footer__top">
       <div class="row liliw-footer-grid">
-        <div class="col-lg-4 col-md-6">
-          <div class="lonyo-footer-textarea liliw-footer-brand">
-            @include('home.body.brand')
-            <p class="mb-3">Providing compassionate cemetery management services to help families honor and remember their loved ones with dignity.</p>
-            <div class="liliw-footer-contact-info">
-              <div class="liliw-footer-contact-item">
-                <i class="ri-map-pin-line"></i>
-                <span>Liliw, Laguna, Philippines</span>
-              </div>
-              <div class="liliw-footer-contact-item">
-                <i class="ri-phone-line"></i>
-                <span>(+63) 995 360 1357</span>
-              </div>
-              <div class="liliw-footer-contact-item">
-                <i class="ri-mail-line"></i>
-                <span>liliwmemoria@gmail.com</span>
-              </div>
-            </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="liliw-footer-brand">
+            <a href="{{ url('/') }}" class="liliw-footer-logo">
+              <img src="{{ asset('frontend/assets/images/logo/liliw-square.png') }}" alt="LiliwMemoria logo">
+            </a>
           </div>
         </div>
-
-        <div class="col-lg-2 col-md-6">
-          <div class="lonyo-footer-menu">
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="{{ route('about.page') }}">About Us</a></li>
-              <li><a href="{{ route('pricing.page') }}">Pricing</a></li>
-              <li><a href="{{ route('location.page') }}">Location</a></li>
-              <li><a href="{{ url('/') }}#contact">Contact</a></li>
-            </ul>
-          </div>
-        </div>
-
-        {{-- <div class="col-lg-3 col-md-6">
-          <div class="lonyo-footer-menu">
-            <h4>Services</h4>
-            <ul>
-              <li><a href="{{ url('/') }}#contact">Burial Plots</a></li>
-              <li><a href="{{ url('/') }}#contact">Memorial Services</a></li>
-              <li><a href="{{ url('/') }}#contact">Interment</a></li>
-              <li><a href="{{ url('/') }}#contact">Landscaping</a></li>
-            </ul>
-          </div>
-        </div> --}}
 
         <div class="col-lg-3 col-md-6">
-          <div class="lonyo-footer-menu">
-            <h4>Connect With Us</h4>
-            <p class="mb-3">Follow us on social media for updates and announcements.</p>
-            <div class="lonyo-social-wrap">
-              <ul class="liliw-footer-social">
-                <li>
-                  <a href="https://www.facebook.com/memorialparkofsansebastian" target="_blank" rel="noopener noreferrer">
-                    <svg width="18" height="18" viewBox="0 0 9 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2.61987 16.7464V9.37041H0.137695V6.49583H2.61987V4.37591C2.61987 1.91577 4.12245 0.576172 6.31707 0.576172C7.36832 0.576172 8.27181 0.654439 8.53511 0.689422V3.26042L7.01302 3.26111C5.81946 3.26111 5.58836 3.82827 5.58836 4.66054V6.49583H8.43488L8.06426 9.37041H5.58836V16.7464H2.61987Z" fill="currentColor" />
-                    </svg>
-                  </a>
-                </li>
-                    </svg>
-                  </a>
-                </li>
-              </ul>
+          <div class="liliw-footer-block">
+            <h4 class="liliw-footer-title">Contact Us</h4>
+            <div class="liliw-footer-list">
+              <div class="liliw-footer-item">Memorial Park of San Sebastian</div>
+              <div class="liliw-footer-item">(+63) 995 360 1357</div>
             </div>
+
+            <div class="liliw-footer-social-row">
+              <a href="https://www.facebook.com/memorialparkofsansebastian" target="_blank" rel="noopener noreferrer" class="liliw-footer-social">
+                <svg width="18" height="18" viewBox="0 0 9 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M2.61987 16.7464V9.37041H0.137695V6.49583H2.61987V4.37591C2.61987 1.91577 4.12245 0.576172 6.31707 0.576172C7.36832 0.576172 8.27181 0.654439 8.53511 0.689422V3.26042L7.01302 3.26111C5.81946 3.26111 5.58836 3.82827 5.58836 4.66054V6.49583H8.43488L8.06426 9.37041H5.58836V16.7464H2.61987Z" fill="currentColor" />
+                </svg>
+                <span class="visuallyhidden">Facebook</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="liliw-footer-block">
+            <h4 class="liliw-footer-title">Office Schedule</h4>
+            <div class="liliw-footer-list">
+              <div class="liliw-footer-item">7:30am – 5:00pm (Mon–Fri)</div>
+              <div class="liliw-footer-item liliw-footer-muted">Liliw, Laguna, Philippines</div>
+            </div>
+
+            <a
+              href="#"
+              class="liliw-footer-btn liliw-footer-btn--primary liliwmemoria-inquiry-trigger"
+              data-bs-toggle="modal"
+              data-bs-target="#inquiryModal"
+            >Schedule a Visit</a>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="liliw-footer-block">
+            <h4 class="liliw-footer-title">Email Us</h4>
+            <div class="liliw-footer-list">
+              <div class="liliw-footer-item">memorialparkofsansebastian@gmail.com</div>
+              <div class="liliw-footer-item"><span class="liliw-footer-muted">Inquiries:</span> liliwmemoria@gmail.com</div>
+            </div>
+
+            <a href="{{ route('services.page') }}" class="liliw-footer-btn liliw-footer-btn--accent">Inquire Now</a>
           </div>
         </div>
       </div>
-      <div class="lonyo-footer-shape"></div>
     </div>
-    <div class="lonyo-footer-bottom-text liliw-footer-bottom-text">
+
+    <div class="liliw-footer__bottom">
       <p>&copy; <span id="current-year"></span> LiliwMemoria. All rights reserved.</p>
       <p>Compassionate memorial care for every family.</p>
     </div>
@@ -78,131 +68,157 @@
 </footer>
 
 <style>
+  .liliw-footer {
+    background: #142c14;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .liliw-footer__top {
+    padding: 0 0 34px;
+  }
+
   .liliw-footer-grid {
-    row-gap: 40px;
+    row-gap: 34px;
   }
 
-  .liliw-footer-brand {
-    max-width: 100%;
-  }
-
-  .liliw-footer-brand .liliwmemoria-brand {
+  .liliw-footer-logo {
     display: inline-flex;
     align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .liliw-footer-brand .liliwmemoria-brand img {
-    height: 48px !important;
-    width: auto;
-  }
-
-  .liliw-footer-contact-info {
-    margin-top: 20px;
-  }
-
-  .liliw-footer-contact-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    color: #4b5563;
-    font-size: 0.95rem;
-  }
-
-  .liliw-footer-contact-item i {
-    color: #142C14;
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
-  }
-
-  .liliw-footer-menu h4 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #142C14;
-    margin-bottom: 20px;
-  }
-
-  .liliw-footer-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .liliw-footer-menu ul li {
-    margin-bottom: 12px;
-  }
-
-  .liliw-footer-menu ul li a {
-    color: #4b5563;
+    margin-bottom: 18px;
     text-decoration: none;
-    font-size: 0.95rem;
-    transition: color 0.2s ease;
   }
 
-  .liliw-footer-menu ul li a:hover {
-    color: #142C14;
+  .liliw-footer-logo img {
+    height: 158px !important;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .liliw-footer-muted {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .liliw-footer-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.96);
+    margin-bottom: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  .liliw-footer-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .liliw-footer-item {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .liliw-footer-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 18px;
+    padding: 12px 18px;
+    border-radius: 4px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .liliw-footer-btn--primary {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.26);
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .liliw-footer-btn--primary:hover,
+  .liliw-footer-btn--primary:focus {
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.36);
+    color: #ffffff !important;
+  }
+
+  .liliw-footer-btn--accent {
+    background: #7fe39c;
+    color: #0a180a !important;
+  }
+
+  .liliw-footer-btn--accent:hover,
+  .liliw-footer-btn--accent:focus {
+    background: #5fd883;
+    color: #061006 !important;
+  }
+
+  .liliw-footer-btn--ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.28);
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .liliw-footer-btn--ghost:hover,
+  .liliw-footer-btn--ghost:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.36);
+    color: #ffffff !important;
+  }
+
+  .liliw-footer-social-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
   }
 
   .liliw-footer-social {
-    display: flex;
-    gap: 12px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .liliw-footer-social li {
-    margin: 0;
-  }
-
-  .liliw-footer-social a {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: rgba(20, 44, 20, 0.08);
     border-radius: 10px;
-    color: #142C14;
-    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.92);
+    text-decoration: none;
+    transition: all 0.2s ease;
   }
 
-  .liliw-footer-social a:hover {
-    background: #142C14;
-    color: #fff;
+  .liliw-footer-social:hover,
+  .liliw-footer-social:focus {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
   }
 
-  .liliw-footer-bottom-text {
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
+  .liliw-footer__bottom {
+    padding: 18px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    text-align: left;
-  }
-
-  .liliw-footer-bottom-text p {
-    margin: 0;
-    color: #6b7280;
     font-size: 0.9rem;
   }
 
-  @media (max-width: 991.98px) {
-    .liliw-footer-grid > div {
-      margin-bottom: 24px;
-    }
+  .liliw-footer__bottom p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
   }
 
   @media (max-width: 767.98px) {
-    .liliw-footer-brand .liliwmemoria-brand img {
+    .liliw-footer__top {
+      padding: 46px 0 26px;
+    }
+
+    .liliw-footer-logo img {
       height: 40px !important;
     }
 
-    .liliw-footer-bottom-text {
+    .liliw-footer__bottom {
       flex-direction: column;
       text-align: center;
     }

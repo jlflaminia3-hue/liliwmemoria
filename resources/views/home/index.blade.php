@@ -6,8 +6,9 @@
     <img src="{{ asset('frontend/assets/images/shape/shape1.svg') }}" alt="">
 </div> --}}
 
-@include('home.layout.slider2')
 @include('home.layout.slider3')
+
+@include('home.layout.slider2')
 @include('home.layout.slider4')
 
 {{-- @include('home.layout.slider_card') --}}

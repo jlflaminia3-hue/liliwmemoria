@@ -47,6 +47,7 @@ class LotPayment extends Model
         'completed_at',
         'receipt_path',
         'notes',
+        'contract_emailed_at',
     ];
 
     protected function casts(): array
@@ -57,6 +58,7 @@ class LotPayment extends Model
             'amount' => 'decimal:2',
             'verified_at' => 'datetime',
             'completed_at' => 'datetime',
+            'contract_emailed_at' => 'datetime',
         ];
     }
 

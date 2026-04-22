@@ -46,13 +46,6 @@
                                     <td>{{ $other?->full_name ?? '-' }}</td>
                                     <td>{{ $link->relationship ?? '-' }}</td>
                                     <td>{{ $link->notes ?? '-' }}</td>
-                                    <td class="text-end">
-                                        <form method="POST" action="{{ route('admin.clients.familyLinks.destroy', [$client, $link]) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this family link?')">Remove</button>
-                                        </form>
-                                    </td>
                                 </tr>
                             @endforeach
                             @if ($familyLinks->isEmpty())

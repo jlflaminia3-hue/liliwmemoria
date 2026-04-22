@@ -67,11 +67,6 @@
                                 <td class="text-muted">{{ optional($user->created_at)->format('Y-m-d H:i') }}</td>
                                 <td class="d-flex gap-2">
                                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('master.users.edit', $user) }}">Edit</a>
-                                    <form method="POST" action="{{ route('master.users.destroy', $user) }}" onsubmit="return confirm('Delete this user?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                                    </form>
                                 </td>
                             </tr>
                         @empty

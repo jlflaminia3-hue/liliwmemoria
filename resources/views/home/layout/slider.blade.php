@@ -9,7 +9,12 @@
               provide a vital to the community and offer new options for final 
               resting places.</p>
             <div class="mt-50" data-aos="fade-up" data-aos-duration="900">
-              <a href="sign-up.html" class="lonyo-default-btn video-btn">Book an Appointment</a>
+              <a
+                href="#"
+                class="lonyo-default-btn video-btn liliwmemoria-inquiry-trigger"
+                data-bs-toggle="modal"
+                data-bs-target="#inquiryModal"
+              >Inquire Now</a>
             </div>
           </div>
         </div>

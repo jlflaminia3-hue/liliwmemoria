@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\FullPaymentPdfMail;
 use App\Models\Client;
 use App\Models\Lot;
 use App\Models\LotPayment;
+use App\Services\Contracts\FullPaymentPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class LotPaymentController extends Controller
 {
@@ -220,5 +224,44 @@ class LotPaymentController extends Controller
         $extension = pathinfo($lotPayment->receipt_path, PATHINFO_EXTENSION);
 
         return Storage::disk('public')->download($lotPayment->receipt_path, "LotPayment-{$lotPayment->payment_number}.{$extension}");
+    }
+
+    public function sendContractEmail(Request $request, LotPayment $lotPayment, FullPaymentPdfService $pdfService)
+    {
+        if (! $lotPayment->client?->email) {
+            return back()->with('error', 'Client has no email address on file.');
+        }
+
+        $lotPayment->loadMissing(['client', 'lot', 'reservation']);
+
+        try {
+            $pdfBinary = $pdfService->renderPdfBinary($lotPayment);
+            $filename = 'LotContract-'.$lotPayment->payment_number.'.pdf';
+
+            Mail::to($lotPayment->client->email)->send(new FullPaymentPdfMail($lotPayment, $pdfBinary, $filename));
+
+            $lotPayment->update(['contract_emailed_at' => now()]);
+
+            return back()->with('success', 'Contract PDF sent to '.$lotPayment->client->email);
+        } catch (TransportExceptionInterface $e) {
+            report($e);
+
+            return back()->with('error', 'Failed to send email. Please check mail configuration.');
+        }
+    }
+
+    public function downloadContract(LotPayment $lotPayment, FullPaymentPdfService $pdfService)
+    {
+        $lotPayment->loadMissing(['client', 'lot', 'reservation']);
+
+        $pdfBinary = $pdfService->renderPdfBinary($lotPayment);
+
+        return response()->streamDownload(
+            function () use ($pdfBinary) {
+                echo $pdfBinary;
+            },
+            'LotContract-'.$lotPayment->payment_number.'.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 }

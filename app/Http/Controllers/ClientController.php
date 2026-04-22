@@ -201,6 +201,39 @@ class ClientController extends Controller
         return redirect()->route('admin.clients.index')->with('success', 'Client deleted successfully.');
     }
 
+    public function archive(Request $request, Client $client)
+    {
+        if ($client->isArchived()) {
+            return back()->with('info', 'Client is already archived.');
+        }
+
+        $client->archive();
+
+        return back()->with('success', 'Client has been archived. It will be kept for records but hidden from active views.');
+    }
+
+    public function deactivate(Request $request, Client $client)
+    {
+        if (! $client->isActive()) {
+            return back()->with('info', 'Only active clients can be deactivated.');
+        }
+
+        $client->deactivate();
+
+        return back()->with('success', 'Client has been deactivated. It will be marked as inactive but remain searchable.');
+    }
+
+    public function restore(Request $request, Client $client)
+    {
+        if ($client->isActive()) {
+            return back()->with('info', 'Client is already active.');
+        }
+
+        $client->activate();
+
+        return back()->with('success', 'Client has been restored to active status.');
+    }
+
     public function exportCsv(Request $request)
     {
         $validated = $this->validateClientIndexFilters($request);

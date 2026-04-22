@@ -66,13 +66,6 @@
                                                 <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editContractModal_{{ $contract->id }}">
                                                     Edit
                                                 </button>
-                                                <form method="POST" action="{{ route('admin.clients.contracts.destroy', [$client, $contract]) }}" class="dropdown-item p-0">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-link dropdown-item text-danger m-0" onclick="return confirm('Delete this contract?')">
-                                                        Delete
-                                                    </button>
-                                                </form>
                                             </div>
                                         </div>
                                     </td>
