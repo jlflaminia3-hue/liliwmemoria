@@ -34,7 +34,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<section class="lonyo-section-padding6 visit-page">
+<section class="lonyo-section-padding6 visit-page lonyo-hero-section light-bg liliwmemoria-hero-bg">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-11">

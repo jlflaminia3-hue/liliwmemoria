@@ -14,8 +14,8 @@
           <div class="liliw-footer-block">
             <h4 class="liliw-footer-title">Contact Us</h4>
             <div class="liliw-footer-list">
-              <div class="liliw-footer-item">Memorial Park of San Sebastian</div>
               <div class="liliw-footer-item">(+63) 995 360 1357</div>
+              <div class="liliw-footer-item">Memorial Park of San Sebastian</div>
             </div>
 
             <div class="liliw-footer-social-row">
@@ -33,8 +33,8 @@
           <div class="liliw-footer-block">
             <h4 class="liliw-footer-title">Office Schedule</h4>
             <div class="liliw-footer-list">
-              <div class="liliw-footer-item">7:30am – 5:00pm (Mon–Fri)</div>
               <div class="liliw-footer-item liliw-footer-muted">Liliw, Laguna, Philippines</div>
+              <div class="liliw-footer-item">7:30am – 5:00pm (Mon–Fri)</div>
             </div>
 
             <a
@@ -50,8 +50,8 @@
           <div class="liliw-footer-block">
             <h4 class="liliw-footer-title">Email Us</h4>
             <div class="liliw-footer-list">
-              <div class="liliw-footer-item">memorialparkofsansebastian@gmail.com</div>
               <div class="liliw-footer-item"><span class="liliw-footer-muted">Inquiries:</span> liliwmemoria@gmail.com</div>
+              <div class="liliw-footer-item">memorialparkofsansebastian@gmail.com</div>
             </div>
 
             <a href="{{ route('services.page') }}" class="liliw-footer-btn liliw-footer-btn--accent">Inquire Now</a>

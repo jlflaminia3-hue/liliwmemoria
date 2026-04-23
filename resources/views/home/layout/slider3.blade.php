@@ -2,7 +2,7 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-5">
-          <div class="lonyo-video-thumb" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(20, 44, 20, 0.38);">
+          <div class="lonyo-video-thumb" style="border-radius: 16px;">
             <video class="video-init" width="100%" controls autoplay muted style="display: block; border-radius: 12px;">
               <source src="{{ asset('frontend/assets/liliw_vid.mp4') }}" type="video/mp4">
               Your browser does not support the video tag.
