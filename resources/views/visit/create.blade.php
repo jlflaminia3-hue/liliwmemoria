@@ -3,28 +3,31 @@
 @section('home')
 <style>
     .visit-page { padding-top: 80px !important; }
-    .visit-container { max-width: 1120px; margin: 0 auto; }
+    .visit-container { max-width: 860px; margin: 0 auto; }
     .visit-card { border-radius: 16px; border: 1px solid #eef0f3; }
     .visit-title { font-weight: 700; letter-spacing: -.02em; }
     .visit-subtitle { font-size: .95rem; color: #6c757d; }
     .visit-step { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .6rem; border-radius: 999px; background: #f8f9fa; border: 1px solid #e9ecef; font-size: .85rem; color: #495057; }
     .visit-step .dot { width: 8px; height: 8px; border-radius: 999px; background: #0d6efd; display: inline-block; }
-    .visit-field { background: #fff; border-radius: 12px; border: 1px solid #eef0f3; padding: 12px; }
-    .visit-field .form-label { font-weight: 600; margin-bottom: .35rem; }
-    .visit-help { font-size: .9rem; color: #6c757d; }
+    .visit-field { background: #fff; border-radius: 12px; border: 1px solid #eef0f3; padding: 10px; }
+    .visit-field .form-label { font-weight: 600; margin-bottom: .3rem; font-size: .92rem; color: #212529; }
+    .visit-field .form-control,
+    .visit-field .form-select { font-size: .95rem; padding: .4rem .65rem; border-radius: 10px; }
+    .visit-help { font-size: .85rem; color: #6c757d; }
     .deceased-search-wrap { position: relative; }
     .deceased-results { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 1000; max-height: 220px; overflow: auto; border-radius: 12px; }
     .deceased-results .list-group-item { cursor: pointer; }
     .selected-chip { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .35rem .65rem; background: #eef6ff; border: 1px solid #cfe5ff; }
     .selected-chip .x { border: 0; background: transparent; font-weight: 700; color: #0d6efd; padding: 0 2px; }
 
-    #visitSubmitBtn { color: #fff !important; background: #0f2f16; border-color: #0f2f16; }
-    #visitSubmitBtn:hover, #visitSubmitBtn:focus { color: #fff !important; background: #0a1f0f; border-color: #0a1f0f; }
+    #visitSubmitBtn { color: #fff !important; background: #0f2f16 !important; border-color: #0f2f16 !important; }
+    #visitSubmitBtn:hover, #visitSubmitBtn:focus { color: #0f2f16 !important; background: #0a1f0f; border-color: #0a1f0f; }
+    #visitSubmitBtn { font-size: .95rem; padding: .55rem 1rem; border-radius: 12px; }
 
     @media (min-width: 992px) {
         .visit-page { padding-top: 70px !important; }
+        .visit-field { padding: 12px; }
         .visit-field .form-control, .visit-field .form-select { padding-top: .45rem; padding-bottom: .45rem; }
-        .visit-help { font-size: .85rem; }
     }
 </style>
 
@@ -32,7 +35,7 @@
     <div class="container-fluid px-3 px-md-4 px-lg-3">
         <div class="visit-container">
         <div class="row justify-content-center">
-            <div class="col-12">
+            <div class="col-12 col-lg-10">
                 <div class="card shadow-sm visit-card">
                     <div class="card-body p-3 p-md-4 p-lg-4">
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
@@ -66,25 +69,25 @@
                                     <div class="visit-field h-100">
                                         <label class="form-label">Your Name</label>
                                         <input type="text" name="visitor_name" class="form-control" value="{{ old('visitor_name') }}" required autocomplete="name" placeholder="Full name">
-                                        <div class="visit-help mt-1">Please use your real name for the visitor record.</div>
+                                        {{-- <div class="visit-help mt-1">Please use your real name for the visitor record.</div> --}}
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-3">
                                     <div class="visit-field h-100">
-                                        <label class="form-label">Contact Number (optional)</label>
+                                        <label class="form-label">Contact Number</label>
                                         <input type="text" name="contact_number" class="form-control" value="{{ old('contact_number') }}" autocomplete="tel" placeholder="09xx xxx xxxx">
-                                        <div class="visit-help mt-1">For safety and office assistance if needed.</div>
+                                        {{-- <div class="visit-help mt-1">For safety and office assistance if needed.</div> --}}
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-7 col-lg-3">
                                     <div class="visit-field h-100">
-                                        <label class="form-label">Address (optional)</label>
+                                        <label class="form-label">Address</label>
                                         <input type="text" name="address" class="form-control" value="{{ old('address') }}" autocomplete="street-address" placeholder="Barangay / City">
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-5 col-lg-3">
                                     <div class="visit-field h-100">
-                                        <label class="form-label">Purpose (optional)</label>
+                                        <label class="form-label">Purpose</label>
                                         <input type="text" name="purpose" class="form-control" placeholder="Visit / Prayer / Cleaning" value="{{ old('purpose') }}">
                                     </div>
                                 </div>
@@ -102,9 +105,9 @@
 
                                 <div id="deceased_selected" class="mt-2 d-none"></div>
 
-                                <div class="visit-help mt-1">
+                                {{-- <div class="visit-help mt-1">
                                     If you can&rsquo;t find the name, please ask the admin office for assistance.
-                                </div>
+                                </div> --}}
 
                                 <noscript>
                                     <div class="mt-3">
@@ -125,7 +128,7 @@
 
                             <div class="d-flex gap-2 flex-wrap mt-2">
                                 <button type="submit" class="lonyo-default-btn" id="visitSubmitBtn">CONTINUE TO LOCATOR</button>
-                                <a href="{{ route('public.map') }}" class="btn btn-outline-secondary">Open Map</a>
+                                <a href="{{ route('public.map') }}" class="btn btn-sm btn-outline-secondary">Open Map</a>
                             </div>
                         </form>
                     </div>

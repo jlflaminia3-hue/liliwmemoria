@@ -1,15 +1,16 @@
-@extends('home.home_master')
+﻿@extends('home.home_master')
 @section('home')
 <style>
     .visit-page { padding-top: 120px !important; }
     #locatorMap { 
-        height: 640px; 
+        height: 420px; 
         width: 100%; 
-        border-radius: 12px; 
+        border-radius: 6px; 
         overflow: hidden;
         position: relative;
         z-index: 1;
     }
+    .container { max-width: 1060px; margin: 0 auto; }
     .locator-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem .65rem; border-radius: 999px; background: #f8f9fa; border: 1px solid #e9ecef; }
     .marker-entrance { display: inline-flex; align-items: center; gap: 8px; }
     .marker-entrance-dot { width: 16px; height: 16px; border-radius: 999px; background: #dc3545; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
@@ -38,22 +39,24 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-11">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                    <div>
-                        <h3 class="mb-1">Tomb Locator</h3>
-                        <div class="text-muted">
-                            Visitor: <span class="fw-semibold">{{ $log->visitor_name }}</span> •
-                            Visiting: <span class="fw-semibold">{{ $deceased->last_name }}, {{ $deceased->first_name }}</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('public.visit.create') }}" class="btn btn-outline-secondary">New Visitor</a>
-                        <a href="{{ route('public.map') }}" class="btn btn-outline-secondary">Public Map</a>
-                    </div>
-                </div>
 
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-3 p-md-4">
+
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                            <div>
+                                <h3 class="mb-1">Tomb Locator</h3>
+                                <div class="text-muted">
+                                    Visitor: <span class="fw-semibold">{{ $log->visitor_name }}</span> •
+                                    Visiting: <span class="fw-semibold">{{ $deceased->last_name }}, {{ $deceased->first_name }}</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ route('public.visit.create') }}" class="btn btn-outline-secondary">New Visitor</a>
+                                <a href="{{ route('public.map') }}" class="btn btn-outline-secondary">Public Map</a>
+                            </div>
+                        </div>
+
                         <div class="d-flex flex-wrap gap-2 mb-3">
                             <span class="locator-badge">
                                 <span class="fw-semibold">{{ $entrance['label'] }}</span>
