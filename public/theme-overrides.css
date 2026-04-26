@@ -45,6 +45,17 @@ a.text-primary:focus {
   border-color: #0f1f0f !important;
 }
 
+/* Theme buttons: default template button text should not inherit blue body color */
+.lonyo-default-btn {
+  color: #ffffff !important;
+}
+
+.lonyo-default-btn:hover,
+.lonyo-default-btn:focus {
+  /* keep template hover: white bg + green text */
+  color: #142C14 !important;
+}
+
 .btn-outline-primary {
   color: #142C14 !important;
   border-color: #142C14 !important;
@@ -238,6 +249,12 @@ header.liliwmemoria-header--glass .main-menu > ul > li > a:focus {
   padding: 70px 0 54px;
   background: #142c14;
 }
+
+.liliwmemoria-slider2-cards1 {
+  padding: 70px 0 54px;
+  background: #fff;
+}
+
 
 .liliwmemoria-slider2-cards__kicker {
   margin: 0 0 8px;
@@ -854,6 +871,13 @@ body[data-menu-color] .content-page {
 .liliwmemoria-inquiry-submit {
   min-width: 200px;
   justify-content: center;
+  color: #ffffff !important;
+}
+
+.liliwmemoria-inquiry-submit:hover,
+.liliwmemoria-inquiry-submit:focus {
+  /* keep template hover: white bg + green text */
+  color: #142C14 !important;
 }
 
 .liliwmemoria-policy-card h2 {
@@ -882,6 +906,7 @@ body[data-menu-color] .content-page {
   .liliwmemoria-inquiry-submit {
     width: 100%;
     max-width: 260px;
+    color: #fff;
   }
 }
 

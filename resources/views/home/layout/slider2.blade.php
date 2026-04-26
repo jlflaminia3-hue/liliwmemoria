@@ -26,7 +26,7 @@
             </p>
             <p class="liliwmemoria-services-card__text">
               Whether you are planning ahead or arranging for immediate needs, Narra Lots give you a thoughtful option
-              that balances value, beauty, and long-term care — so your loved one’s memory can be honored with respect
+              that balances value, beauty, and long-term care, so your loved one's memory can be honored with respect
               for years to come.
             </p>
             <a href="{{ route('services.page') }}" class="liliwmemoria-services-card__btn">
@@ -94,7 +94,7 @@
       align-items: center;
       justify-content: center;
       padding: 16px;
-      background: rgba(0, 0, 0, 0.38);
+      background: rgba(20, 44, 20, 0.55);
     }
 
     .lonyo-testimonial-slider-init .lonyo-review-card__title {

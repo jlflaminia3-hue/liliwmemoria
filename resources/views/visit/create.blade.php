@@ -82,13 +82,13 @@
                                 <div class="col-12 col-md-7 col-lg-3">
                                     <div class="visit-field h-100">
                                         <label class="form-label">Address</label>
-                                        <input type="text" name="address" class="form-control" value="{{ old('address') }}" autocomplete="street-address" placeholder="Barangay / City">
+                                        <input type="text" name="address" class="form-control" value="{{ old('address') }}" autocomplete="street-address" placeholder="Brgy. / City">
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-5 col-lg-3">
                                     <div class="visit-field h-100">
                                         <label class="form-label">Purpose</label>
-                                        <input type="text" name="purpose" class="form-control" placeholder="Visit / Prayer / Cleaning" value="{{ old('purpose') }}">
+                                        <input type="text" name="purpose" class="form-control" placeholder="Visit" value="{{ old('purpose') }}">
                                     </div>
                                 </div>
                             </div>

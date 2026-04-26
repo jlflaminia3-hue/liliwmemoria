@@ -13,11 +13,11 @@
     </div>
   </section>
 
-<section class="liliwmemoria-slider2-cards position-relative overflow-hidden">
+<section class="liliwmemoria-slider2-cards1 position-relative overflow-hidden">
   <div class="container">
-    <div class="liliwmemoria-services-section__title text-center">
+    {{-- <div class="liliwmemoria-services-section__title text-center">
       <span class="liliwmemoria-services-section__rule" aria-hidden="true"></span>
-    </div>
+    </div> --}}
 
     <div class="liliwmemoria-services-card shadow-sm">
       <div class="row g-0 align-items-stretch">
@@ -43,10 +43,20 @@
               memories. Our goal is simple: provide peace of mind through compassionate service and transparent
               communication.
             </p>
-            <a href="{{ route('services.page') }}" class="liliwmemoria-services-card__btn">
+
+              <a
+                class="lonyo-default-btn liliwmemoria-inquiry-trigger"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#inquiryModal"
+              >
+                Inquire Now
+              </a>
+
+            {{-- <a href="{{ route('services.page') }}" class="liliwmemoria-services-card__btn">
               Read More
               <span aria-hidden="true">&rarr;</span>
-            </a>
+            </a> --}}
           </div>
         </div>
       </div>
@@ -90,7 +100,7 @@
       </div>
     </div>
   </section> --}}
-
+</br>
   <section>
     <div class="liliwmemoria-about-banner__media" data-aos="fade-up" data-aos-duration="700">
       <img
@@ -101,6 +111,8 @@
       >
     </div>
   </section>
+</br></br>
+
 
 
   {{-- include in services
@@ -188,28 +200,24 @@
       <div class="row g-4 justify-content-center mt-3">
         <div class="col-lg-3 col-md-6">
           <div class="liliwmemoria-about-card" data-aos="fade-up" data-aos-duration="600">
-            <div class="liliwmemoria-about-card__icon" aria-hidden="true"><i class="ri-heart-3-line"></i></div>
             <h3>Peaceful for Families</h3>
             <p>A quiet, well-kept space to remember, reflect, and visit in comfort.</p>
           </div>
         </div>
         <div class="col-lg-3 col-md-6">
           <div class="liliwmemoria-about-card" data-aos="fade-up" data-aos-duration="700">
-            <div class="liliwmemoria-about-card__icon" aria-hidden="true"><i class="ri-price-tag-3-line"></i></div>
             <h3>Affordable Options</h3>
             <p>Respectful memorial services, including burial plots and mausoleums, priced with families in mind.</p>
           </div>
         </div>
         <div class="col-lg-3 col-md-6">
           <div class="liliwmemoria-about-card" data-aos="fade-up" data-aos-duration="800">
-            <div class="liliwmemoria-about-card__icon" aria-hidden="true"><i class="ri-leaf-line"></i></div>
             <h3>Eco-Friendly Grounds</h3>
             <p>We plant trees, manage waste responsibly, and preserve the natural beauty of the park.</p>
           </div>
         </div>
         <div class="col-lg-3 col-md-6">
           <div class="liliwmemoria-about-card" data-aos="fade-up" data-aos-duration="900">
-            <div class="liliwmemoria-about-card__icon" aria-hidden="true"><i class="ri-community-line"></i></div>
             <h3>Community Support</h3>
             <p>We help create local opportunities and provide services that meet the community’s needs.</p>
           </div>

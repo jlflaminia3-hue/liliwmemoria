@@ -1,455 +1,578 @@
 @extends('home.home_master')
 
 @section('home')
-<section class="liliwmemoria-page-hero liliwmemoria-hero-bg">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
-        <div class="liliwmemoria-page-hero__content text-center" data-aos="fade-up" data-aos-duration="700">
-          <h1 class="liliwmemoria-page-hero__title">Services</h1>
+  <section class="liliwmemoria-page-hero liliwmemoria-hero-bg">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="liliwmemoria-page-hero__content text-center" data-aos="fade-up" data-aos-duration="700">
+            <h1 class="liliwmemoria-page-hero__title">Services</h1>
+          </div>
         </div>
       </div>
     </div>
-</section>
+  </section>
 
-<section class="lonyo-section-padding">
-  <div class="container">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="lonyo-default-content" data-aos="fade-up" data-aos-duration="700">
-          <h2>Transparent and Affordable Memorial Services</h2>
-          <p>
-            At Liliw Memoria, we believe in providing clear and honest pricing for all our memorial park services. 
-            Our packages are designed to accommodate various needs and budgets, ensuring that every family can honor 
-            their loved ones with dignity and respect.
-          </p>
-          <p>
-            We offer flexible payment options and customized packages to suit your specific requirements. 
-            Contact us today for a personalized quote and consultation.
-          </p>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="liliwmemoria-pricing-image" data-aos="fade-up" data-aos-duration="700">
-          <img src="{{ asset('frontend/assets/images/plan.jpg') }}" alt="Memorial Park Plan" class="img-fluid rounded-3 shadow">
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="lonyo-section-padding pt-0">
-  <div class="container">
-    <div class="liliwmemoria-section-header text-center" data-aos="fade-up" data-aos-duration="700">
-      <h2>Our Packages</h2>
-      <p>Choose the package that best fits your family's needs</p>
-    </div>
-    <div class="row g-4 justify-content-center mt-4">
-      <div class="col-lg-4 col-md-6">
-        <div class="liliwmemoria-pricing-card" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-pricing-card-header">
-            <h3>Lot Only</h3>
-            <p>Perfect for those who prefer outside services</p>
-          </div>
-          <div class="liliwmemoria-pricing-card-price">
-            <span class="currency">₱</span>
-            <span class="amount">60,000</span>
-            <span class="period">starting</span>
-          </div>
-          <ul class="liliwmemoria-pricing-card-features">
-            <li class="included"><i class="ri-check-line"></i> Lot space allocation</li>
-            <li class="included"><i class="ri-check-line"></i> Basic plot preparation</li>
-              {{-- <li class="included"><i class="ri-check-line"></i> 25-year lease agreement</li> --}}
-            <li class="included"><i class="ri-check-line"></i> Ground maintenance</li>
-            <li class="excluded"><i class="ri-close-line"></i> Interment services</li>
-            <li class="excluded"><i class="ri-close-line"></i> Memorial marker</li>
-          </ul>
-          <a href="#" class="liliwmemoria-pricing-card-btn liliwmemoria-inquiry-trigger" data-bs-toggle="modal" data-bs-target="#inquiryModal">Inquire Now</a>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-6">
-        <div class="liliwmemoria-pricing-card liliwmemoria-pricing-card--featured" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-pricing-badge">Most Popular</div>
-          <div class="liliwmemoria-pricing-card-header">
-            <h3>Standard Package</h3>
-            <p>Complete memorial services included</p>
-          </div>
-          <div class="liliwmemoria-pricing-card-price">
-            <span class="currency">₱</span>
-            <span class="amount">75,000</span>
-            <span class="period">starting</span>
-          </div>
-          <ul class="liliwmemoria-pricing-card-features">
-            <li class="included"><i class="ri-check-line"></i> Lot space allocation</li>
-            <li class="included"><i class="ri-check-line"></i> Full plot preparation</li>
-            {{-- <li class="included"><i class="ri-check-line"></i> 25-year lease agreement</li> --}}
-            <li class="included"><i class="ri-check-line"></i> Ground maintenance</li>
-            <li class="included"><i class="ri-check-line"></i> Basic interment services</li>
-            <li class="included"><i class="ri-check-line"></i> Standard memorial marker</li>
-          </ul>
-          <a href="#" class="liliwmemoria-pricing-card-btn liliwmemoria-inquiry-trigger" data-bs-toggle="modal" data-bs-target="#inquiryModal">Inquire Now</a>
-        </div>
+  <section class="lonyo-section-padding pt-0">
+    <div class="container">
+      <div class="liliwmemoria-services-grid__title text-center" data-aos="fade-up" data-aos-duration="700">
+        <span class="liliwmemoria-services-grid__rule" aria-hidden="true"></span>
       </div>
 
-    </div>
-  </div>
-</section>
+      @php
+        $services = [
+          [
+            'id' => 'narra-lots',
+            'title' => 'NARRA LOTS',
+            'img' => 'frontend/assets/images/service/narra.jpg',
+            'text' => 'A serene and well-kept resting place option with a dignified layout for family visits.',
+            'details' => 'Our Narra Lots are located in a quiet area of the memorial park and maintained regularly to ensure a clean and dignified setting for remembrance.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'reservation_inquiry',
+          ],
+          [
+            'id' => 'garden-lots',
+            'title' => 'GARDEN LOTS',
+            'img' => 'frontend/assets/images/service/garden-lot.jpg',
+            'text' => 'Peaceful garden settings that support quiet reflection, remembrance, and comfort.',
+            'details' => 'Garden Lots offer a calm, landscaped environment ideal for families who value a serene space for visits, reflection, and ongoing care.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'reservation_inquiry',
+          ],
+          [
+            'id' => 'back-office-lots',
+            'title' => 'BACK OFFICE LOTS',
+            'img' => 'frontend/assets/images/service/backoffice.jpg',
+            'text' => 'Convenient lot options close to service areas while maintaining a calm memorial environment.',
+            'details' => 'Back Office Lots provide a practical option with convenient access while still offering a peaceful, well-maintained memorial setting.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'reservation_inquiry',
+          ],
+          [
+            'id' => 'mausoleum',
+            'title' => 'MAUSOLEUM',
+            'img' => 'frontend/assets/images/service/mausoleum.jpg',
+            'text' => 'A dignified space for interment designed for lasting protection, privacy, and respect.',
+            'details' => 'Our Mausoleum option provides a protected, dignified resting place designed for lasting respect, security, and family privacy.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'reservation_inquiry',
+          ],
+        ];
 
-<section class="lonyo-section-padding pt-0">
-  <div class="container">
-    <div class="liliwmemoria-section-header text-center" data-aos="fade-up" data-aos-duration="700">
-      <h2>Additional Services</h2>
-      <p>Customize your memorial experience with our optional services</p>
-    </div>
-    <div class="row g-4 mt-4">
-      <div class="col-lg-4 col-md-6">
-        <div class="liliwmemoria-service-card text-center" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-service-icon">
-            <i class="ri-cemetery-line"></i>
-          </div>
-          <h3>Memorial Markers</h3>
-          <p>Granite, marble, and bronze markers available in various designs and sizes.</p>
-          <span class="liliwmemoria-price-tag">₱5,000 - ₱25,000</span>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-6">
-        <div class="liliwmemoria-service-card text-center" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-service-icon">
-            <i class="ri-caravan-line"></i>
-          </div>
-          <h3>Exhumation Services</h3>
-          <p>Professional exhumation and re-interment services when needed.</p>
-          <span class="liliwmemoria-price-tag">₱8,000 - ₱15,000</span>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-6">
-        <div class="liliwmemoria-service-card text-center" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-service-icon">
-            <i class="ri-leaf-line"></i>
-          </div>
-          <h3>Landscaping</h3>
-          <p>Floral arrangements and landscaping services for gravesites.</p>
-          <span class="liliwmemoria-price-tag">₱2,000 - ₱10,000</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+        $otherServices = [
+          [
+            'id' => 'interment',
+            'title' => 'INTERMENT',
+            'img' => 'frontend/assets/images/service/phases.jpg',
+            'text' => 'Professional interment assistance handled with respect, care, and proper coordination.',
+            'details' => 'We assist families through the interment process with clear guidance, scheduling support, and on-site coordination to ensure a dignified service.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'interment',
+          ],
+          [
+            'id' => 'exhumation',
+            'title' => 'EXHUMATION',
+            'img' => 'frontend/assets/images/service/narra2.jpg',
+            'text' => 'Careful exhumation services following required procedures and respectful handling.',
+            'details' => 'Our team provides support for documentation needs and careful handling throughout the exhumation process, in accordance with applicable requirements.',
+            'price' => 'Price: Please inquire for current rates.',
+            'reason' => 'reservation_inquiry',
+          ],
+        ];
+      @endphp
 
-<section class="lonyo-section-padding pt-0">
-  <div class="container">
-    <div class="liliwmemoria-section-header text-center" data-aos="fade-up" data-aos-duration="700">
-      <h2>Payment Options</h2>
-      <p>Flexible payment plans to suit your family's financial needs</p>
-    </div>
-    <div class="row g-4 mt-4 justify-content-center">
-      <div class="col-lg-5">
-        <div class="liliwmemoria-payment-card" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-payment-icon">
-            <i class="ri-wallet-3-line"></i>
+      <div class="row g-4 mt-4 justify-content-center">
+        @foreach ($services as $service)
+          <div class="col-lg-6 col-md-10">
+            <article
+              id="{{ $service['id'] }}"
+              class="liliwmemoria-service-tile"
+              style="--service-image: url('{{ asset($service['img']) }}')"
+              data-aos="fade-up"
+              data-aos-duration="700"
+            >
+              <div class="liliwmemoria-service-tile__content">
+                <h3 class="liliwmemoria-service-tile__title">{{ $service['title'] }}</h3>
+                <span class="liliwmemoria-service-tile__accent" aria-hidden="true"></span>
+                <p class="liliwmemoria-service-tile__text">{{ $service['text'] }}</p>
+                <button
+                  type="button"
+                  class="liliwmemoria-service-tile__btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#serviceModal-{{ $service['id'] }}"
+                >
+                  VIEW DETAILS
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+              </div>
+            </article>
           </div>
-          <h3>Full Payment</h3>
-          <p>Pay in full and receive a <strong>5% discount</strong> on the total package price.</p>
+        @endforeach
+      </div>
+    </div>
+  </section>
+
+  <section class="lonyo-section-padding pt-0">
+    <div class="container">
+      <div class="liliwmemoria-services-grid__title text-center" data-aos="fade-up" data-aos-duration="700">
+        <h2 class="liliwmemoria-services-grid__heading">OTHER SERVICES</h2>
+        <span class="liliwmemoria-services-grid__rule" aria-hidden="true"></span>
+      </div>
+
+      <div class="row g-4 mt-4 justify-content-center">
+        @foreach ($otherServices as $service)
+          <div class="col-lg-6 col-md-10">
+            <article
+              id="{{ $service['id'] }}"
+              class="liliwmemoria-service-tile"
+              style="--service-image: url('{{ asset($service['img']) }}')"
+              data-aos="fade-up"
+              data-aos-duration="700"
+            >
+              <div class="liliwmemoria-service-tile__content">
+                <h3 class="liliwmemoria-service-tile__title">{{ $service['title'] }}</h3>
+                <span class="liliwmemoria-service-tile__accent" aria-hidden="true"></span>
+                <p class="liliwmemoria-service-tile__text">{{ $service['text'] }}</p>
+                <button
+                  type="button"
+                  class="liliwmemoria-service-tile__btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#serviceModal-{{ $service['id'] }}"
+                >
+                  VIEW DETAILS
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </section>
+
+  @foreach (array_merge($services, $otherServices) as $service)
+    <div
+      class="modal fade"
+      id="serviceModal-{{ $service['id'] }}"
+      tabindex="-1"
+      aria-labelledby="serviceModalLabel-{{ $service['id'] }}"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content liliwmemoria-service-modal">
+          <div class="modal-header">
+            <div>
+              <div class="liliwmemoria-service-modal__kicker">Service</div>
+              <h2 class="modal-title" id="serviceModalLabel-{{ $service['id'] }}">{{ $service['title'] }}</h2>
+            </div>
+            <button type="button" class="btn-close liliwmemoria-service-modal__close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="liliwmemoria-service-modal__media">
+              <img class="liliwmemoria-service-modal__img" src="{{ asset($service['img']) }}" alt="{{ $service['title'] }}">
+            </div>
+
+            <div class="liliwmemoria-service-modal__body">
+              <p class="liliwmemoria-service-modal__text">{{ $service['details'] }}</p>
+
+              <div class="liliwmemoria-service-modal__meta">
+                <div class="liliwmemoria-service-modal__meta-label">Price</div>
+                <div class="liliwmemoria-service-modal__meta-value">{{ $service['price'] }}</div>
+              </div>
+
+              <div class="liliwmemoria-service-modal__note">
+                For updated availability and current rates, tap <strong>Inquire Now</strong> and we'll respond shortly.
+              </div>
+            </div>
+          </div>
+          <div class="liliwmemoria-service-modal__divider" aria-hidden="true"></div>
+          <div class="liliwmemoria-service-modal__form">
+            <h3 class="liliwmemoria-service-modal__form-title">Inquire Now</h3>
+            <p class="liliwmemoria-service-modal__form-subtitle">Fill out the form below and we will contact you shortly.</p>
+
+            <form method="POST" action="{{ route('contact.inquiry.submit') }}" class="liliwmemoria-service-modal__form-inner">
+              @csrf
+
+              <input type="hidden" name="subject" value="{{ $service['title'] }}">
+              <input type="hidden" name="reason" value="{{ $service['reason'] ?? 'reservation_inquiry' }}">
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <input class="form-control" type="text" name="first_name" value="{{ old('first_name') }}" placeholder="First Name" required autocomplete="given-name">
+                </div>
+
+                <div class="col-md-6">
+                  <input class="form-control" type="text" name="last_name" value="{{ old('last_name') }}" placeholder="Last Name" required autocomplete="family-name">
+                </div>
+
+                <div class="col-md-6">
+                  <input class="form-control" type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email">
+                </div>
+
+                <div class="col-md-6">
+                  <input class="form-control" type="tel" name="phone" value="{{ old('phone') }}" placeholder="Contact Number" required autocomplete="tel">
+                </div>
+
+                <div class="col-12">
+                  <textarea class="form-control" name="message" rows="5" placeholder="Message" required>{{ old('message') }}</textarea>
+                </div>
+              </div>
+
+              <div class="liliwmemoria-service-modal__consent">
+                <label class="liliwmemoria-inquiry-checkbox" for="service-inquiry-consent-{{ $service['id'] }}">
+                  <input
+                    id="service-inquiry-consent-{{ $service['id'] }}"
+                    type="checkbox"
+                    name="consent"
+                    value="1"
+                    {{ old('consent') ? 'checked' : '' }}
+                    required
+                  >
+                  <span>
+                    I agree to the collection and use of my personal information in accordance with the
+                    <a href="{{ route('privacy.policy') }}" target="_blank" rel="noopener">privacy policy</a>.
+                  </span>
+                </label>
+              </div>
+
+              <div class="liliwmemoria-service-modal__form-actions">
+                <button type="button" class="liliwmemoria-service-modal__secondary" data-bs-dismiss="modal">Close</button>
+                <button class="lonyo-default-btn hero-btn liliwmemoria-service-modal__cta" type="submit">Submit</button>
+              </div>
+
+              <div class="liliwmemoria-service-modal__form-note">
+                Subject will be sent as <strong>{{ $service['title'] }}</strong>.
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="col-lg-5">
-        <div class="liliwmemoria-payment-card" data-aos="fade-up" data-aos-duration="700">
-          <div class="liliwmemoria-payment-icon">
-            <i class="ri-calendar-check-line"></i>
-          </div>
-          <h3>Installment Plan</h3>
-          <p>Choose from <strong>12, 18, or 24-month</strong> installment plans with competitive interest rates.</p>
-        </div>
-      </div>
     </div>
-    <div class="text-center mt-5" data-aos="fade-up" data-aos-duration="700">
-      <a href="#" class="lonyo-default-btn hero-btn" data-bs-toggle="modal" data-bs-target="#inquiryModal">Get a Custom Quote</a>
-    </div>
-      {{-- <div class="lonyo-title-btn" data-aos="fade-up" data-aos-duration="900">
-        <a class="lonyo-default-btn hero-btn" href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal">Get a Custom Quote</a>
-      </div> --}}
-
-  </div>
-</section>
-
-@include('home.layout.slider2')
-@include('home.layout.slider4')
+  @endforeach
 @endsection
 
 @push('styles')
-<style>
-.liliwmemoria-pricing-image {
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-}
+  <style>
+    .liliwmemoria-services-grid__heading {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #142c14;
+      margin-bottom: 0.5rem;
+    }
 
-.liliwmemoria-pricing-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
+    .liliwmemoria-services-grid__rule {
+      display: inline-block;
+      width: 130px;
+      height: 2px;
+      background: rgba(160, 230, 170, 0.95);
+      border-radius: 999px;
+    }
 
-.liliwmemoria-section-header h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #142C14;
-    margin-bottom: 0.5rem;
-}
+    .liliwmemoria-service-tile {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 320px;
+      background-image: var(--service-image);
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 16px 32px rgba(17, 24, 39, 0.08);
+    }
 
-.liliwmemoria-section-header p {
-    color: #6b7280;
-    font-size: 1.1rem;
-}
+    .liliwmemoria-service-tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 44, 20, 0.55);
+    }
 
-.liliwmemoria-pricing-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+    .liliwmemoria-service-tile__content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 44px 44px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      color: #fff;
+    }
 
-.liliwmemoria-pricing-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(20, 44, 20, 0.12);
-}
+    .liliwmemoria-service-tile__title {
+      margin: 0;
+      font-size: 2.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
 
-.liliwmemoria-pricing-card--featured {
-    background: linear-gradient(135deg, #142C14 0%, #1a3a1a 100%);
-    border: none;
-    color: #fff;
-}
+    .liliwmemoria-service-tile__accent {
+      width: 44px;
+      height: 2px;
+      background: rgba(160, 230, 170, 0.95);
+      border-radius: 999px;
+    }
 
-.liliwmemoria-pricing-card--featured .liliwmemoria-pricing-card-header p,
-.liliwmemoria-pricing-card--featured .liliwmemoria-pricing-card-features li {
-    color: rgba(255, 255, 255, 0.85);
-}
+    .liliwmemoria-service-tile__text {
+      margin: 0;
+      max-width: 44ch;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+    }
 
-.liliwmemoria-pricing-card--featured .liliwmemoria-pricing-card-header h3 {
-    color: #fff;
-}
+    .liliwmemoria-service-tile__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin-top: 8px;
+      padding: 10px 18px;
+      border-radius: 0;
+      background: #7fe39c;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      border: 0;
+    }
 
-.liliwmemoria-pricing-badge {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #fff;
-    padding: 0.35rem 1.25rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+    .liliwmemoria-service-tile__btn:hover {
+      color: #fff;
+      filter: brightness(0.95);
+      transform: translateY(-1px);
+    }
 
-.liliwmemoria-pricing-card-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding-top: 0.5rem;
-}
+    .liliwmemoria-service-modal .modal-body {
+      padding: 18px;
+    }
 
-.liliwmemoria-pricing-card-header h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #142C14;
-    margin-bottom: 0.5rem;
-}
+    .liliwmemoria-service-modal .modal-header {
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+      align-items: flex-start;
+    }
 
-.liliwmemoria-pricing-card-header p {
-    color: #6b7280;
-    font-size: 0.9rem;
-    margin: 0;
-}
+    .liliwmemoria-service-modal .modal-title {
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #0f2613;
+      margin: 0;
+      font-size: clamp(26px, 3.2vw, 44px);
+      line-height: 1.05;
+    }
 
-.liliwmemoria-pricing-card-price {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-}
+    .liliwmemoria-service-modal__kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(20, 44, 20, 0.8);
+      margin-bottom: 6px;
+    }
 
-.liliwmemoria-pricing-card--featured .liliwmemoria-pricing-card-price {
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-}
+    .liliwmemoria-service-modal__close {
+      margin-top: 4px;
+    }
 
-.liliwmemoria-pricing-card-price .currency {
-    font-size: 1.5rem;
-    font-weight: 600;
-    vertical-align: top;
-}
+    .liliwmemoria-service-modal {
+      border: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 22px 60px rgba(17, 24, 39, 0.18);
+      background: #fff;
+    }
 
-.liliwmemoria-pricing-card-price .amount {
-    font-size: 3rem;
-    font-weight: 800;
-    line-height: 1;
-}
+    .liliwmemoria-service-modal__media {
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: #0f2613;
+      box-shadow: 0 12px 26px rgba(17, 24, 39, 0.12);
+    }
 
-.liliwmemoria-pricing-card-price .period {
-    display: block;
-    font-size: 0.85rem;
-    color: #9ca3af;
-    margin-top: 0.25rem;
-}
+    .liliwmemoria-service-modal__media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(20, 44, 20, 0.12) 0%, rgba(20, 44, 20, 0.46) 100%);
+      pointer-events: none;
+    }
 
-.liliwmemoria-pricing-card--featured .liliwmemoria-pricing-card-price .period {
-    color: rgba(255, 255, 255, 0.6);
-}
+    .liliwmemoria-service-modal__img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scale(1.01);
+    }
 
-.liliwmemoria-pricing-card-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.5rem 0;
-    flex-grow: 1;
-}
+    .liliwmemoria-service-modal__body {
+      padding: 16px 2px 2px;
+    }
 
-.liliwmemoria-pricing-card-features li {
-    padding: 0.6rem 0;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+    .liliwmemoria-service-modal__text {
+      margin: 0;
+      color: #374151;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
 
-.liliwmemoria-pricing-card-features li.included {
-    color: #374151;
-}
+    .liliwmemoria-service-modal__meta {
+      margin-top: 14px;
+      border: 1px solid rgba(17, 24, 39, 0.1);
+      border-radius: 14px;
+      background: rgba(20, 44, 20, 0.04);
+      padding: 12px 14px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-.liliwmemoria-pricing-card-features li.included i {
-    color: #10b981;
-    font-size: 1.1rem;
-}
+    .liliwmemoria-service-modal__meta-label {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: rgba(20, 44, 20, 0.85);
+    }
 
-.liliwmemoria-pricing-card-features li.excluded {
-    color: #9ca3af;
-}
+    .liliwmemoria-service-modal__meta-value {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #0f2613;
+      text-align: right;
+    }
 
-.liliwmemoria-pricing-card-features li.excluded i {
-    color: #d1d5db;
-    font-size: 1.1rem;
-}
+    .liliwmemoria-service-modal__divider {
+      height: 1px;
+      background: rgba(17, 24, 39, 0.08);
+      margin: 16px 18px 0;
+    }
 
-.liliwmemoria-pricing-card-btn {
-    display: block;
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    text-align: center;
-    background: #142C14;
-    color: #fff;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    margin-top: auto;
-}
+    .liliwmemoria-service-modal__form {
+      padding: 16px 18px 18px;
+    }
 
-.liliwmemoria-pricing-card-btn:hover {
-    background: #1a3a1a;
-    color: #fff;
-}
+    .liliwmemoria-service-modal__form-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #0f2613;
+      letter-spacing: -0.01em;
+    }
 
-.liliwmemoria-service-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    height: 100%;
-}
+    .liliwmemoria-service-modal__form-subtitle {
+      margin: 6px 0 14px;
+      color: rgba(55, 65, 81, 0.85);
+      font-size: 0.95rem;
+    }
 
-.liliwmemoria-service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(20, 44, 20, 0.08);
-}
+    .liliwmemoria-service-modal__form-inner {
+      border: 1px solid rgba(17, 24, 39, 0.1);
+      border-radius: 16px;
+      background: rgba(20, 44, 20, 0.03);
+      padding: 14px;
+    }
 
-.liliwmemoria-service-icon {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, #142C14 0%, #2d5a27 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-}
+    .liliwmemoria-service-modal__form-inner .form-control {
+      border-radius: 12px;
+      padding: 12px 12px;
+      border-color: rgba(17, 24, 39, 0.14);
+    }
 
-.liliwmemoria-service-icon i {
-    font-size: 2rem;
-    color: #fff;
-}
+    .liliwmemoria-service-modal__form-inner .form-control:focus {
+      border-color: rgba(20, 44, 20, 0.55);
+      box-shadow: 0 0 0 0.25rem rgba(20, 44, 20, 0.12);
+    }
 
-.liliwmemoria-service-card h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #142C14;
-    margin-bottom: 0.75rem;
-}
+    .liliwmemoria-service-modal__consent {
+      margin-top: 12px;
+    }
 
-.liliwmemoria-service-card p {
-    color: #6b7280;
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-}
+    .liliwmemoria-service-modal__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
 
-.liliwmemoria-price-tag {
-    display: inline-block;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-}
+    .liliwmemoria-service-modal__form-note {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: rgba(55, 65, 81, 0.9);
+    }
 
-.liliwmemoria-payment-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem;
-    border: 1px solid #e5e7eb;
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    transition: all 0.3s ease;
-}
+    .liliwmemoria-service-modal__cta {
+      background: #142c14;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      min-width: 170px;
+    }
 
-.liliwmemoria-payment-card:hover {
-    border-color: #142C14;
-    box-shadow: 0 8px 24px rgba(20, 44, 20, 0.1);
-}
+    .liliwmemoria-service-modal__secondary {
+      border: 1px solid rgba(17, 24, 39, 0.16);
+      background: #fff;
+      color: #111827;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 800;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-width: 130px;
+    }
 
-.liliwmemoria-payment-icon {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    background: rgba(20, 44, 20, 0.1);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .liliwmemoria-service-modal__secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(17, 24, 39, 0.08);
+    }
 
-.liliwmemoria-payment-icon i {
-    font-size: 1.75rem;
-    color: #142C14;
-}
+    .liliwmemoria-service-modal__note {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: rgba(55, 65, 81, 0.9);
+    }
 
-.liliwmemoria-payment-card h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #142C14;
-    margin-bottom: 0.5rem;
-}
+    @media (max-width: 575.98px) {
+      .liliwmemoria-service-modal .modal-body {
+        padding: 14px;
+      }
 
-.liliwmemoria-payment-card p {
-    color: #6b7280;
-    font-size: 0.95rem;
-    margin: 0;
-}
-</style>
+      .liliwmemoria-service-modal__divider {
+        margin: 14px 14px 0;
+      }
+
+      .liliwmemoria-service-modal__form {
+        padding: 14px 14px 16px;
+      }
+
+      .liliwmemoria-service-modal__form-actions {
+        justify-content: stretch;
+      }
+
+      .liliwmemoria-service-modal__cta,
+      .liliwmemoria-service-modal__secondary {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .liliwmemoria-service-tile__content {
+        padding: 32px 24px 28px;
+      }
+
+      .liliwmemoria-service-tile__title {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
 @endpush
