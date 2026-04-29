@@ -27,6 +27,7 @@ use App\Http\Controllers\PaymentTransactionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\VisitorLogController;
 use App\Models\Lot;
 use App\Models\Reservation;
@@ -39,7 +40,8 @@ Route::get('/', function () {
 });
 
 Route::view('/about-us', 'home.about')->name('about.page');
-Route::view('/services', 'home.services')->name('services.page');
+Route::get('/services', [ServiceController::class, 'index'])->name('services.page');
+Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
 Route::view('/location', 'home.location')->name('location.page');
 

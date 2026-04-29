@@ -255,6 +255,11 @@ header.liliwmemoria-header--glass .main-menu > ul > li > a:focus {
   background: #fff;
 }
 
+.liliwmemoria-slider2-cards2 {
+  padding: 70px 0 54px;
+  background: #f5fff5;
+}
+
 
 .liliwmemoria-slider2-cards__kicker {
   margin: 0 0 8px;
@@ -550,7 +555,7 @@ header.liliwmemoria-header--glass .main-menu > ul > li > a:focus {
 }
 
 .liliwmemoria-page-hero {
-  padding: 180px 0 90px;
+  padding: 120px 0 90px;
   display: flex;
   align-items: center;
 }

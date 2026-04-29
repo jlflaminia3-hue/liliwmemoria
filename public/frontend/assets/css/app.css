@@ -1780,7 +1780,7 @@ img {
 }
 @media (max-width: 991px) {
   .lonyo-header-section {
-    padding: 20px 0;
+    padding: 5px 0;
   }
 }
 .lonyo-header-section3 {
@@ -1792,7 +1792,7 @@ img {
 }
 @media (max-width: 991px) {
   .lonyo-header-section3 {
-    padding: 20px 0;
+    padding: 5px 0;
   }
 }
 
@@ -1818,7 +1818,7 @@ header.lonyo-header-section.lonyo-header-two.sticky-menu {
 @media (max-width: 1199px) {
   header.lonyo-header-section.lonyo-header-two.sticky-menu {
     margin-top: 0;
-    padding: 20px 0;
+    padding: 5px 0;
   }
 }
 
