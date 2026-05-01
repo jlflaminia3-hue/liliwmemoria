@@ -43,7 +43,17 @@ Route::view('/about-us', 'home.about')->name('about.page');
 Route::get('/services', [ServiceController::class, 'index'])->name('services.page');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
-Route::view('/location', 'home.location')->name('location.page');
+Route::get('/location', function () {
+    $expiredLotIds = Reservation::expireDue(CarbonImmutable::today());
+    $lotState = app(LotStateService::class);
+    foreach ($expiredLotIds as $lotId) {
+        $lotState->sync((int) $lotId);
+    }
+
+    $lots = Lot::with('deceased')->get();
+
+    return view('home.location', compact('lots'));
+})->name('location.page');
 
 Route::get('/contact-us', function () {
     return redirect('/');
