@@ -175,6 +175,13 @@ class IntermentController extends Controller
             $this->syncLotState((int) $deceased->lot_id);
         });
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Interment record created successfully.',
+            ]);
+        }
+
         return redirect()
             ->route('admin.interments.index')
             ->with('success', 'Interment record created successfully.');

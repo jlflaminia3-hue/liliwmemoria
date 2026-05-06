@@ -1608,15 +1608,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept': 'application/json',
                 },
                 body: formData,
             })
             .then(function(response) {
                 if (response.ok) {
-                    var modalEl = document.getElementById('intermentLotModal');
-                    var modal = bootstrap.Modal.getInstance(modalEl);
-                    if (modal) modal.hide();
-                    window.location.reload();
+                    return response.json().then(function(data) {
+                        var modalEl = document.getElementById('intermentLotModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                        window.location.reload();
+                    });
                 } else if (response.status === 422) {
                     return response.json().then(function(data) {
                         var errorMessages = Object.values(data.errors || {}).flat().join('\n') || 'Validation failed.';
