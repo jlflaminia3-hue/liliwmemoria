@@ -1033,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', function() {
             available: '#198754',
             occupied: '#dc3545',
             reserved: '#0d6efd',
+            sold: '#0d6efd',
         };
         var fillColor = colors[status] || colors.available;
         return {
@@ -1047,6 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function lotStatus(lot) {
         var status = (lot && lot.status) ? String(lot.status) : (lot && lot.is_occupied ? 'occupied' : 'available');
+        if (status === 'sold') status = 'reserved';
         if (status !== 'available' && status !== 'occupied' && status !== 'reserved') status = 'available';
         return status;
     }

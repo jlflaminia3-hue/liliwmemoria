@@ -67,6 +67,23 @@ class LotStateService
                 return;
             }
 
+            $fulfilledReservation = Reservation::query()
+                ->with('client')
+                ->where('lot_id', $lotId)
+                ->where('status', Reservation::STATUS_FULFILLED)
+                ->latest('fulfilled_at')
+                ->latest('id')
+                ->first();
+
+            if ($fulfilledReservation?->client) {
+                $lot->status = 'reserved';
+                $lot->is_occupied = false;
+                $lot->name = $fulfilledReservation->client->full_name;
+                $lot->save();
+
+                return;
+            }
+
             $latestOwnership = ClientLotOwnership::query()
                 ->with('client')
                 ->where('lot_id', $lotId)

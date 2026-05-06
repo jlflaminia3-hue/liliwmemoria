@@ -94,6 +94,48 @@
   </div>
 </section> --}}
 
+<section class="liliwmemoria-slider2-cards position-relative overflow-hidden">
+  <div class="container">
+    <div class="liliwmemoria-services-section__title text-center">
+      <span class="liliwmemoria-services-section__rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="liliwmemoria-services-card shadow-sm">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-6">
+          <div class="liliwmemoria-services-card__media">
+            <img
+              src="{{ asset('frontend/assets/images/location/memorial-park.jpg') }}"
+              alt="Narra lots"
+              class="liliwmemoria-services-card__img"
+            >
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="liliwmemoria-services-card__body">
+            <h3 class="liliwmemoria-services-card__title">About Lots</h3>
+            <p class="liliwmemoria-services-card__text">
+              Our cemetery is thoughtfully divided into five distinct lot categories, each designed to meet different needs and preferences. 
+              Families can choose from Lot Phases, which provide accessible memorial spaces, Garden Lots that offer a serene and natural environment, 
+              Narra Lots that symbolize strength and prestige, Mausoleums for those seeking exclusivity and permanence, and Back Office Lots that balance practicality with dignity.            
+            </p>
+            <p class="liliwmemoria-services-card__text">
+              Together, these five services create a complete offering that ensures every family can find a resting place that reflects their values, 
+              traditions, and budget. This structure highlights both flexibility and respect, making it easier for clients to select 
+              the option that best honors their loved ones.
+            </p>
+            <a href="{{ route('services.page') }}" class="liliwmemoria-services-card__btn">
+              Read More
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 @include('home.layout.slider4')
 @endsection
 
@@ -102,6 +144,7 @@
   .liliwmemoria-map-container { margin-top: 16px; }
   .liliwmemoria-map-container iframe { border-radius: 12px; }
 </style>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endpush
 
