@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('postal_code')->nullable();
             $table->string('country')->nullable();
             $table->text('notes')->nullable();
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }
